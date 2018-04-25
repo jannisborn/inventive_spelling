@@ -39,7 +39,7 @@ def accuracy(sess, logits, labels, char2numY, mode='train'):
     
     #Padded target string
     fullTarg = np.copy(labels) 
-    
+
     # Set pads to 0 - as preparation for edit_distance
     fullPred[fullPred==char2numY['<PAD>']] = 0
     fullTarg[fullTarg==char2numY['<PAD>']] = 0
@@ -631,10 +631,10 @@ def celex_retrieve():
     """
 
     data = np.load('data/celex.npz')
-    data['phon_dict'] = np_dict_to_dict(data['phon_dict'])
-    data['word_dict'] = np_dict_to_dict(data['word_dict'])
+    phon_dict = np_dict_to_dict(data['phon_dict'])
+    word_dict = np_dict_to_dict(data['word_dict'])
 
-    return ( (data['phons'], data['words']) , (data['phon_dict'],data['word_dict']))
+    return ( (data['phons'], data['words']) , (phon_dict, word_dict))
 
                                                
 
