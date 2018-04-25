@@ -19,7 +19,7 @@ def batch_data(x, y, BATCH_SIZE):
         start += BATCH_SIZE
         
         
-def accuracy(sess, logits,labels,char2numY,mode='train'):
+def accuracy(sess, logits, labels, char2numY, mode='train'):
     """ 
     Receives the LOGITS and the LABELS (np.array of identical dimensions) 
     Return token accuracy (Levensthein distance), word accuracy and the initial measure of Sachin
@@ -39,7 +39,9 @@ def accuracy(sess, logits,labels,char2numY,mode='train'):
     
     #Padded target string
     fullTarg = np.copy(labels) 
-    
+    print(type(char2numY))
+    print(char2numY)
+    print(char2numY['<PAD>'])
     # Set pads to 0 - as preparation for edit_distance
     fullPred[fullPred==char2numY['<PAD>']] = 0
     fullTarg[fullTarg==char2numY['<PAD>']] = 0
