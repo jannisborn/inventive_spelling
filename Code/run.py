@@ -130,7 +130,7 @@ if __name__ == '__main__':
     if args.log_dir == 0:
         log_dir = os.path.join(os.path.dirname(os.path.dirname(os.getcwd())), 'logs')
     elif args.log_dir == 1:
-        log_dir = "../"
+        log_dir = "../../"
 
     print('\n You have choosen the following options: \n ', args, '\n')
     file_name = args.file_name + str(args.run_id)
