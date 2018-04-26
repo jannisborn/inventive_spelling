@@ -580,7 +580,7 @@ def retrieve_model(path, num):
 
     """
     with tf.Session() as sess:
-        pretrained_model = tf.train.import_meta_graph(path+'Model-'+str(num)+'.meta')
+        pretrained_model = tf.train.import_meta_graph(path+'/Model-'+str(num)+'.meta')
         pretrained_model.restore(sess,tf.train.latest_checkpoint(path)) 
 
     print(type(pretrained_model))

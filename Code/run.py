@@ -150,12 +150,7 @@ if __name__ == '__main__':
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    exp = Experiment(name='', save_dir=test_tube)
-    exp.add_meta_tags({'bidirectional': args.bidirectional, 'task': args.task, 'learn_type': args.learn_type, 'Write+Read = ': args.reading, 
-                        'epochs': args.epochs, 'batch_size':args.batch_size, 'seed':args.seed,
-                       'lr': args.learning_rate, 'input embed size':args.input_embed_size, 'output embed size': args.output_embed_size, 'nodes/Layer':args.num_nodes,
-                       'num_layers': args.num_layers, 'optimization':str(args.optimization), 'LSTM_initializer':str(args.LSTM_initializer), 'ActFctn':str(args.activation_fn),
-                       'momentum':args.momentum, 'restored':args.restore, 'dropout':args.dropout})
+
 
     # setting the gpu options if any
     if args.gpu_options == 0:
@@ -225,6 +220,7 @@ if __name__ == '__main__':
     model_write.forward()
     model_write.backward()
 
+
     # Should the reading module be enabled?
     if args.reading:
         model_read = bLSTM(y_seq_length, x_seq_length, num_classes, x_dict_size, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes,
@@ -233,7 +229,13 @@ if __name__ == '__main__':
         model_read.forward()
         model_read.backward()
 
-
+    exp = Experiment(name='', save_dir=test_tube)
+    # First K arguments are in the same order like the ones to initialize the bLSTM, this simplifies restoring
+    exp.add_meta_tags({'inp_len':x_seq_length, 'out_len':y_seq_length, 'x_dict_size':x_dict_size, 'num_classes':num_classes, 'input_embed':args.input_embed_size,
+                        'output_embed':args.output_embed_size, 'num_layers':args.num_layers, 'nodes/Layer':args.num_nodes, 'batch_size':args.batch_size, 'learn_type':
+                        args.learn_type, 'task': 'write', 'print_ratio':args.print_ratio, 'optimization':str(args.optimization), 'lr': args.learning_rate,
+                        'LSTM_initializer':str(args.LSTM_initializer), 'momentum':args.momentum,'ActFctn':str(args.activation_fn), 'bidirectional': args.bidirectional,  
+                         'Write+Read = ': args.reading, 'epochs': args.epochs,  'seed':args.seed,'restored':args.restore, 'dropout':args.dropout})
 
     #saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=None)) # Add ops to save and restore all the variables.
     #sess.run(tf.global_variables_initializer())
@@ -373,8 +375,8 @@ if __name__ == '__main__':
 
                 
 
-            if epoch == 200:
-                np.savez('step200.npz', logits=batch_logits, dict=dict_char2num_y, targets=write_out_batch[:,1:])
+            if epoch == 0:
+                np.savez('step' + str(epoch)+'.npz', logits=batch_logits, dict=dict_char2num_y, targets=write_out_batch[:,1:])
 
             #print('Train',batch_logits.shape, write_out_batch[:,1:].shape)
             print('WRITING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
