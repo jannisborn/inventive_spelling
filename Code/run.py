@@ -375,7 +375,7 @@ if __name__ == '__main__':
 
                 
 
-            if epoch == 0:
+            if epoch == 0 or epoch == 200:
                 np.savez('step' + str(epoch)+'.npz', logits=batch_logits, dict=dict_char2num_y, targets=write_out_batch[:,1:])
 
             #print('Train',batch_logits.shape, write_out_batch[:,1:].shape)
