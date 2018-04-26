@@ -373,7 +373,8 @@ if __name__ == '__main__':
 
                 
 
-
+            if epoch == 200:
+                np.savez('step200.npz', logits=batch_logits, dict=dict_char2num_y, targets=write_out_batch[:,1:])
 
             #print('Train',batch_logits.shape, write_out_batch[:,1:].shape)
             print('WRITING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'

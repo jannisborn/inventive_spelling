@@ -46,7 +46,7 @@ def accuracy(sess, logits, labels, char2numY, mode='train'):
     if '<PAD>' in char2numY:
         fullPred[fullPred==char2numY['<PAD>']] = 0
         fullTarg[fullTarg==char2numY['<PAD>']] = 0
-        
+            
     # Initial measure in file
     oldAcc = np.mean(fullPred == fullTarg)     
     
