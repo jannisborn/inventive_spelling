@@ -71,7 +71,7 @@ if __name__ == '__main__':
                         help='The number of epochs to train on')
     parser.add_argument('--print_step', default=10, type=int,
                         help='Record training & test accuracy after every n epochs')
-    parser.add_argument('--batch_size', default=16, type=int,
+    parser.add_argument('--batch_size', default=160, type=int,
                         help='The batch size for training')
     parser.add_argument('--seed', default=42, type=int,
                         help='Seed for the random number generator')
@@ -143,7 +143,7 @@ if __name__ == '__main__':
         print('Increment run_id by 1')
         args.run_id += 1
         file_name = "run_" + str(args.run_id)
-        save_path = os.path.join(log_dir,'Models', args.task, args.learn_type + '   _' + file_name)
+        save_path = os.path.join(log_dir,'Models', args.task, args.learn_type + '_' + file_name)
         test_tube = save_path
 
     # if save_path does not exist, create one
