@@ -68,7 +68,7 @@ class bLSTM(object):
 	def convert_string_to_functions(self):
 
 		# Mapping parsed inputs to functions.
-		Function_Map = {'None': None ,          'Xavier': tf.contrib.layers.xavier_initializer(),    'ReLU': tf.nn.relu,  
+		Function_Map = {'None': None ,  None:None,        'Xavier': tf.contrib.layers.xavier_initializer(),    'ReLU': tf.nn.relu,  
                 'ReLU6': tf.nn.relu6,   'SeLU': tf.nn.selu,     'Tanh':tf.nn.tanh,           'Sigmoid':tf.sigmoid,
                 'RMSProp': tf.train.RMSPropOptimizer, 'GD':tf.train.GradientDescentOptimizer , 'Momentum':tf.train.MomentumOptimizer , 
                 'Adam': tf.train.AdamOptimizer, 'Adadelta': tf.train.AdadeltaOptimizer, 'Adagrad': tf.train.AdagradOptimizer ,
@@ -145,7 +145,7 @@ class bLSTM(object):
 
 			# Fully connected layer of the decoder outputs to the predictions
 			self.all_logits = tf.contrib.layers.fully_connected(self.dec_outputs, num_outputs=self.num_classes, activation_fn=self.activation_fn) 
-			self.logits = tf.contrib.layers.dropout(self.all_logits, self.keep_prob) 
+			self.logits = tf.contrib.layers.dropout(self.all_logits, self.keep_prob,name='logits') 
 
 
 

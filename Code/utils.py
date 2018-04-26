@@ -483,15 +483,16 @@ def BAS_G2P_retrieve():
 
 
 
-def write_word(model, phon_word, phon_dict):
+def write_word(model, phon_word, phon_dict, orth_dict):
     """
     Receives a phonetic sequence and writes the word down. Prints input and output
 
     Parameters:
     --------------
     MODEL           {bLSTM} the trained bLSTM object 
-    PHON_WORD       {str, np.array} either a plain string of phonemes or a n
-    PHON_DICT       {dict} mapping the phonemes to the integers        
+    PHON_WORD       {str, np.array} either a plain string of phonemes or a np.array
+    PHON_DICT       {dict} mapping the phonemes to the integers
+    ORTH_DICT       {dict} mapping the characters to integers        
 
     Returns:
     ------------------
@@ -505,30 +506,39 @@ def write_word(model, phon_word, phon_dict):
         rev_dict = dict(zip(phon_dict.values(), phon_dict.keys()))
         phon_word = [rev_dict[phon] for phon in phon_word_num]
     elif isinstance(phon_word,str):
-        phon_word_num = [phon_dict[phon] for phon in phon_word]
+        l = model.input_seq_length
+        phon_word_num = [phon_dict[phon_word[-k]] if k<len(phon_word) else phon_dict['<PAD>'] for k in range(l,0,-1)]
+        
+        #phon_word_num = np.array([phon_dict[phon] for phon in phon_word])
+        phon_word_num = np.expand_dims(phon_word_num, axis=0)
     else:
         raise TypeError("Please insert 2nd argument (phon_word) either as a string or as a np.array of type int")
 
     if not model.task == 'write':
         raise ValueError("Please insert as 1st argument a model (type bLSTM) that was trained on a writing task.")
-
+    orth_dict_rev = dict(zip(orth_dict.values(), orth_dict.keys()))
 
 
     with tf.Session() as sess:
+        
+        sess.run(tf.global_variables_initializer())
 
         dec_input = np.zeros([1,1]) + phon_dict['<GO>']
-        for k in range(phon_word):
-            logits = sess.run(model.logits, feed_dict={model.keep_prob:1.0, model.inputs:phon_word, model.outputs:dec_input})
+
+        for k in range(phon_word_num.shape[1]):
+            logits = sess.run(model.logits, feed_dict={model.keep_prob:1.0, model.inputs:phon_word_num, model.outputs:dec_input})
             char = logits[:,-1].argmax(axis=-1)
             dec_input = np.hstack([dec_input, char[:,None]])
+        written = ''.join([orth_dict_rev[num] for num in dec_input[0,:]])
+        
+        print("The spoken sequence ", phon_word, "  =>  ", written)
+        
+        
 
-        print("The spoken sequence ", phon_word, "  =>  ", dec_input)
 
 
 
-
-
-def read_word(model, orth_word, orth_dict):
+def read_word(model, orth_word, orth_dict, phon_dict):
     """
     Opposite to write_word, receives an orthographic sequence and reads it oud loud
     
@@ -536,7 +546,8 @@ def read_word(model, orth_word, orth_dict):
     --------------
     MODEL           {bLSTM} the trained bLSTM object 
     ORTH_WORD       {str, np.array} either a plain string of phonemes or a n
-    ORTH_DICT       {dict} mapping the phonemes to the integers        
+    ORTH_DICT       {dict} mapping the letters to the integers        
+    PHON_DICT       {dict} mapping the phonemes to the integers        
 
     Returns:
     ------------------
@@ -557,6 +568,7 @@ def read_word(model, orth_word, orth_dict):
     if not model.task == 'read':
         raise ValueError("Please insert as 1st argument a model (type bLSTM) that was trained on a reading task.")
 
+    phon_dict_rev = dict(zip(phon_dict.values(), phon_dict.keys()))
 
     with tf.Session() as sess:
 
@@ -565,6 +577,8 @@ def read_word(model, orth_word, orth_dict):
             logits = sess.run(model.logits, feed_dict={model.keep_prob:1.0, model.inputs:orth_word, model.outputs:dec_input})
             char = logits[:,-1].argmax(axis=-1)
             dec_input = np.hstack([dec_input, char[:,None]])
+
+        spoken = [phon_dict_rev[num] for num in dec_input]
 
         print("The written sequence ", orth_word, "  =>  ", dec_input)
 
