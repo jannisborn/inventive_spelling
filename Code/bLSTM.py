@@ -145,7 +145,8 @@ class bLSTM(object):
 
 			# Fully connected layer of the decoder outputs to the predictions
 			self.all_logits = tf.contrib.layers.fully_connected(self.dec_outputs, num_outputs=self.num_classes, activation_fn=self.activation_fn) 
-			self.logits = tf.contrib.layers.dropout(self.all_logits, self.keep_prob,name='logits') 
+			self.logits = tf.contrib.layers.dropout(self.all_logits, self.keep_prob) 
+			self.logits = tf.identity(self.logits, name='logits')
 
 
 
