@@ -62,7 +62,7 @@ if __name__ == '__main__':
                         " and later on more...")
     parser.add_argument('--learn_type', default='normal', type=str,
                         help="Determines the training regime. Choose from set {'normal', 'lds'}.")
-    parser.add_argument('--reading', default=True, type=bool,
+    parser.add_argument('--reading', default=False, type=bool,
                         help="Specifies whether reading task is also accomplished. Default is False. ")
 
 
@@ -199,10 +199,10 @@ if __name__ == '__main__':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_create(path)
 
     elif args.task == 'bas_g2p_r':
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_G2P_retrieve()
 
     elif args.task == 'bas_p2g_r':
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_G2P_retrieve()
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
 
     elif args.task == 'celex':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.celex_retrieve()
@@ -383,7 +383,7 @@ if __name__ == '__main__':
             trainPerf[epoch//args.print_step, 2] = np.mean(write_old_accs)
 
             if args.reading:
-                print('READING - Loss:{:>6.3f}  token accuracy:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
+                print('READING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
                       .format(read_epoch_loss, np.mean(read_token_accs), np.mean(read_word_accs), np.mean(read_old_accs)))
                 trainPerf[epoch//args.print_step, 3] = np.mean(read_token_accs)
                 trainPerf[epoch//args.print_step, 4] = np.mean(read_word_accs)

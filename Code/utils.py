@@ -36,13 +36,16 @@ def accuracy(sess, logits, labels, char2numY, mode='train'):
         fullPred = np.copy(logits.astype(int))
     else:
         print("Please specify 'mode' as either 'train' or 'test'. ")
+
+    #print(type(char2numY), char2numY)
+    #print(logits.shape, labels.shape)
     
     #Padded target string
     fullTarg = np.copy(labels) 
-
     # Set pads to 0 - as preparation for edit_distance
-    fullPred[fullPred==char2numY['<PAD>']] = 0
-    fullTarg[fullTarg==char2numY['<PAD>']] = 0
+    if '<PAD>' in char2numY:
+        fullPred[fullPred==char2numY['<PAD>']] = 0
+        fullTarg[fullTarg==char2numY['<PAD>']] = 0
         
     # Initial measure in file
     oldAcc = np.mean(fullPred == fullTarg)     
@@ -84,7 +87,7 @@ def date_dataset(seed):
     """
 
     from faker import Faker
-    import babel
+    import babel, random
     from babel.dates import format_date
 
     def create_date():
@@ -474,7 +477,9 @@ def BAS_G2P_retrieve():
     In case whole dataset is not copied on remote machine
     """
     data = np.load('data/BAS_G2P.npz')
-    return ( (data['inputs'], data['targets']) , (data['inp_dict'],data['tar_dict']) )
+    input_dict = np_dict_to_dict(data['inp_dict'])
+    target_dict = np_dict_to_dict(data['tar_dict'])
+    return ( (data['inputs'], data['targets']) , (input_dict, target_dict) )
 
 
 
@@ -576,7 +581,7 @@ def retrieve_model(path, num):
     """
     with tf.Session() as sess:
         pretrained_model = tf.train.import_meta_graph(path+'Model-'+str(num)+'.meta')
-        pretrained_model.restore(sess,tf.train.latest_checkpoint('./')) 
+        pretrained_model.restore(sess,tf.train.latest_checkpoint(path)) 
 
     print(type(pretrained_model))
 
