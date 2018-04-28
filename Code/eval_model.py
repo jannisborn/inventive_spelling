@@ -37,7 +37,6 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 
-print(args)
 
 
 
@@ -113,17 +112,17 @@ class evaluation(object):
 		self.targets - data['targets']
 
 		# Depending on whether the task is to read or to write, dictionaries need to be flipped.
-	   	self.input_dict = {key:data['inp_dict'].item().get(key) for key in data['inp_dict'].item()} if self.learn_type == 'write' else {key:data['tar_dict'].item().get(key) for key in data['tar_dict'].item()}
-	    self.output_dict = {key:data['tar_dict'].item().get(key) for key in data['tar_dict'].item()} if self.learn_type == 'write' else  {key:data['inp_dict'].item().get(key) for key in data['inp_dict'].item()}
+		self.input_dict = {key:data['inp_dict'].item().get(key) for key in data['inp_dict'].item()} if self.learn_type == 'write' else {key:data['tar_dict'].item().get(key) for key in data['tar_dict'].item()}
+		self.output_dict = {key:data['tar_dict'].item().get(key) for key in data['tar_dict'].item()} if self.learn_type == 'write' else  {key:data['inp_dict'].item().get(key) for key in data['inp_dict'].item()}
 
 
-    def retrieve_model(self):
-    	"""
+	def retrieve_model(self):
+		"""
 		Initializes a new instance of the model, with identical arguments to the trained one. 
 		Later, weights will be restored.
-    	"""
+		"""
 
-    	self.net = blSTM(*self.model_args[:13])
+		self.net = blSTM(*self.model_args[:13])
 		self.net.forward()
 		self.net.backward()
 
@@ -136,40 +135,40 @@ class evaluation(object):
 		Use this method for command line interaction with the model (showing its predictions to user-specified input words/phonemes).
 		Leave method with pressing <SPACE>
 		"""
-			loop = True
-			inp = 'phonetic' if args.task == 'write' else 'orthografic' # To read in a type of sequence
-			out = 'spoken' if self.task == 'write' else 'written'
+		loop = True
+		inp = 'phonetic' if args.task == 'write' else 'orthografic' # To read in a type of sequence
+		out = 'spoken' if self.task == 'write' else 'written'
 
 
-			out_dict_rev = dict(zip(self.output_dict.values(), self.output_dict.keys()))
+		out_dict_rev = dict(zip(self.output_dict.values(), self.output_dict.keys()))
 
 
-			with tf.Session() as sess:
+		with tf.Session() as sess:
 
-				# Restore model
-				saver = tf.train.Saver(tf.global_variables())
-	    		saver.restore(sess,tf.train.latest_checkpoint(self.path))
+			# Restore model
+			saver = tf.train.Saver(tf.global_variables())
+			saver.restore(sess,tf.train.latest_checkpoint(self.path))
 
-				while loop:
+			while loop:
 
-					word = input("Please insert a ", inp, " sequence")
+				word = input("Please insert a ", inp, " sequence")
 
-					if word == ' ':
-						loop = False
-						break
+				if word == ' ':
+					loop = False
+					break
 
-					word_num = self.prepare_sequence(word)
+				word_num = self.prepare_sequence(word)
 
-					dec_input = np.zeros([1,1]) + self.input_dict['<GO>']
+				dec_input = np.zeros([1,1]) + self.input_dict['<GO>']
 
-					for k in range(word_num.shape[1]):
-						logits = sess.run(net.logits, feed_dict={net.keep_prob:1.0, net.inputs:phon_word_num, net.outputs:dec_input})
-						char = logits[:,-1].argmax(axis=-1)
-						dec_input = np.hstack(dec_input, char[:,None]) # Identical to np.expand_dims(char,1)
+				for k in range(word_num.shape[1]):
+					logits = sess.run(net.logits, feed_dict={net.keep_prob:1.0, net.inputs:phon_word_num, net.outputs:dec_input})
+					char = logits[:,-1].argmax(axis=-1)
+					dec_input = np.hstack(dec_input, char[:,None]) # Identical to np.expand_dims(char,1)
 
-					dec_input = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
-				    written = ''.join([orth_dict_rev[num] if orth_dict_rev[num]!='<PAD>' else '' for ind,num in enumerate(dec_input[0,1:])])
-				    print("The ", out, " sequence ", phon_word, "  =>  ", written)
+				dec_input = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
+				written = ''.join([orth_dict_rev[num] if orth_dict_rev[num]!='<PAD>' else '' for ind,num in enumerate(dec_input[0,1:])])
+				print("The ", out, " sequence ", phon_word, "  =>  ", written)
 
 
 
@@ -207,40 +206,40 @@ class evaluation(object):
 
 		with tf.Session() as sess:
 
-				# Restore model
-				saver = tf.train.Saver(tf.global_variables())
-	    		saver.restore(sess,tf.train.latest_checkpoint(self.path))
+			# Restore model
+			saver = tf.train.Saver(tf.global_variables())
+			saver.restore(sess,tf.train.latest_checkpoint(self.path))
 
 
-	    		# Iterate over dataset and print all wrong predictions
+			# Iterate over dataset and print all wrong predictions
 
-	    		tested_inputs = self.inputs[self.indices]
-	    		tested_labels = self.outputs[self.indices]
-	    		dec_input = np.zeros((len(tested_words,1))) + self.input_dict['<GO>']
+			tested_inputs = self.inputs[self.indices]
+			tested_labels = self.outputs[self.indices]
+			dec_input = np.zeros((len(tested_words,1))) + self.input_dict['<GO>']
 
-	    		# Classify
-	    		for k in range(self.model_args[1]): # Length of output sequence
+			# Classify
+			for k in range(self.model_args[1]): # Length of output sequence
 
-	    			logits = sess.run(net.logits, feed_dict{net.keep_prob:1.0, net.inputs:tested_inputs, net.outputs:dec_input})
-	    			predictions = logits[:,-1].argmax(axis=-1)
-	    			dec_input = np.hstack(dec_input, predictions[:,None])
+				logits = sess.run(net.logits, feed_dict={net.keep_prob:1.0, net.inputs:tested_inputs, net.outputs:dec_input})
+				predictions = logits[:,-1].argmax(axis=-1)
+				dec_input = np.hstack(dec_input, predictions[:,None])
 
 
-	            write_oldAcc, write_tokenAcc , write_wordAcc = utils.accuracy(sess,dec_input[:,1:], tested_labels[:,1:], self.output_dict , mode='test')
-	            print('Accuracy on ', mode ' set is for tokens{:>6.3f} and for words {:>6.3f}'.format(write_tokenAcc, write_wordAcc),'\n\n')
+			write_oldAcc, write_tokenAcc , write_wordAcc = utils.accuracy(sess,dec_input[:,1:], tested_labels[:,1:], self.output_dict , mode='test')
+			print('Accuracy on {:6.3s} set is for tokens{:>6.3f} and for words {:>6.3f}'.format(mode,write_tokenAcc, write_wordAcc))
 
-	            print("Now printing the mistakes on the ", mode, " dataset")
-	            file = open('mistakes_'+mode+'_data.txt')
-	            for ind,pred in enumerate(dec_input[:,1:]):
+			print('\n',"Now printing the mistakes on the ", mode, " dataset")
+			file = open('mistakes_'+mode+'_data.txt')
+			for ind,pred in enumerate(dec_input[:,1:]):
 
-	            	if pred != tested_labels[ind,1:]:
+				if pred != tested_labels[ind,1:]:
 
-	            		inp_str = [self.inp_dict[k] if self.inp_dict[k] != '<PAD>' else '' for k in tested_inputs[ind,:]]
-	            		out_str = [self.out_dict[k] if self.out_dict[k] != '<PAD>' else '' for k in pred]
-	            		tar_str = [self.out_dict[k] if self.out_dict[k] != '<PAD>' else '' for k in tested_labels[ind,1:]]
+					inp_str = [self.inp_dict[k] if self.inp_dict[k] != '<PAD>' else '' for k in tested_inputs[ind,:]]
+					out_str = [self.out_dict[k] if self.out_dict[k] != '<PAD>' else '' for k in pred]
+					tar_str = [self.out_dict[k] if self.out_dict[k] != '<PAD>' else '' for k in tested_labels[ind,1:]]
 
-	            		print("The ", out, " sequence ", inp_str , "  =>  ", out_str, ' instead of ' tar_str, file=file)
-	            file.close()
+					print("The ", out, " sequence ", inp_str , "  =>  ", out_str, ' instead of ', tar_str, file=file)
+			file.close()
 
 
 
@@ -255,22 +254,3 @@ class evaluation(object):
 
 
 
-
-
-
-
-model = evaluation(args)
-
-
-
-
-
-
-
-
-path = '/home/jannis/workspace/Models/bas_g2p_r/normal _run_0'
-num = 200
-
-#model = utils.retrieve_model(path,num)
-
-# Do some predictions
