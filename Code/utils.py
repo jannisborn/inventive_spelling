@@ -465,7 +465,7 @@ def BAS_P2G_retrieve():
     Shortcut method for quickly retrieving numerical dataset of BAS-Sprecher corpus
     In case whole dataset is not copied on remote machine
     """
-    data = np.load('data/BAS_P2G.npz')
+    data = np.load('data/BAS.npz')
     input_dict = np_dict_to_dict(data['inp_dict'])
     target_dict = np_dict_to_dict(data['tar_dict'])
 
@@ -654,6 +654,24 @@ def celex_retrieve():
     word_dict = np_dict_to_dict(data['word_dict'])
 
     return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+
+
+def get_last_id(dataset):
+
+    # Retrieves the maximal ID of all the saved models in the path
+
+    from os.path import expanduser
+    
+    root_local = expanduser("~")+'/Dropbox/GitHub/LSTM/Models/'
+    path = root_local + dataset
+
+    try:
+        folders = next(os.walk(path))[1]
+    except StopIteration:
+        pass
+    IDs = [int(s) for folder in folders for s in folder.split('_') if s.isdigit()]
+
+    return max(IDs)
 
                                                
 

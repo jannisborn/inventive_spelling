@@ -86,8 +86,8 @@ class bLSTM(object):
 		# Encoder
 		with tf.variable_scope("encoding_"+ self.task) as encoding_scope:
 
-			input_embedding = tf.Variable(tf.random_uniform((self.input_dict_size, self.input_embed_size), -1.0, 1.0), name='enc_embedding')
-			input_embed = tf.nn.embedding_lookup(input_embedding, self.inputs)
+			self.input_embedding = tf.Variable(tf.random_uniform((self.input_dict_size, self.input_embed_size), -1.0, 1.0), name='enc_embedding')
+			input_embed = tf.nn.embedding_lookup(self.input_embedding, self.inputs)
 
 
 			if self.bidirectional:
@@ -123,13 +123,13 @@ class bLSTM(object):
 				# Define LSTM cells
 				enc_cells = [DropoutWrapper(LSTMCell(self.num_LSTM_cells,initializer=self.LSTM_initializer), input_keep_prob=keep_prob) for layer in range(self.num_layers)]
 				enc_multi_cell = tf.nn.rnn_cell.MultiRNNCell(enc_cells)
-				self.enc_output, self.enc_last_state = tf.nn.dynamic_rnn(enc_cells, inputs=date_input_embed, dtype=tf.float32)
+				self.enc_output, self.enc_last_state = tf.nn.dynamic_rnn(enc_cells, inputs=input_embed, dtype=tf.float32)
 
 		# Decoder
 		with tf.variable_scope("decoding_"+self.task) as decoding_scope:
 
-			output_embedding = tf.Variable(tf.random_uniform((self.num_classes, self.output_embed_size), -1.0, 1.0), name='dec_embedding')
-			output_embed = tf.nn.embedding_lookup(output_embedding, self.outputs)
+			self.output_embedding = tf.Variable(tf.random_uniform((self.num_classes, self.output_embed_size), -1.0, 1.0), name='dec_embedding')
+			output_embed = tf.nn.embedding_lookup(self.output_embedding, self.outputs)
 
 			if self.bidirectional:
 
@@ -178,7 +178,6 @@ class bLSTM(object):
 			elif self.optimization == 'RMSProp':
 				self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss)
 
-		print(self.optimizer)
 
 				# Clip gradients?
 
