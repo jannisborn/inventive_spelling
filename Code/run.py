@@ -349,7 +349,7 @@ if __name__ == '__main__':
                                                         {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch, 
                                                         model_read.outputs:read_out_batch[:,:-1], model_read.targets:read_out_batch[:,1:]})
 
-                    elif args.learn_type == 'lds':
+                    #elif args.learn_type == 'lds':
 
 
 
