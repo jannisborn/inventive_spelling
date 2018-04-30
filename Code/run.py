@@ -84,13 +84,13 @@ if __name__ == '__main__':
     # Model hyperparameter
     parser.add_argument('--learning_rate', default=1e-03, type=float,
                         help='The learning rate of the optimizer')
-    parser.add_argument('--input_embed_size', default=10, type=int,
+    parser.add_argument('--input_embed_size', default=100, type=int,
                         help='The feature space dimensionality for the input characters')
-    parser.add_argument('--output_embed_size', default=10, type=int,
+    parser.add_argument('--output_embed_size', default=100, type=int,
                         help='The feature space dimensionality for the output characters')
-    parser.add_argument('--num_nodes', default=64, type=int,
+    parser.add_argument('--num_nodes', default=128, type=int,
                         help='The number of LSTM nodes per layer in both encoder and decoder')
-    parser.add_argument('--num_layers', default=1, type=int,
+    parser.add_argument('--num_layers', default=2, type=int,
                         help='The number of layers in both encoder and decoder')
     parser.add_argument('--optimization',default='RMSProp', type=str, 
                         help="The optimizer used in the model. 'RMSProp' as default, give as string, alternatives: 'GD', "
@@ -104,7 +104,7 @@ if __name__ == '__main__':
                         help="The momentum parameter. Only used in case the momentum optimizer is used.")
     parser.add_argument('--bidirectional', default=True, type=bool,
                         help="Basic unit of encoder is bidirectional by default. Set to False to use regular LSTM units.")
-    parser.add_argument('--dropout', default=0.5, type=float,
+    parser.add_argument('--dropout', default=0.4, type=float,
                         help="Dropout probability of neurons during training.")
 
 
