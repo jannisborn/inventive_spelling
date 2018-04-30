@@ -175,7 +175,7 @@ def str_to_num_dataset(X,Y):
     
     # 2. Padding
     # Pad inputs
-    char2numX['<PAD>'] = len(char2numX) 
+    char2numX['<GO>'] = len(char2numX) 
     char2numX['<PAD>'] = len(char2numX)
     mx_l_X = max([len(word) for word in X]) # longest input sequence
     # Padd all X for the final form for the LSTM
@@ -638,8 +638,20 @@ def extract_celex(path):
         for ind,raw_line in enumerate(raw_data):
             
             line = raw_line.split("\\")
-            words.append(line[1])
-            phons.append(line[-2]) # Using SAMPA notation
+
+            if line[-2]: # Use only words that HAVE a SAMPA transcript (reduces from 51k to 37345)
+
+            # exclude foreign words that have the 'æ' tone (SAMPA '{' ) like in PoINte   - 18 words
+            # exclude foreign words that have the 'ɑ' tone (SAMPA 'A' ) like in NuANce   - 28 words
+            # exclude foreign words that have a nasal vowel (SAMPA '~' ) like in Jargon  - 22 words
+                if not 'A' in line[-2] and not '{' in line[-2] and not '~' in line[-2]: 
+
+                    if not ('tS' in line[-2] and not 'tsch' in line[1]): # exclude 9 foreign words like 'Image', 'Match', 'Punch', 'Sketch'
+                        words.append(line[1].lower()) # All words are lowercase only
+                        phons.append(line[-2]) # Using SAMPA notation
+
+    # Make all the words lowercase only!
+
 
     return str_to_num_dataset(words,phons)
 

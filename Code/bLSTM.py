@@ -157,9 +157,11 @@ class bLSTM(object):
 			# Loss function
 			if self.learn_type == 'normal':
 				self.loss = tf.contrib.seq2seq.sequence_loss(self.logits, self.targets, tf.ones([self.batch_size, self.output_seq_length]))
-			else:
+			elif self.learn_type == 'lds':
 				self.loss, self.read_targs = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, self.alternative_targets, self.print_ratio,
-				 				tf.ones([self.batch_size, self.output_seq_length]))
+				 				tf.ones([self.batch_size, self.output_seq_length]))\
+			else:
+				raise ValueError("Unspecified learning regime.")
 
 			# Optimizer
 			if self.optimization == 'GD':

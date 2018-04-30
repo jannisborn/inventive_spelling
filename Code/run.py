@@ -289,7 +289,6 @@ if __name__ == '__main__':
     #if args.restore:
     #saver.restore(sess, _model_writePath) #Yes, no need to add ".index"
 
-
     num_train_steps, num_val_steps = 0, 0
 
     if args.reading:
@@ -306,14 +305,22 @@ if __name__ == '__main__':
             
         # Regular training (do not show performance)
         if epoch % args.print_step != 0 :
+
+            # Modify this if learn_type is lds: foor loop needs to incorporate alternative targets.
             
             for batch_i, (write_inp_batch, write_out_batch) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size)):
                 
                 # Train Writing
-                _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
+
+                if args.learn_type == 'normal':
+                    _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
                                                             {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch, 
                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:]})
-                
+                elif args.learn_type == 'lds':
+                    _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
+                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch, 
+                                                            model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
+                                                            model_write.alternative_targets: alternative_targets})
                 
                 """
                 # Alternative
@@ -333,12 +340,17 @@ if __name__ == '__main__':
 
                 # Train READING:
                 if args.reading:
-                    read_inp_batch = write_out_batch[:,1:]
-                    read_out_batch = np.concatenate([np.ones([args.batch_size,1],dtype=np.int64) * dict_char2num_x['<GO>'], write_inp_batch],axis=1)
 
-                    _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
+                    if args.learn_type == 'normal':
+                        read_inp_batch = write_out_batch[:,1:]
+                        read_out_batch = np.concatenate([np.ones([args.batch_size,1],dtype=np.int64) * dict_char2num_x['<GO>'], write_inp_batch],axis=1)
+
+                        _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
                                                         {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch, 
                                                         model_read.outputs:read_out_batch[:,:-1], model_read.targets:read_out_batch[:,1:]})
+
+                    elif args.learn_type == 'lds':
+
 
 
                 
@@ -362,7 +374,6 @@ if __name__ == '__main__':
                                                          {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch, 
                                                          model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:]})   
                 write_epoch_loss += batch_loss
-                #print(write_inp_batch.dtype, batch_logits.dtype, write_out_batch[:,1:].dtype,len(dict_char2num_y))
                 write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(sess,batch_logits, write_out_batch[:,1:], dict_char2num_y)
 
                 # Test reading
