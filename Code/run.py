@@ -106,6 +106,8 @@ if __name__ == '__main__':
                         help="Basic unit of encoder is bidirectional by default. Set to False to use regular LSTM units.")
     parser.add_argument('--dropout', default=0.4, type=float,
                         help="Dropout probability of neurons during training.")
+    parser.add_argument('--test_size', default=0.33, type=float,
+                        help="Percentage of dataset hold back for testing.")
 
 
 
@@ -213,7 +215,7 @@ if __name__ == '__main__':
 
     # Split data into training and testing
     indices = range(len(inputs))
-    X_train, X_test,Y_train, Y_test, indices_train, indices_test = train_test_split(inputs, targets, indices, test_size=0.33, random_state=args.seed)
+    X_train, X_test,Y_train, Y_test, indices_train, indices_test = train_test_split(inputs, targets, indices, test_size=args.test_size, random_state=args.seed)
 
 
 
