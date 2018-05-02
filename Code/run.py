@@ -63,7 +63,7 @@ if __name__ == '__main__':
                         " and later on more...")
     parser.add_argument('--learn_type', default='normal', type=str,
                         help="Determines the training regime. Choose from set {'normal', 'lds'}.")
-    parser.add_argument('--reading', default=False, type=bool,
+    parser.add_argument('--reading', default=True, type=bool,
                         help="Specifies whether reading task is also accomplished. Default is False. ")
 
 
@@ -376,7 +376,8 @@ if __name__ == '__main__':
                                                          {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch, 
                                                          model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:]})   
                 write_epoch_loss += batch_loss
-                write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(sess,batch_logits, write_out_batch[:,1:], dict_char2num_y)
+
+                write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(batch_logits, write_out_batch[:,1:], dict_char2num_y)
 
                 # Test reading
                 if args.reading:
@@ -388,7 +389,7 @@ if __name__ == '__main__':
                                                          model_read.outputs: read_out_batch[:, :-1], model_read.targets: read_out_batch[:, 1:]})   
                     read_epoch_loss += batch_loss
                     #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
-                    read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(sess,batch_logits, read_out_batch[:,1:], dict_char2num_x)
+                    read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(batch_logits, read_out_batch[:,1:], dict_char2num_x)
 
 
 
@@ -424,7 +425,7 @@ if __name__ == '__main__':
                                                                             model_write.outputs: write_out_batch[:, :-1]})
                 predictions = batch_logits.argmax(-1)
                 #print('Test',batch_logits.shape,write_out_batch[:,1:].shape)
-                oldAccs[batch_i], tokenAccs[batch_i] , wordAccs[batch_i] = utils.accuracy(sess,batch_logits,write_out_batch[:,1:],dict_char2num_y, mode='train')
+                oldAccs[batch_i], tokenAccs[batch_i] , wordAccs[batch_i] = utils.accuracy(batch_logits,write_out_batch[:,1:],dict_char2num_y, mode='train')
             print('- WRITING BAD - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(np.mean(tokenAccs), np.mean(wordAccs)))
             """
 
@@ -440,7 +441,7 @@ if __name__ == '__main__':
                 #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
             #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
-            write_oldAcc, write_tokenAcc , write_wordAcc = utils.accuracy(sess,write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
+            write_oldAcc, write_tokenAcc , write_wordAcc = utils.accuracy(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
             print('WRITING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(write_tokenAcc, write_wordAcc))
             testPerf[epoch//args.print_step, 0] = write_tokenAcc
             testPerf[epoch//args.print_step, 1] = write_wordAcc
@@ -455,7 +456,7 @@ if __name__ == '__main__':
                     #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                     read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
                 #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
-                read_oldAcc, read_tokenAcc , read_wordAcc = utils.accuracy(sess,read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
+                read_oldAcc, read_tokenAcc , read_wordAcc = utils.accuracy(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
                 print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
                 testPerf[epoch//args.print_step, 0] = read_tokenAcc
                 testPerf[epoch//args.print_step, 1] = read_wordAcc
@@ -497,7 +498,7 @@ if __name__ == '__main__':
         prediction = test_logits[:,-1].argmax(axis=-1)
         dec_input = np.hstack([dec_input, prediction[:,None]])
 
-    oldAcc, tokenAcc , wordAcc = utils.accuracy(sess,dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
+    oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
 
     print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
 

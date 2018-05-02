@@ -19,7 +19,7 @@ def batch_data(x, y, BATCH_SIZE):
         start += BATCH_SIZE
         
         
-def accuracy(sess, logits, labels, char2numY, mode='train'):
+def accuracy(logits, labels, char2numY, mode='train'):
     """ 
     Receives the LOGITS and the LABELS (np.array of identical dimensions) 
     Return token accuracy (Levensthein distance), word accuracy and the initial measure of Sachin
@@ -49,11 +49,13 @@ def accuracy(sess, logits, labels, char2numY, mode='train'):
             
     # Initial measure in file
     oldAcc = np.mean(fullPred == fullTarg)     
-    
-    # Compute accuracy based on Levensthein Distance (without Padding) 
-    dists = tf.edit_distance(dense_to_sparse(fullPred), dense_to_sparse(fullTarg)).eval(session=sess)
 
-    tokenAcc = 1 - tf.reduce_mean(dists).eval(session=sess)
+    with tf.Session() as sess2:
+    
+        # Compute accuracy based on Levensthein Distance (without Padding) 
+        dists = tf.edit_distance(dense_to_sparse(fullPred), dense_to_sparse(fullTarg)).eval(session=sess2)
+
+        tokenAcc = 1 - tf.reduce_mean(dists).eval(session=sess2)
     wordAcc = np.count_nonzero(dists==0) / len(dists)
     return oldAcc, tokenAcc, wordAcc
             
