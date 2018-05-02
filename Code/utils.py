@@ -1,8 +1,9 @@
-import warnings
+import warnings, os, sys
 warnings.filterwarnings("ignore",category=FutureWarning)
 
 import tensorflow as tf
 import numpy as np
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 
 def batch_data(x, y, BATCH_SIZE):
