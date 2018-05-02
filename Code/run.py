@@ -74,7 +74,7 @@ if __name__ == '__main__':
                         help='Record training & test accuracy after every n epochs')
     parser.add_argument('--batch_size', default=160, type=int,
                         help='The batch size for training')
-    parser.add_argument('--seed', default=42, type=int,
+    parser.add_argument('--seed', default=41, type=int,
                         help='Seed for the random number generator')
     parser.add_argument('--print_ratio', default=False, type=bool,
                         help='For LdS training regime, whether ratio of incorrect but accepted words should be printed.')
@@ -106,7 +106,7 @@ if __name__ == '__main__':
                         help="Basic unit of encoder is bidirectional by default. Set to False to use regular LSTM units.")
     parser.add_argument('--dropout', default=0.4, type=float,
                         help="Dropout probability of neurons during training.")
-    parser.add_argument('--test_size', default=0.33, type=float,
+    parser.add_argument('--test_size', default=0.05, type=float,
                         help="Percentage of dataset hold back for testing.")
 
 
