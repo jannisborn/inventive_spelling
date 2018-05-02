@@ -463,12 +463,12 @@ if __name__ == '__main__':
             
 
         if epoch % args.save_model == 0:
-            saver.save(sess, save_path + '/Model', global_step=epoch, write_meta_graph=True)
+            saver.save(sess, save_path + '/Model', global_step=epoch, write_meta_graph=False)
 
                     
                
                 
-    saver.save(sess, save_path + '/MODEL')
+    saver.save(sess, save_path + '/MODEL',write_meta_graph=False)
 
     print(" Training done, model_write saved in file: %s" % save_path + ' ' + os.path.abspath(save_path))
 
