@@ -84,9 +84,9 @@ if __name__ == '__main__':
     # Model hyperparameter
     parser.add_argument('--learning_rate', default=1e-03, type=float,
                         help='The learning rate of the optimizer')
-    parser.add_argument('--input_embed_size', default=200, type=int,
+    parser.add_argument('--input_embed_size', default=150, type=int,
                         help='The feature space dimensionality for the input characters')
-    parser.add_argument('--output_embed_size', default=200, type=int,
+    parser.add_argument('--output_embed_size', default=150, type=int,
                         help='The feature space dimensionality for the output characters')
     parser.add_argument('--num_nodes', default=128, type=int,
                         help='The number of LSTM nodes per layer in both encoder and decoder')
