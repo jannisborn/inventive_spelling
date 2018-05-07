@@ -24,7 +24,7 @@ from test_tube import Experiment
 # Import my files
 import utils
 from bLSTM import bLSTM
-#from eval_model import evaluation
+from eval_model import evaluation
 
 
 sys.path.append('../')
@@ -207,7 +207,6 @@ if __name__ == '__main__':
 
     elif args.task == 'bas':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
-        args.reading = True
 
 
     # Set remaining parameter based on the processed data
@@ -222,20 +221,28 @@ if __name__ == '__main__':
 
     ############## PREPARATION FOR TRAINING ##############
 
-    model_write = bLSTM(x_seq_length, y_seq_length, x_dict_size, num_classes, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes, args.batch_size,
-        args.learn_type, 'write', print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, LSTM_initializer=args.LSTM_initializer, 
-        momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
-    model_write.forward()
-    model_write.backward()
+    with tf.variable_scope('writing'):
+
+        model_write = bLSTM(x_seq_length, y_seq_length, x_dict_size, num_classes, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes, args.batch_size,
+            args.learn_type, 'write', print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, LSTM_initializer=args.LSTM_initializer, 
+            momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
+        model_write.forward()
+        model_write.backward()
+
+        saver_write = tf.train.Saver([k for k in tf.all_variables() if k.name.startswith("writing")], max_to_keep=4)
+
 
 
     # Should the reading module be enabled?
     if args.reading:
-        model_read = bLSTM(y_seq_length, x_seq_length, num_classes, x_dict_size, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes,
-            args.batch_size, args.learn_type, 'read',print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, 
-            LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
-        model_read.forward()
-        model_read.backward()
+        with tf.variable_scope('reading'):
+            model_read = bLSTM(y_seq_length, x_seq_length, num_classes, x_dict_size, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes,
+                args.batch_size, args.learn_type, 'read',print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, 
+                LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
+            model_read.forward()
+            model_read.backward()
+            saver_read = tf.train.Saver([k for k in tf.all_variables() if k.name.startswith("reading")], max_to_keep=4)
+
 
     exp = Experiment(name='', save_dir=test_tube)
     # First K arguments are in the same order like the ones to initialize the bLSTM, this simplifies restoring
@@ -277,8 +284,6 @@ if __name__ == '__main__':
 
 
 
-    # defining the saver object
-    saver = tf.train.Saver(max_to_keep=4)
 
     if args.restore:
         utils.retrieve_model()
@@ -463,7 +468,10 @@ if __name__ == '__main__':
             
 
         if epoch % args.save_model == 0:
-            saver.save(sess, save_path + '/Model', global_step=epoch, write_meta_graph=False)
+            saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=False)
+            if self.reading:
+                saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)
+
 
                     
                

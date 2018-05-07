@@ -24,7 +24,7 @@ from test_tube import Experiment
 # Import my files
 import utils
 from bLSTM import bLSTM
-#from eval_model import evaluation
+from eval_model import evaluation
 
 
 sys.path.append('../')
@@ -54,17 +54,17 @@ if __name__ == '__main__':
                         help='Max number of samples to save in summaries')
     parser.add_argument('--restore', default=False, type=bool, 
                         help='Restore a pretrained model or initialize a new one (default).')
-    parser.add_argument('--save_model', default=20, type=int,
+    parser.add_argument('--save_model', default=200, type=int,
                         help='Frequency of iterations before model is saved and stored.')
 
     # Task hyperparameter
-    parser.add_argument('--task', default='Date', type=str,
+    parser.add_argument('--task', default='celex', type=str,
                         help="Sets the task to solve, default is 'TIMIT_P2G', alternatives are 'Dates', 'TIMIT_G2P' "
                         " and later on more...")
     parser.add_argument('--learn_type', default='normal', type=str,
                         help="Determines the training regime. Choose from set {'normal', 'lds'}.")
-    parser.add_argument('--reading', default=False, type=bool,
-                        help="Specifies whether reading task is also accomplished.")
+    parser.add_argument('--reading', default=True, type=bool,
+                        help="Specifies whether reading task is also accomplished. Default is False. ")
 
 
     # Training and recording hyperparameter
@@ -84,13 +84,13 @@ if __name__ == '__main__':
     # Model hyperparameter
     parser.add_argument('--learning_rate', default=1e-03, type=float,
                         help='The learning rate of the optimizer')
-    parser.add_argument('--input_embed_size', default=20, type=int,
+    parser.add_argument('--input_embed_size', default=150, type=int,
                         help='The feature space dimensionality for the input characters')
-    parser.add_argument('--output_embed_size', default=20, type=int,
+    parser.add_argument('--output_embed_size', default=150, type=int,
                         help='The feature space dimensionality for the output characters')
-    parser.add_argument('--num_nodes', default=64, type=int,
+    parser.add_argument('--num_nodes', default=128, type=int,
                         help='The number of LSTM nodes per layer in both encoder and decoder')
-    parser.add_argument('--num_layers', default=1, type=int,
+    parser.add_argument('--num_layers', default=2, type=int,
                         help='The number of layers in both encoder and decoder')
     parser.add_argument('--optimization',default='RMSProp', type=str, 
                         help="The optimizer used in the model. 'RMSProp' as default, give as string, alternatives: 'GD', "
@@ -207,7 +207,6 @@ if __name__ == '__main__':
 
     elif args.task == 'bas':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
-        args.reading = True
 
 
     # Set remaining parameter based on the processed data
