@@ -474,9 +474,10 @@ if __name__ == '__main__':
 
 
                     
-               
+    saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=False)
+    if self.reading:
+        saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)           
                 
-    saver.save(sess, save_path + '/MODEL',write_meta_graph=False)
 
     print(" Training done, model_write saved in file: %s" % save_path + ' ' + os.path.abspath(save_path))
 
