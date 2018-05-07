@@ -25,7 +25,7 @@ if __name__ == '__main__':
 						help='The dataset on which the model was trained, from {celex, bas, bas_p2g_r}')
 	parser.add_argument('--learn_type', default='normal', type=str,
 						help='The used learning paradigm. Choose from {normal, lds}.')
-	parser.add_argument('--task', default='write', type=str,
+	parser.add_argument('--task', default='read', type=str,
 						help="The task the model solved. Choose from {write, read}.")
 
 	args = parser.parse_args()
@@ -70,6 +70,17 @@ class evaluation(object):
 		self.retrieve_model_args()
 		self.retrieve_model()
 
+		#self.show_mistakes()
+		#print("Training mistakes saved.")
+		#self.show_mistakes('test')
+		#self.plot_pca(mode='input')
+		#self.plot_pca(mode='output')
+
+		#self.plot_tsne(mode='input')
+		#self.plot_tsne(mode='output')
+
+		self.predict_input()
+
 
 
 	def retrieve_model_args(self):
@@ -78,25 +89,38 @@ class evaluation(object):
 		"""
 		import pandas as pd
 
-
 		df = pd.read_csv(self.path+'/test_tube_data/version_0/meta_tags.csv')
 		raw_args = df['value'].values.tolist()
 
 		self.model_args = []
-		types = ['i','i','i','i','i','i','i','i','i',
-		         's','s','b','s','f','s','f','s',
-		         'b','b','i','i','b','f','l',',l'] # ends with test_indices
+		types = ['i','i','i','i','i','i','i','i','i','s','s','b','s','f','s','f','s','b','b','i','i','b','f','l','l'] # ends with test_indices
 		for ind,raw_arg in enumerate(raw_args):
-		    if types[ind] == 'i':
-		        self.model_args.append(int(raw_arg))
-		    elif types[ind] == 's':
-		        self.model_args.append(str(raw_arg))
-		    elif types[ind] == 'b':
-		        self.model_args.append(raw_arg==True)  
-		    elif types[ind] == 'f':
-		        self.model_args.append(float(raw_arg))
-		    elif types[ind] == 'l':
-		    	self.model_args.append(list(raw_arg))
+			if types[ind] == 'i':
+				self.model_args.append(int(raw_arg))
+			elif types[ind] == 's':
+				self.model_args.append(str(raw_arg))
+			elif types[ind] == 'b':
+				self.model_args.append(raw_arg==True)  
+			elif types[ind] == 'f':
+				self.model_args.append(float(raw_arg))
+			elif types[ind] == 'l':
+				str_inds = list(raw_arg)
+				self.model_args.append(self.join_inds(str_inds))
+		#return self.model_args
+
+	def join_inds(self,str_inds):
+		""" 
+		Helper method
+		"""
+
+		number_string = ''.join(str_inds)
+		number_string_list = number_string.split(",")
+		# Remove square brackets
+		number_string_list[0] = number_string_list[0][1:] 
+		number_string_list[-1] = number_string_list[-1][:-1] 
+
+		# convert to in
+		return list(map(int,number_string_list))
 
 
 
@@ -107,15 +131,18 @@ class evaluation(object):
 		"""
 
 		path = self.root_local + 'LdS_bLSTM/Code/data/'
-		data = np.load(path + self.task + '.npz')
+		data = np.load(path + self.dataset + '_old.npz')
 
-		self.inputs = data['inputs']
-		self.targets - data['targets']
+
+		self.inputs = data['phons'] if self.task == 'write' else data['words']
+		self.targets = data['words'] if self.task == 'write' else data['phons']
+
 
 		# Depending on whether the task is to read or to write, dictionaries need to be flipped.
-		self.input_dict = {key:data['inp_dict'].item().get(key) for key in data['inp_dict'].item()} if self.learn_type == 'write' else {key:data['tar_dict'].item().get(key) for key in data['tar_dict'].item()}
-		self.output_dict = {key:data['tar_dict'].item().get(key) for key in data['tar_dict'].item()} if self.learn_type == 'write' else  {key:data['inp_dict'].item().get(key) for key in data['inp_dict'].item()}
+		self.input_dict = {key:data['phon_dict'].item().get(key) for key in data['phon_dict'].item()} if self.task == 'write' else {key:data['word_dict'].item().get(key) for key in data['word_dict'].item()}
+		self.output_dict = {key:data['word_dict'].item().get(key) for key in data['word_dict'].item()} if self.task == 'write' else  {key:data['phon_dict'].item().get(key) for key in data['phon_dict'].item()}
 
+		self.output_dict_rev = dict(zip(self.output_dict.values(), self.output_dict.keys()))
 
 	def retrieve_model(self):
 		"""
@@ -123,7 +150,7 @@ class evaluation(object):
 		Later, weights will be restored.
 		"""
 
-		self.net = blSTM(*self.model_args[:13])
+		self.net = bLSTM(*self.model_args[:13])
 		self.net.forward()
 		self.net.backward()
 
@@ -131,7 +158,7 @@ class evaluation(object):
 
 
 
-	def predict_input():
+	def predict_input(self):
 		"""
 		Use this method for command line interaction with the model (showing its predictions to user-specified input words/phonemes).
 		Leave method with pressing <SPACE>
@@ -152,7 +179,7 @@ class evaluation(object):
 
 			while loop:
 
-				word = input("Please insert a ", inp, " sequence")
+				word = input("Please insert a " + inp + " sequence: ")
 
 				if word == ' ':
 					loop = False
@@ -163,13 +190,13 @@ class evaluation(object):
 				dec_input = np.zeros([1,1]) + self.input_dict['<GO>']
 
 				for k in range(word_num.shape[1]):
-					logits = sess.run(net.logits, feed_dict={net.keep_prob:1.0, net.inputs:phon_word_num, net.outputs:dec_input})
+					logits = sess.run(self.net.logits, feed_dict={self.net.keep_prob:1.0, self.net.inputs:word_num, self.net.outputs:dec_input})
 					char = logits[:,-1].argmax(axis=-1)
-					dec_input = np.hstack(dec_input, char[:,None]) # Identical to np.expand_dims(char,1)
+					dec_input = np.hstack([dec_input, char[:,None]]) # Identical to np.expand_dims(char,1)
 
 				dec_input = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
-				written = ''.join([orth_dict_rev[num] if orth_dict_rev[num]!='<PAD>' else '' for ind,num in enumerate(dec_input[0,1:])])
-				print("The ", out, " sequence ", phon_word, "  =>  ", written)
+				output = ''.join([self.output_dict_rev[num] if self.output_dict_rev[num]!='<PAD>' else '' for ind,num in enumerate(dec_input[0,1:])])
+				print("The ", out, " sequence ", word, "  =>  ", output)
 
 
 
@@ -179,7 +206,7 @@ class evaluation(object):
 
 		Parameters:
 		--------------
-		WORD 		{str}
+		WORD 		{str}		Can be an orthographic word (if task = read) or a phonetic word (if task = write)
 		"""
 		
 		# Error handling
@@ -187,13 +214,13 @@ class evaluation(object):
 			raise TypeError("Please insert a string that contains no numerical values.")
 
 		l = self.model_args[0] # length of the input sequence 
-		phon_word_num = [phon_dict[word[-k]] if k<=len(word) else self.input_dict['<PAD>'] for k in range(l,0,-1)]
+		phon_word_num = [self.input_dict[word[-k]] if k<=len(word) else self.input_dict['<PAD>'] for k in range(l,0,-1)]
 
 		return np.expand_dims(phon_word_num, axis=0)
 
 
 
-	def show_mistakes(mode='train'):
+	def show_mistakes(self,mode='train'):
 		"""
 		Show the mistakes of the model on training or testing data and saves the mistakes to a .txt file
 
@@ -213,17 +240,17 @@ class evaluation(object):
 
 
 			# Iterate over dataset and print all wrong predictions
-
+			print(type(self.indices))
 			tested_inputs = self.inputs[self.indices]
-			tested_labels = self.outputs[self.indices]
-			dec_input = np.zeros((len(tested_words,1))) + self.input_dict['<GO>']
+			tested_labels = self.targets[self.indices]
+			dec_input = np.zeros((len(tested_inputs),1)) + self.input_dict['<GO>']
 
 			# Classify
 			for k in range(self.model_args[1]): # Length of output sequence
 
-				logits = sess.run(net.logits, feed_dict={net.keep_prob:1.0, net.inputs:tested_inputs, net.outputs:dec_input})
+				logits = sess.run(self.net.logits, feed_dict={self.net.keep_prob:1.0, self.net.inputs:tested_inputs, self.net.outputs:dec_input})
 				predictions = logits[:,-1].argmax(axis=-1)
-				dec_input = np.hstack(dec_input, predictions[:,None])
+				dec_input = np.hstack([dec_input, predictions[:,None]])
 
 
 			write_oldAcc, write_tokenAcc , write_wordAcc = utils.accuracy(sess,dec_input[:,1:], tested_labels[:,1:], self.output_dict , mode='test')
@@ -263,6 +290,7 @@ class evaluation(object):
 		from sklearn.preprocessing import StandardScaler
 
 
+
 		with tf.Session() as sess:
 
 			saver = tf.train.Saver(tf.global_variables())
@@ -282,7 +310,7 @@ class evaluation(object):
 			pca = PCA(n_components=n_comp)
 			pcs = pca.fit_transform(weight_vectors)
 
-			print("The explained variance of the first ", n_comp, ' PCs is (in %): ', np.round(np.sum(pca.explained_variance_ratio_),3))    
+			print("The explained variance of the first", n_comp, 'PCs is (in %):', np.round(100*np.sum(pca.explained_variance_ratio_),3))    
     
 
 			if plot:
@@ -296,12 +324,19 @@ class evaluation(object):
 				ax.scatter(pcs[:,0], pcs[:,1],s=2)
 				ax.spines['right'].set_visible(False)
 				ax.spines['top'].set_visible(False)
+				print(len(pcs))
 				for k in range(len(pcs)):
-				    ax.annotate(dic[k],(pcs[k,0], pcs[k,1]))
+					# in output dict 0 is not used as key
+					# will be obsolete after proper retraining
+					if mode=='output' and k<28:
+						
+						ax.annotate(dic[k+1],(pcs[k,0], pcs[k,1]))  
+					else:
+						ax.annotate(dic[k],(pcs[k,0], pcs[k,1]))
 
-				plt.savefig("PCA-Results.pdf")
+				plt.savefig("PCA_"+ling+"_Results.pdf")
 
-				np.save("PCA_Results", pcs)
+				np.save("PCA_"+ling+"_Results", pcs)
 
 			else:
 
@@ -353,7 +388,7 @@ class evaluation(object):
 				raise ValueError("Specify mode as either 'input' or 'output'." )
 
 
-			if perplexity >= weight.vectors.shape[0]:
+			if perplexity >= weight_vectors.shape[0]:
 				raise ValueError("Please make sure the perplexity argument is smaller than the number of data points.")
 
 
@@ -377,8 +412,14 @@ class evaluation(object):
 			ax.spines['top'].set_visible(False)
 
 			ax.scatter(tsne_results[:,0], tsne_results[:,1],s=2)
-			for k in range(len(pcs)):
-			    ax.annotate(rev_in_dict[k],(tsne_results[k,0], tsne_results[k,1]))
+			for k in range(len(tsne_results)):
+			    # in output dict 0 is not used as key
+				# will be obsolete after proper retraining
+				if mode=='output' and k<28:
+					
+					ax.annotate(dic[k+1],(tsne_results[k,0], tsne_results[k,1]))  
+				else:
+					ax.annotate(dic[k],(tsne_results[k,0], tsne_results[k,1]))  
 
 			filename = 'tSNE_'+ling+'_perp='+str(perplexity)+'step='+str(steps)+'lr='+str(lr)+'ang='+str(angle)+'init='+init+'pca='+str(pca)
 
@@ -387,4 +428,4 @@ class evaluation(object):
 
 
 
-
+eva = evaluation(args)

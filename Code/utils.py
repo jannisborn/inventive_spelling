@@ -166,7 +166,7 @@ def str_to_num_dataset(X,Y):
         print("TypeError occurred.")
         u_characters = set([quant for seq in X for quant in seq])
 
-    char2numX = dict(zip(u_characters, range(len(u_characters))))
+    char2numX = dict(zip(u_characters, range(1,len(u_characters)+1)))
 
     # Dictionary assignining a unique integer to each phoneme
     try:
@@ -178,16 +178,16 @@ def str_to_num_dataset(X,Y):
     
     # 2. Padding
     # Pad inputs
-    char2numX['<GO>'] = len(char2numX) 
-    char2numX['<PAD>'] = len(char2numX)
+    char2numX['<GO>'] = len(char2numX) + 1
+    char2numX['<PAD>'] = len(char2numX) + 1
     mx_l_X = max([len(word) for word in X]) # longest input sequence
     # Padd all X for the final form for the LSTM
     x = [[char2numX['<PAD>']]*(mx_l_X - len(word)) +[char2numX[char] for char in word] for word in X]
     x = np.array(x) 
 
     # Pad targets
-    char2numY['<GO>'] = len(char2numY) # Define number denoting the response onset
-    char2numY['<PAD>'] = len(char2numY)  
+    char2numY['<GO>'] = len(char2numY) + 1 # Define number denoting the response onset
+    char2numY['<PAD>'] = len(char2numY) + 1 
     mx_l_Y = max([len(phon_seq) for phon_seq in Y]) # longest output sequence
 
     y = [[char2numY['<GO>']] + [char2numY['<PAD>']]*(mx_l_Y - len(ph_sq)) + [char2numY[phon] for phon in ph_sq] for ph_sq in Y]
@@ -650,11 +650,11 @@ def extract_celex(path):
                 if not 'A' in line[-2] and not '{' in line[-2] and not '~' in line[-2]: 
 
                     if not ('tS' in line[-2] and not 'tsch' in line[1]): # exclude 9 foreign words like 'Image', 'Match', 'Punch', 'Sketch'
-                        words.append(line[1].lower()) # All words are lowercase only
-                        phons.append(line[-2]) # Using SAMPA notation
 
-    # Make all the words lowercase only!
+                        if len(line[1]) < 15: # exclude extra long words (reduces to 34376)
 
+                            words.append(line[1].lower()) # All words are lowercase only
+                            phons.append(line[-2]) # Using SAMPA notation
 
     return str_to_num_dataset(words,phons)
 

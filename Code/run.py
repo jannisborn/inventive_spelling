@@ -24,7 +24,7 @@ from test_tube import Experiment
 # Import my files
 import utils
 from bLSTM import bLSTM
-from eval_model import evaluation
+#from eval_model import evaluation
 
 
 sys.path.append('../')
