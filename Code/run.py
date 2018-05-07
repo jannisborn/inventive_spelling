@@ -217,6 +217,8 @@ if __name__ == '__main__':
     X_train, X_test,Y_train, Y_test, indices_train, indices_test = train_test_split(inputs, targets, indices, test_size=args.test_size, random_state=args.seed)
 
 
+    print(dict_char2num_x,'\n')
+    print(dict_char2num_y)
 
 
     ############## PREPARATION FOR TRAINING ##############
@@ -469,13 +471,13 @@ if __name__ == '__main__':
 
         if epoch % args.save_model == 0:
             saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=False)
-            if self.reading:
+            if args.reading:
                 saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)
 
 
                     
     saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=False)
-    if self.reading:
+    if args.reading:
         saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)           
                 
 
