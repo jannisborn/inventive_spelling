@@ -24,7 +24,7 @@ from test_tube import Experiment
 # Import my files
 import utils
 from bLSTM import bLSTM
-from eval_model import evaluation
+#from eval_model import evaluation
 
 
 sys.path.append('../')
@@ -72,7 +72,7 @@ if __name__ == '__main__':
                         help='The number of epochs to train on')
     parser.add_argument('--print_step', default=10, type=int,
                         help='Record training & test accuracy after every n epochs')
-    parser.add_argument('--batch_size', default=160, type=int,
+    parser.add_argument('--batch_size', default=1500, type=int,
                         help='The batch size for training')
     parser.add_argument('--seed', default=42, type=int,
                         help='Seed for the random number generator')
