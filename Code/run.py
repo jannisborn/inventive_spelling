@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
 
     # Training and recording hyperparameter
-    parser.add_argument('--epochs', default=100, type=int,
+    parser.add_argument('--epochs', default=1000, type=int,
                         help='The number of epochs to train on')
     parser.add_argument('--print_step', default=10, type=int,
                         help='Record training & test accuracy after every n epochs')
@@ -216,9 +216,6 @@ if __name__ == '__main__':
     indices = range(len(inputs))
     X_train, X_test,Y_train, Y_test, indices_train, indices_test = train_test_split(inputs, targets, indices, test_size=args.test_size, random_state=args.seed)
 
-
-    print(dict_char2num_x,'\n')
-    print(dict_char2num_y)
 
 
     ############## PREPARATION FOR TRAINING ##############
