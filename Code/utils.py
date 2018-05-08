@@ -321,7 +321,7 @@ def set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y):
     dict_num2char_y = dict(zip(dict_char2num_y.values(), dict_char2num_y.keys()))
     x_dict_size = len(dict_char2num_x)
     num_classes = len(dict_char2num_y) # (y_dict_size) Cardinality of output dictionary
-    x_seq_length = len(inputs[0])
+    x_seq_length = len(inputs[0]) - 1 # Because of the <GO> as response onset
     y_seq_length = len(targets[0]) - 1 # Because of the <GO> as response onset
 
     return x_dict_size, num_classes, x_seq_length, y_seq_length, dict_num2char_x, dict_num2char_y
