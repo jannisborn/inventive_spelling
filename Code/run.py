@@ -439,7 +439,7 @@ if __name__ == '__main__':
             # TESTING 2
             # Set initial decoder input to be 0
 
-            write_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
+            write_dec_input = np.zeros((len(X_test)-1, 1)) + dict_char2num_y['<GO>']
             # Generate character by character (for the entire batch, weirdly)
             for i in range(y_seq_length):
                 write_test_logits = sess.run(model_write.logits, feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test, model_write.outputs:write_dec_input})
@@ -454,7 +454,7 @@ if __name__ == '__main__':
 
             # Test READING
             if args.reading:
-                read_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_x['<GO>']
+                read_dec_input = np.zeros((len(X_test)-1, 1)) + dict_char2num_x['<GO>']
                 # Generate character by character (for the entire batch, weirdly)
                 for i in range(x_seq_length):
                     read_test_logits = sess.run(model_read.logits, feed_dict={model_read.keep_prob:1.0, model_read.inputs:Y_test[:,1:], model_read.outputs:read_dec_input})
