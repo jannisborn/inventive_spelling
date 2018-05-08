@@ -24,8 +24,8 @@ class bLSTM(object):
 		# Task dependent hyperparamter
 		self.input_seq_length = input_seq_length        # How long is the input sequence (all have equal length, due to padding)
 		self.output_seq_length = output_seq_length		# How long is output sequence (also equal length)
-		self.input_dict_size = input_dict_size 			# Cardinality of input alphabet
-		self.num_classes = num_classes					# Cardinality of output alphabet
+		self.input_dict_size = input_dict_size + 1		# Cardinality of input alphabet 
+		self.num_classes = num_classes + 1				# Cardinality of output alphabet (+1 so 0 does not need to be covered since it causes trouble for tf.edit_dist)
 		self.learn_type = learn_type					# {'normal', 'lds'} specifies the training regime for the reading.
 		self.task = task        						# {'write', 'read'}
 
