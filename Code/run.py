@@ -320,11 +320,11 @@ if __name__ == '__main__':
 
                 if args.learn_type == 'normal':
                     _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
-                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch, 
+                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:, 1:], 
                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:]})
                 elif args.learn_type == 'lds':
                     _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
-                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch, 
+                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:,1:], 
                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
                                                             model_write.alternative_targets: alternative_targets})
                 
@@ -348,11 +348,12 @@ if __name__ == '__main__':
                 if args.reading:
 
                     if args.learn_type == 'normal':
-                        read_inp_batch = write_out_batch[:,1:]
-                        read_out_batch = np.concatenate([np.ones([args.batch_size,1],dtype=np.int64) * dict_char2num_x['<GO>'], write_inp_batch],axis=1)
+                        read_inp_batch = write_out_batch
+                        read_out_batch = write_inp_batch
+                        #read_out_batch = np.concatenate([np.ones([args.batch_size,1],dtype=np.int64) * dict_char2num_x['<GO>'], write_inp_batch],axis=1)
 
                         _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
-                                                        {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch, 
+                                                        {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch[:,1:], 
                                                         model_read.outputs:read_out_batch[:,:-1], model_read.targets:read_out_batch[:,1:]})
 
                     #elif args.learn_type == 'lds':
@@ -377,7 +378,7 @@ if __name__ == '__main__':
                 
                 # Test writing
                 _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict =
-                                                         {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch, 
+                                                         {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                          model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:]})   
                 write_epoch_loss += batch_loss
 
@@ -385,11 +386,12 @@ if __name__ == '__main__':
 
                 # Test reading
                 if args.reading:
-                    read_inp_batch = write_out_batch[:,1:]
-                    read_out_batch = np.concatenate([np.ones([args.batch_size,1],dtype=np.int64) * dict_char2num_x['<GO>'], write_inp_batch],axis=1)
+                    read_inp_batch = write_out_batch
+                    read_out_batch = write_inp_batch
+                    #read_out_batch = np.concatenate([np.ones([args.batch_size,1],dtype=np.int64) * dict_char2num_x['<GO>'], write_inp_batch],axis=1)
 
                     _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict =
-                                                         {model_read.keep_prob:1.0, model_read.inputs: read_inp_batch, 
+                                                         {model_read.keep_prob:1.0, model_read.inputs: read_inp_batch[:,1:], 
                                                          model_read.outputs: read_out_batch[:, :-1], model_read.targets: read_out_batch[:, 1:]})   
                     read_epoch_loss += batch_loss
                     #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
