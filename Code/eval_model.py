@@ -131,7 +131,7 @@ class evaluation(object):
 		"""
 
 		path = self.root_local + 'LdS_bLSTM/Code/data/'
-		data = np.load(path + self.dataset + '_old.npz')
+		data = np.load(path + self.dataset + '.npz')
 
 
 		self.inputs = data['phons'] if self.task == 'write' else data['words']

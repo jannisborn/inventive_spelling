@@ -208,6 +208,159 @@ if __name__ == '__main__':
     elif args.task == 'bas':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
 
+    elif args.task == 'childlex':
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.childlex_retrieve()
+
+    elif args.task == 'fibel':
+        
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.fibel_retrieve()
+        lektions_inds = [9,14,20,28,36,46,58,77,99,121,154,174]
+
+        # Very different training regime and thus done within this if/else case.
+
+        x_dict_size, num_classes, x_seq_length, y_seq_length, dict_num2char_x, dict_num2char_y = utils.set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y)
+
+        with tf.variable_scope('writing'):
+            model_write = bLSTM(x_seq_length, y_seq_length, x_dict_size, num_classes, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes, args.batch_size,
+                args.learn_type, 'write', print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, LSTM_initializer=args.LSTM_initializer, 
+                momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
+            model_write.forward()
+            model_write.backward()
+            saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=4)
+
+
+
+        # Should the reading module be enabled?
+        if args.reading:
+            with tf.variable_scope('reading'):
+                model_read = bLSTM(y_seq_length, x_seq_length, num_classes, x_dict_size, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes,
+                    args.batch_size, args.learn_type, 'read',print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, 
+                    LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
+                model_read.forward()
+                model_read.backward()
+                saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=4)
+        
+
+        exp = Experiment(name='', save_dir=test_tube)
+            # First K arguments are in the same order like the ones to initialize the bLSTM, this simplifies restoring
+            exp.add_meta_tags({'inp_len':x_seq_length, 'out_len':y_seq_length, 'x_dict_size':x_dict_size, 'num_classes':num_classes, 'input_embed':args.input_embed_size,
+                                'output_embed':args.output_embed_size, 'num_layers':args.num_layers, 'nodes/Layer':args.num_nodes, 'batch_size':args.batch_size, 'learn_type':
+                                args.learn_type, 'task': 'write', 'print_ratio':args.print_ratio, 'optimization':str(args.optimization), 'lr': args.learning_rate,
+                                'LSTM_initializer':str(args.LSTM_initializer), 'momentum':args.momentum,'ActFctn':str(args.activation_fn), 'bidirectional': args.bidirectional,  
+                                 'Write+Read = ': args.reading, 'epochs': args.epochs,  'seed':args.seed,'restored':args.restore, 'dropout':args.dropout, 'train_indices':
+                                 indices_train, 'test_indices':indices_test})
+
+        regime = args.learn_type
+
+        # For every Lektion, train k epochs, then test once.
+        for k in range(len(lektions_inds)):
+
+            print("Now training Lektion "+str(k+1))
+
+            for e in range(args.epochs):
+
+                print("Epoch nr "+str(e))
+                ind = 0 if k==0 else lektions_inds[k-1]
+                write_inp = inputs[ind:lektions_inds[k],1:]
+                write_out = targets[ind:lektions_inds[k],:-1]
+                write_targets = targets[ind:lektions_inds[k],1:]
+
+
+                if regime == 'normal':
+
+                    _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
+                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp,model_write.outputs: write_target,
+                                                             model_write.targets: write_targets})
+                # Needs some more work
+                elif regime == 'lds':
+
+                    _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
+                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp,model_write.outputs: write_out,
+                                                             model_write.targets: write_targets, model_write.alternative_targets: alternative_targets})
+
+                if args.reading and regime == 'normal':
+                    read_inp = write_targets
+                    read_out = inputs[ind:lektions_inds[k],:-1]
+                    read_targets = write_inp
+
+                    _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
+                                                        {model_read.keep_prob:args.dropout, model_read.inputs: read_inp, model_read.outputs:read_out,
+                                                         model_read.targets:read_targets})
+                
+                if args.reading and regime == 'lds':
+                    # Needs more work
+                    read_inp = write_targets
+                    read_out = inputs[ind:lektions_inds[k],:-1]
+                    read_targets = write_inp
+
+                    _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
+                                                        {model_read.keep_prob:args.dropout, model_read.inputs: read_inp, model_read.outputs:read_out,
+                                                         model_read.targets:read_targets})
+                if regime=='lds':
+                    regime = 'normal'  if e == args.epoch//2 else 'lds' # change learning regime if half of the epochs are over
+
+            # reset regime.
+            regime = args.learn_type 
+
+        # ------------------------ TESTING -----------------------------
+        accs = np.zeros(4,len(lektions_inds))
+        for k in range(len(lektions_inds)):
+            ind = 0 if k==0 else lektions_inds[k-1]
+            write_inp = inputs[ind:lektions_inds[k],1:]
+            write_targets = targets[ind:lektions_inds[k],1:]
+
+            write_dec_input = np.zeros((len(write_targets), 1)) + dict_char2num_y['<GO>']
+            # Generate character by character (for the entire batch, weirdly)
+            for i in range(y_seq_length):
+                write_test_logits = sess.run(model_write.logits, feed_dict={model_write.keep_prob:1.0, model_write.inputs:write_inp, model_write.outputs:write_dec_input})
+                write_prediction = write_test_logits[:,-1].argmax(axis=-1)
+                #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
+                write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
+            #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
+            write_oldAcc, write_tokenAcc , write_wordAcc = utils.accuracy(write_dec_input[:,1:], write_targets,dict_char2num_y, mode='test')
+            print('WRITING - Accuracy for lektion{:>6.3f} is for tokens{:>6.3f} and for words {:>6.3f}'.format(k+1,write_tokenAcc, write_wordAcc))
+            accs[0,k] = write_tokenAcc
+            accs[1,k] = write_wordAcc
+
+            # Test READING
+            if args.reading:
+                read_inp = write_targets
+                read_targets = write_inp
+                read_dec_input = np.zeros((len(read_targets), 1)) + dict_char2num_x['<GO>']
+                # Generate character by character (for the entire batch, weirdly)
+                for i in range(x_seq_length):
+                    read_test_logits = sess.run(model_read.logits, feed_dict={model_read.keep_prob:1.0, model_read.inputs:read_inp, model_read.outputs:read_dec_input})
+                    read_prediction = read_test_logits[:,-1].argmax(axis=-1)
+                    #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
+                    read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
+                #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
+                read_oldAcc, read_tokenAcc , read_wordAcc = utils.accuracy(read_dec_input[:,1:], read_targets,dict_char2num_x, mode='test')
+                print('READING - Accuracy for lektion{:>6.3f} is for tokens{:>6.3f} and for words {:>6.3f}'.format(k+1,read_tokenAcc, read_wordAcc))
+                accs[2,k] = read_tokenAcc
+                accs[3,k] = read_wordAcc
+
+        saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=False)
+        if args.reading:
+            saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)           
+                    
+
+        print(" Training done, model_write saved in file: %s" % save_path + ' ' + os.path.abspath(save_path))
+
+        np.savetxt(save_path+'/performance.txt', accs, delimiter=',')   
+
+
+
+
+
+
+
+
+        print("DONE!")
+        sys.exit(0)
+
+
+
+    # -------------------------------------------- REGULAR TRAINING SETUP --------------------------------------------------- #
 
     # Set remaining parameter based on the processed data
     x_dict_size, num_classes, x_seq_length, y_seq_length, dict_num2char_x, dict_num2char_y = utils.set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y)
@@ -504,7 +657,7 @@ if __name__ == '__main__':
 
     # Generate character by character (for the entire batch, weirdly)
     for i in range(y_seq_length):
-        test_logits = sess.run(model_write.logits, feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test, model_write.outputs:dec_input})
+        test_logits = sess.run(model_write.logits, feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:dec_input})
         prediction = test_logits[:,-1].argmax(axis=-1)
         dec_input = np.hstack([dec_input, prediction[:,None]])
 

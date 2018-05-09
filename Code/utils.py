@@ -151,6 +151,7 @@ def date_dataset(seed):
     return ((Dx,Dy),(Dchar2numX,Dchar2numY))
 
 
+
 def str_to_num_dataset(X,Y):
     """
     This method receives 2 lists of strings (input X and output Y) and converts it to padded, numerical arrays.
@@ -182,7 +183,7 @@ def str_to_num_dataset(X,Y):
     char2numX['<PAD>'] = len(char2numX) + 1
     mx_l_X = max([len(word) for word in X]) # longest input sequence
     # Padd all X for the final form for the LSTM
-    x = [[char2numX['<PAD>']]*(mx_l_X - len(word)) +[char2numX[char] for char in word] for word in X]
+    x = [[char2numX['<GO>']] + [char2numX['<PAD>']]*(mx_l_X - len(word)) +[char2numX[char] for char in word] for word in X]
     x = np.array(x) 
 
     # Pad targets
@@ -321,7 +322,7 @@ def set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y):
     dict_num2char_y = dict(zip(dict_char2num_y.values(), dict_char2num_y.keys()))
     x_dict_size = len(dict_char2num_x)
     num_classes = len(dict_char2num_y) # (y_dict_size) Cardinality of output dictionary
-    x_seq_length = len(inputs[0]) - 1 # Because of the <GO> as response onset
+    x_seq_length = len(inputs[0]) - 1 
     y_seq_length = len(targets[0]) - 1 # Because of the <GO> as response onset
 
     return x_dict_size, num_classes, x_seq_length, y_seq_length, dict_num2char_x, dict_num2char_y
@@ -651,12 +652,16 @@ def extract_celex(path):
 
                     if not ('tS' in line[-2] and not 'tsch' in line[1]): # exclude 9 foreign words like 'Image', 'Match', 'Punch', 'Sketch'
 
-                        if len(line[1]) < 15: # exclude extra long words (reduces to 34376)
+                        if len(line[1]) < 15 and len(line[-2]) < 15: # exclude extra long words (reduces to 34376)
 
                             words.append(line[1].lower()) # All words are lowercase only
                             phons.append(line[-2]) # Using SAMPA notation
+                        else:
+                            t+=1
+        print("Excluded",t, "words because they were too long (more than 15 phons)" )
+        print("Size of dataset is", len(words), "samples")
 
-    return str_to_num_dataset(words,phons)
+        return str_to_num_dataset(words,phons)
 
 
 def celex_retrieve():
@@ -665,11 +670,31 @@ def celex_retrieve():
     """
 
     #data = np.load('data/celex.npz')
-    data = np.load('data/celex_new.npz')
+    data = np.load('data/celex.npz')
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
     return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+
+def childlex_retrieve():
+    """
+    Retrives the previously saved data from the childlex database (subset of CELEX)
+    """
+
+    data = np.load('data/childlex.npz')
+    phon_dict = np_dict_to_dict(data['phon_dict'])
+    word_dict = np_dict_to_dict(data['word_dict'])
+
+    return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+
+def fibel_retrieve():
+
+    data = np.load('data/fibel.npz')
+    phon_dict = np_dict_to_dict(data['phon_dict'])
+    word_dict = np_dict_to_dict(data['word_dict'])
+
+    return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+
 
 
 def get_last_id(dataset):
@@ -688,6 +713,16 @@ def get_last_id(dataset):
     IDs = [int(s) for folder in folders for s in folder.split('_') if s.isdigit()]
 
     return max(IDs)
+
+
+def fibel_train():
+    """
+    Helper class that implements the training regime for the fibel database (learning letter by letter).
+    Book: Mia and Mo - Fibel with 12 Lektionen. 
+    Lektionen are trained one after another and each for k epochs. Testing is done on training dataset.
+    """
+
+    
 
                                                
 
