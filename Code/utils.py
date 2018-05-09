@@ -152,10 +152,14 @@ def date_dataset(seed):
 
 
 
-def str_to_num_dataset(X,Y):
+
+
+def str_to_num_dataset(X,Y,pads=5):
     """
     This method receives 2 lists of strings (input X and output Y) and converts it to padded, numerical arrays.
     It returns the numerical dataset as well as the dictionaries to retrieve the strings.
+    
+    PADS    {int} specifiying how many additional fields should be padded (to allow long words to have longer alt. writings)
     """
 
     # 1. Define dictionaries 
@@ -191,11 +195,10 @@ def str_to_num_dataset(X,Y):
     char2numY['<PAD>'] = len(char2numY) + 1 
     mx_l_Y = max([len(phon_seq) for phon_seq in Y]) # longest output sequence
 
-    y = [[char2numY['<GO>']] + [char2numY['<PAD>']]*(mx_l_Y - len(ph_sq)) + [char2numY[phon] for phon in ph_sq] for ph_sq in Y]
+    y = [[char2numY['<GO>']] + pads*[char2numY['<PAD>']] + [char2numY['<PAD>']]*(mx_l_Y - len(ph_sq)) + [char2numY[phon] for phon in ph_sq] for ph_sq in Y]
     y = np.array(y)
 
     return ((x,y) , (char2numX,char2numY))
-
 
 
 
@@ -638,7 +641,8 @@ def extract_celex(path):
         raw_data = file.read().splitlines()
         words = []
         phons = []
-        
+        m = 0
+        t = 0
         for ind,raw_line in enumerate(raw_data):
             
             line = raw_line.split("\\")
@@ -652,16 +656,24 @@ def extract_celex(path):
 
                     if not ('tS' in line[-2] and not 'tsch' in line[1]): # exclude 9 foreign words like 'Image', 'Match', 'Punch', 'Sketch'
 
-                        if len(line[1]) < 15 and len(line[-2]) < 15: # exclude extra long words (reduces to 34376)
+                        if len(line[1]) < 15 and len(line[-2]) < 15 : # exclude extra long words (reduces to 34376)
+                            
+                            if len(line[-2]) > m:
+                                m = len(line[-2])
+                                print(line[1],line[-2])
+                                
 
                             words.append(line[1].lower()) # All words are lowercase only
                             phons.append(line[-2]) # Using SAMPA notation
+                            
                         else:
                             t+=1
-        print("Excluded",t, "words because they were too long (more than 15 phons)" )
-        print("Size of dataset is", len(words), "samples")
+                            
+    print("Excluded",t, "words because they were too long (more than 15 phons)" )
+    print("Size of dataset is", len(words), "samples")
 
-        return str_to_num_dataset(words,phons)
+    return words,phons
+
 
 
 def celex_retrieve():
@@ -715,14 +727,61 @@ def get_last_id(dataset):
     return max(IDs)
 
 
-def fibel_train():
+def lds_compare(prediction, targets, alt_targets):
     """
-    Helper class that implements the training regime for the fibel database (learning letter by letter).
-    Book: Mia and Mo - Fibel with 12 Lektionen. 
-    Lektionen are trained one after another and each for k epochs. Testing is done on training dataset.
-    """
+    Like in sequence_loss_lds this method checks whether the generated predictions match any of the alternative targets
 
+    Parameters:
+    --------------
+    PREDICTION      {np.array}  2D  of shape batch_size x seq_len
+    TARGETS         {np.array}  2D  of shape batch_size x seq_len
+    ALT_TARGETS     {np.array}  3D  of shape batch_size x seq_len x max_alt_writings
+
+    Returns:
+    --------------
+    NEW_TARGETS     {np.array}  2D  of shape batch_size x seq_len
+
+    """
+    batch_size = targets.shape[0]
+    max_alt_spellings = alt_targets.shape[2]
+
+
+    new_targets = np.zeros(targets.shape)
+    counter = []
+
+    for wo_ind in range(batch_size):
+        wrote_alternative = False
+
+        # Check whether the word was actually correctly spelled.
+        if np.array_equal(prediction[wo_ind,:],targets[wo_ind,:]):
+            new_targets[wo_ind,:] = targets[wo_ind,:]
+
+
+        else:
+            # If not, check all the alternative writings
+            for tar_ind in range(max_alt_spellings):
+                if np.array_equal(prediction[wo_ind,:], alt_targets[wo_ind,:,tar_ind]):
+                    wrote_alternative = True 
+                    new_targets[wo_ind,:] = alt_targets[wo_ind,:,tar_ind]
+                    continue
+
+        # In case the spelling was actuall bullshit
+        if not wrote_alternative:
+            new_targets[wo_ind,:] = targets[wo_ind,:]
+
+        counter.append(wrote_alternative)
     
+    # How many words were written alternatively?
+    rat = sum(counter) / len(counter)
+    if rat > 0:
+          print("Ratio of words that were 'correct' in LdS sense: ", str(rat))
+
+
+    return new_targets
+
+
+
+
 
                                                
 

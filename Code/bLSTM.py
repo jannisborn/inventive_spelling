@@ -59,7 +59,7 @@ class bLSTM(object):
 		self.inputs = tf.placeholder(tf.int32 , (None,self.input_seq_length),'input')
 		self.outputs = tf.placeholder(tf.int32 , (None,None),'output')
 		self.targets = tf.placeholder(tf.int32 , (None,None),'targets')
-		self.alternative_targets = tf.placeholder(tf.int32, (None,None,None),'alternative_targets') # Orthographically incorrect, but accepted spellings.
+		self.alternative_targets = tf.placeholder(tf.int32, (None,None,None),'alternative_targets') # Orthographically incorrect, but accepted spellings: bs x seq_len x max_alt_targs
 		self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')			# Dropout parameter. Determines what ratio of neurons is used (all per default)
 		#self.pred_seq_len = tf.placeholder(tf.int32, name='predicted_seq_len')
 
@@ -158,7 +158,7 @@ class bLSTM(object):
 			if self.learn_type == 'normal':
 				self.loss = tf.contrib.seq2seq.sequence_loss(self.logits, self.targets, tf.ones([self.batch_size, self.output_seq_length]))
 			elif self.learn_type == 'lds':
-				self.loss, self.read_targs = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, self.alternative_targets, self.print_ratio,
+				self.loss, self.read_inps = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, self.alternative_targets, self.print_ratio,
 				 				tf.ones([self.batch_size, self.output_seq_length]))
 			else:
 				raise ValueError("Unspecified learning regime.")
