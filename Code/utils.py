@@ -609,6 +609,8 @@ def retrieve_model(path, num):
     return saver
 
 
+path = '/Users/jannisborn/Desktop/LDS_Data/celex2/german/gpl/gpl.cd'
+
 def extract_celex(path):
     """
     Reads in data from the CELEX corpus
@@ -655,16 +657,18 @@ def extract_celex(path):
                 if not 'A' in line[-2] and not '{' in line[-2] and not '~' in line[-2]: 
 
                     if not ('tS' in line[-2] and not 'tsch' in line[1]): # exclude 9 foreign words like 'Image', 'Match', 'Punch', 'Sketch'
+                        
+                        if not ('e' in line[-2] and not 'eː' in line[-2]): # exclude aerosol
 
-                        if len(line[1]) < 15 and len(line[-2]) < 15 : # exclude extra long words (reduces to 34376)
-                            
-                            if len(line[-2]) > m:
-                                m = len(line[-2])
-                                print(line[1],line[-2])
-                                
+                            if len(line[1]) < 10 and len(line[-2]) < 10 : # exclude extra long words 
 
-                            words.append(line[1].lower()) # All words are lowercase only
-                            phons.append(line[-2]) # Using SAMPA notation
+                                if len(line[-2]) > m:
+                                    m = len(line[-2])
+                                    print(line[1],line[-2])
+
+
+                                words.append(line[1].lower()) # All words are lowercase only
+                                phons.append(line[-2]) # Using SAMPA notation
                             
                         else:
                             t+=1
@@ -682,7 +686,7 @@ def celex_retrieve():
     """
 
     #data = np.load('data/celex.npz')
-    data = np.load('data/celex.npz')
+    data = np.load('../../Models/celex_all.npz')
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
