@@ -230,7 +230,7 @@ if __name__ == '__main__':
             model_write.forward()
             model_write.backward()
             model_write.exe = True
-            saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=4)
+            saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=10)
 
 
 
@@ -244,7 +244,7 @@ if __name__ == '__main__':
                 model_read.forward()
                 model_read.backward()
                 model_read.exe = True
-                saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=4)
+                saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=10)
         
 
         exp = Experiment(name='', save_dir=test_tube)
@@ -396,7 +396,7 @@ if __name__ == '__main__':
         model_write.backward()
         model_write.exe = True
 
-        saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=4)
+        saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=10)
 
 
 
@@ -409,7 +409,7 @@ if __name__ == '__main__':
             model_read.forward()
             model_read.backward()
             model_read.exe = True
-            saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=4)
+            saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=10)
 
 
     exp = Experiment(name='', save_dir=test_tube)
