@@ -202,10 +202,10 @@ if __name__ == '__main__':
     elif args.task == 'bas_p2g_r':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
 
-    elif args.task == 'celex' and args.learn_type == 'normal'
+    elif args.task == 'celex' and args.learn_type == 'normal':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.celex_retrieve(args.learn_type)
     
-    elif args.task == 'celex' and args.learn_type == 'lds'
+    elif args.task == 'celex' and args.learn_type == 'lds':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_retrieve(args.learn_type)
 
     elif args.task == 'bas':
