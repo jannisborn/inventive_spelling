@@ -63,6 +63,8 @@ class bLSTM(object):
 		self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')			# Dropout parameter. Determines what ratio of neurons is used (all per default)
 		#self.pred_seq_len = tf.placeholder(tf.int32, name='predicted_seq_len')
 
+		self.exe = False
+
 
 
 	def convert_string_to_functions(self):
@@ -159,7 +161,7 @@ class bLSTM(object):
 				self.loss = tf.contrib.seq2seq.sequence_loss(self.logits, self.targets, tf.ones([self.batch_size, self.output_seq_length]))
 			elif self.learn_type == 'lds':
 				self.loss, self.read_inps = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, self.alternative_targets, 
-					tf.ones([self.batch_size, self.output_seq_length], self.print_ratio))
+					tf.ones([self.batch_size, self.output_seq_length], self.print_ratio, self.exe))
 			else:
 				raise ValueError("Unspecified learning regime.")
 

@@ -226,6 +226,7 @@ if __name__ == '__main__':
                 momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
             model_write.forward()
             model_write.backward()
+            model_write.exe = True
             saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=4)
 
 
@@ -239,6 +240,7 @@ if __name__ == '__main__':
                 # Learn type is always normal, but if regime is lds, then corrupted input may be used.
                 model_read.forward()
                 model_read.backward()
+                model_read.exe = True
                 saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=4)
         
 
@@ -384,6 +386,7 @@ if __name__ == '__main__':
             momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
         model_write.forward()
         model_write.backward()
+        model_write.exe = True
 
         saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=4)
 
@@ -397,6 +400,7 @@ if __name__ == '__main__':
                 LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
             model_read.forward()
             model_read.backward()
+            model_read.exe = True
             saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=4)
 
 
