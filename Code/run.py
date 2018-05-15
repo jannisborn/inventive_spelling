@@ -383,7 +383,7 @@ if __name__ == '__main__':
             args.learn_type, 'write', print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, LSTM_initializer=args.LSTM_initializer, 
             momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
         model_write.forward()
-        model_write.backward()
+        #model_write.backward()
 
         saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=4)
 
@@ -396,7 +396,7 @@ if __name__ == '__main__':
                 args.batch_size, args.learn_type, 'read',print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, 
                 LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
             model_read.forward()
-            model_read.backward()
+            #model_read.backward()
             saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=4)
 
 
