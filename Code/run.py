@@ -693,7 +693,7 @@ if __name__ == '__main__':
             if args.reading:
                 saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)
 
-        if args.epochs // 2 == epoch and regime = 'lds':
+        if args.epochs // 2 == epoch and regime == 'lds':
             regime = 'normal'
             model_write.learn_type = 'normal'
             print("Training regime changed to normal")
