@@ -1,23 +1,34 @@
 import warnings, os, sys
 warnings.filterwarnings("ignore",category=FutureWarning)
-
+import pickle
 import tensorflow as tf
 import numpy as np
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 
-def batch_data(x, y, BATCH_SIZE):
+def batch_data(x, y, BATCH_SIZE, alt_targs=None):
     """
     Receives a batch_size and the entire training data [i.e inputs (x) and labels (y)]
     Returns a data iterator
     """
+
     shuffle = np.random.permutation(len(x))
     start = 0
     x = x[shuffle]
     y = y[shuffle]
-    while start + BATCH_SIZE <= len(x):
-        yield x[start:start+BATCH_SIZE], y[start:start+BATCH_SIZE]
-        start += BATCH_SIZE
+
+    if alt_targs == None:
+
+        while start + BATCH_SIZE <= len(x):
+            yield x[start:start+BATCH_SIZE], y[start:start+BATCH_SIZE]
+            start += BATCH_SIZE
+
+    else:
+
+        while start + BATCH_SIZE <= len(x):
+            yield x[start:start+BATCH_SIZE], y[start:start+BATCH_SIZE], alt_targs[start:start+BATCH_SIZE]
+            start += BATCH_SIZE
+
         
         
 def accuracy(logits, labels, char2numY, mode='train'):
@@ -680,7 +691,7 @@ def extract_celex(path):
 
 
 
-def celex_retrieve():
+def celex_retrieve(learn_type):
     """
     Retrives the previously saved data from the CELEX corpus
     """
@@ -690,7 +701,21 @@ def celex_retrieve():
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-    return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+    if learn_type == 'lds':
+        alt_targs_raw = np.load('../../Models/celex_alt_targets.npy')
+        max_bytes = 2**31 - 1
+        input_size = os.path.getsize(filepath)
+        bytes_in = bytearray(0)
+        with open(filepath, 'rb') as f_in:
+            for _ in range(0, input_size, max_bytes):
+                bytes_in += f_in.read(max_bytes)
+        obj = pickle.loads(bytes_in)
+        alt_targs = [np.array(d,dtype=np.int8) for d in alt_targs_raw]
+
+        return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
+    else:
+        return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+
 
 def childlex_retrieve():
     """
