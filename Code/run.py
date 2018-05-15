@@ -585,8 +585,8 @@ if __name__ == '__main__':
 
                     _, batch_loss, write_new_targs, w_batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict =
                                                              {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
-                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:]},
-                                                             model_write.alternative_targets: write_alt_targs)
+                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
+                                                             model_write.alternative_targets: write_alt_targs})
                     write_epoch_loss += batch_loss
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
 
