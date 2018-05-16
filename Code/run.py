@@ -379,7 +379,6 @@ if __name__ == '__main__':
         X_train, X_test,Y_train, Y_test, indices_train, indices_test = train_test_split(inputs, targets, indices, test_size=args.test_size, random_state=args.seed)
     elif args.learn_type == 'lds':
         X_train, X_test,Y_train, Y_test, Y_alt_train_l, Y_alt_test_l, indices_train, indices_test = train_test_split(inputs, targets, alt_targets, indices, test_size=args.test_size, random_state=args.seed)
-\
         max_len = max([len(l) for l in Y_alt_train_l])
         inp_seq_len = len(Y_alt_train_l[1][0])
         Y_alt_train = np.zeros([len(Y_alt_train_l), inp_seq_len, max_len], dtype=np.int8)
