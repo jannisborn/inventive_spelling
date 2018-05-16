@@ -702,11 +702,12 @@ def celex_retrieve(learn_type):
     word_dict = np_dict_to_dict(data['word_dict'])
 
     if learn_type == 'lds':
+        path = '../../Models/data/celex_alt_targets_small.npy'
         print("Loading alternative targets ...")
-        alt_targs_raw = np.load('../../Models/data/celex_alt_targets_small.npy')
-        print("Alternative targets successfully loaded.")
+        alt_targs_raw = np.load(path)
 
         ## Workaround due to pickle bug (cannot save npy files > 2GB)
+        """
         max_bytes = 2**31 - 1
         input_size = os.path.getsize(filepath)
         bytes_in = bytearray(0)
@@ -715,6 +716,8 @@ def celex_retrieve(learn_type):
                 bytes_in += f_in.read(max_bytes)
         alt_targs_raw = pickle.loads(bytes_in) # Takes a couple of minutes
         alt_targs = [np.array(d,dtype=np.int8) for d in alt_targs_raw]
+        """
+        print("Alternative targets successfully loaded.")
 
         return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
     else:
