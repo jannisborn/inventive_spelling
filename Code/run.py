@@ -504,7 +504,7 @@ if __name__ == '__main__':
 
             elif regime == 'lds':
 
-                for batch_i, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, Y_alt_train, args.batch_size)):
+                for batch_i, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
                     _, batch_loss, write_new_targs, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
                                                             {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:,1:], 
@@ -580,7 +580,7 @@ if __name__ == '__main__':
 
             elif regime == 'lds':
 
-                for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, Y_alt_train, args.batch_size)):
+                for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
 
                     _, batch_loss, write_new_targs, w_batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict =
@@ -604,8 +604,8 @@ if __name__ == '__main__':
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
 
             if epoch % args.save_model == 0:
-                np.savez(save_path + 'write_step' + str(epoch)+'.npz', logits=w_batch_logits, dict=dict_char2num_y, targets=write_out_batch[:,1:])
-                np.savez(save_path + 'read_step' + str(epoch)+'.npz', logits=r_batch_logits, dict=dict_char2num_x, targets=read_out_batch[:,1:])
+                np.savez(save_path + '/write_step' + str(epoch)+'.npz', logits=w_batch_logits, dict=dict_char2num_y, targets=write_out_batch[:,1:])
+                np.savez(save_path + '/read_step' + str(epoch)+'.npz', logits=r_batch_logits, dict=dict_char2num_x, targets=read_out_batch[:,1:])
 
             #print('Train',batch_logits.shape, write_out_batch[:,1:].shape)
             print('WRITING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
