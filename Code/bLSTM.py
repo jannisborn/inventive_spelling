@@ -162,6 +162,7 @@ class bLSTM(object):
 			elif self.learn_type == 'lds':
 				self.loss, self.read_inps = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, 
 					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets)
+				self.loss = np.array(self.loss)
 			else:
 				raise ValueError("Unspecified learning regime.")
 
