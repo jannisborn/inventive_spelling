@@ -165,6 +165,9 @@ class bLSTM(object):
 			else:
 				raise ValueError("Unspecified learning regime.")
 
+			print(type(self.loss),self.loss)
+
+
 			# Optimizer
 			if self.optimization == 'GD':
 				self.optimizer = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.loss)
