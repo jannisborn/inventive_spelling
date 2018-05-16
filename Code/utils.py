@@ -697,11 +697,16 @@ def celex_retrieve(learn_type):
     """
 
     #data = np.load('data/celex.npz')
-    data = np.load('../../Models/data/celex_small.npz')
+    data = np.load('../../Models/celex.npz')
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
+    
 
     if learn_type == 'lds':
+
+        data = np.load('../../Models/data/celex_small.npz')
+        phon_dict = np_dict_to_dict(data['phon_dict'])
+        word_dict = np_dict_to_dict(data['word_dict'])
         path = '../../Models/data/celex_alt_targets_small.npy'
         print("Loading alternative targets ...")
         alt_targs_raw = np.load(path)
