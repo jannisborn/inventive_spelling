@@ -722,7 +722,7 @@ def celex_retrieve(learn_type):
         alt_targs_raw = pickle.loads(bytes_in) # Takes a couple of minutes
         
         """
-        alt_targs = [np.array(d,dtype=np.int8) for d in alt_targs_raw]
+        alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
         print("Alternative targets successfully loaded.")
 
         return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
