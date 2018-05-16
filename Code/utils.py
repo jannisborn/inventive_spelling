@@ -727,7 +727,7 @@ def celex_retrieve(learn_type):
         alt_targs = np.zeros([len(alt_targs_raw), inp_seq_len, max_len], dtype=np.int8)
         for word_ind in range(len(alt_targs_raw)):
             for write_ind in range(len(alt_targs_raw[word_ind])):
-                alt_targs[wo_ind,:,write_ind] = np.array(alt_targs_raw[word_ind][write_ind],dtype=np.int8)
+                alt_targs[word_ind,:,write_ind] = np.array(alt_targs_raw[word_ind][write_ind],dtype=np.int8)
 
         #alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
         print("Alternative targets successfully loaded.")
