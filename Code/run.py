@@ -391,7 +391,7 @@ if __name__ == '__main__':
         max_len = max([len(l) for l in Y_alt_test_l])
         inp_seq_len = len(Y_alt_test_l[1][0])
         Y_alt_train = np.zeros([len(Y_alt_test_l), inp_seq_len, max_len], dtype=np.int8)
-        for word_ind in range(len(aY_alt_test_l)):
+        for word_ind in range(len(Y_alt_test_l)):
             for write_ind in range(len(Y_alt_test_l[word_ind])):
                 Y_alt_train[word_ind,:,write_ind] = np.array(Y_alt_test_l[word_ind][write_ind],dtype=np.int8)
 
