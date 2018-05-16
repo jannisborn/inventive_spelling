@@ -165,8 +165,6 @@ class bLSTM(object):
 			else:
 				raise ValueError("Unspecified learning regime.")
 
-			print(type(self.loss),self.loss)
-
 
 			# Optimizer
 			if self.optimization == 'GD':
