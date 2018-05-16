@@ -164,10 +164,6 @@ class bLSTM(object):
 					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets)
 			else:
 				raise ValueError("Unspecified learning regime.")
-			print(self.loss)
-			sess = tf.InteractiveSession()
-			print(self.loss.eval())
-			sess.close()
 
 			# Optimizer
 			if self.optimization == 'GD':
