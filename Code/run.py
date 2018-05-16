@@ -378,7 +378,23 @@ if __name__ == '__main__':
     if args.learn_type == 'normal':
         X_train, X_test,Y_train, Y_test, indices_train, indices_test = train_test_split(inputs, targets, indices, test_size=args.test_size, random_state=args.seed)
     elif args.learn_type == 'lds':
-        X_train, X_test,Y_train, Y_test, Y_alt_train, Y_alt_test, indices_train, indices_test = train_test_split(inputs, targets, alt_targets, indices, test_size=args.test_size, random_state=args.seed)
+        X_train, X_test,Y_train, Y_test, Y_alt_train_l, Y_alt_test_l, indices_train, indices_test = train_test_split(inputs, targets, alt_targets, indices, test_size=args.test_size, random_state=args.seed)
+        print(Y_alt_train_l.shape)
+
+        max_len = max([len(l) for l in Y_alt_train_l])
+        inp_seq_len = len(Y_alt_train_l[1][0])
+        Y_alt_train = np.zeros([len(Y_alt_train_l), inp_seq_len, max_len], dtype=np.int8)
+        for word_ind in range(len(aY_alt_train_l)):
+            for write_ind in range(len(Y_alt_train_l[word_ind])):
+                Y_alt_train[word_ind,:,write_ind] = np.array(Y_alt_train_l[word_ind][write_ind],dtype=np.int8)
+
+        max_len = max([len(l) for l in Y_alt_test_l])
+        inp_seq_len = len(Y_alt_test_l[1][0])
+        Y_alt_train = np.zeros([len(Y_alt_test_l), inp_seq_len, max_len], dtype=np.int8)
+        for word_ind in range(len(aY_alt_test_l)):
+            for write_ind in range(len(Y_alt_test_l[word_ind])):
+                Y_alt_train[word_ind,:,write_ind] = np.array(Y_alt_test_l[word_ind][write_ind],dtype=np.int8)
+
 
 
 
