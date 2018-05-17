@@ -800,7 +800,7 @@ def lds_compare(prediction, targets, alt_targets):
     max_alt_spellings = alt_targets.shape[2]
 
 
-    new_targets = np.zeros(targets.shape, tf.int64)
+    new_targets = np.zeros(targets.shape, np.int64)
     counter = []
 
     for wo_ind in range(batch_size):
