@@ -418,7 +418,7 @@ if __name__ == '__main__':
     if args.reading:
         with tf.variable_scope('reading'):
             model_read = bLSTM(y_seq_length, x_seq_length, num_classes, x_dict_size, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes,
-                args.batch_size, args.learn_type, 'read',print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, 
+                args.batch_size, 'normal', 'read',print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, 
                 LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
             model_read.forward()
             model_read.backward()
@@ -597,12 +597,11 @@ if __name__ == '__main__':
                 for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
                     print(type(write_alt_targs), write_alt_targs.shape, type(write_alt_targs[1]))
-                    _, batch_loss_write_new_targs, w_batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict =
-                                                             {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
-                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
-                                                             model_write.alternative_targets: write_alt_targs})
+                    _, batch_loss, write_new_targs, w_batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.read_inps, model_write.logits], 
+                                                                        feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
+                                                                            model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
+                                                                            model_write.alternative_targets: write_alt_targs})
 
-                    print(type(batch_loss_write_new_targs), batch_loss_write_new_targs)
                     write_epoch_loss += batch_loss
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
 
