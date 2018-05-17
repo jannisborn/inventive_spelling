@@ -181,8 +181,10 @@ class bLSTM(object):
 				self.optimizer = tf.train.AdadeltaOptimizer().minimize(self.loss)
 			elif self.optimization == 'Adagrad':
 				self.optimizer = tf.train.AdagradOptimizer(self.learning_rate).minimize(self.loss)
-			elif self.optimization == 'RMSProp':
+			elif self.optimization == 'RMSProp' and self.learn_type == 'normal':
 				self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss)
+			elif self.optimization == 'RMSProp' and self.learn_type == 'lds':
+				self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss_lds)
 
 
 				# Clip gradients?
