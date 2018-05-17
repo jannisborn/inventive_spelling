@@ -243,7 +243,6 @@ if __name__ == '__main__':
                 # Learn type is always normal, but if regime is lds, then corrupted input may be used.
                 model_read.forward()
                 model_read.backward()
-                model_read.exe = True
                 saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=10)
         
 
@@ -280,7 +279,8 @@ if __name__ == '__main__':
                 # Needs some more work
                 elif regime == 'lds':
                     # Inputs for readings are returned from writing process
-                    _, batch_loss, read_inp, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
+                    _, batch_loss, read_inp, batch_logits = sess.run([model_write.optimizer, model_write.loss_lds, model_write.read_inps, model_write.logits], 
+                                                            feed_dict = 
                                                             {model_write.keep_prob: args.dropout, model_write.inputs: write_inp,model_write.outputs: write_out,
                                                              model_write.targets: write_targets, model_write.alternative_targets: alternative_targets})
 
@@ -422,7 +422,6 @@ if __name__ == '__main__':
                 LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
             model_read.forward()
             model_read.backward()
-            model_read.exe = True
             saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=10)
 
 
@@ -520,7 +519,8 @@ if __name__ == '__main__':
 
                 for batch_i, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
-                    _, batch_loss, write_new_targs, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
+                    _, batch_loss, write_new_targs, batch_logits = sess.run([model_write.optimizer, model_write.loss_lds, model_write.read_inps, model_write.logits], 
+                                    feed_dict = 
                                                             {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:,1:], 
                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
                                                             model_write.alternative_targets: write_alt_targs})
@@ -596,8 +596,8 @@ if __name__ == '__main__':
 
                 for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
-                    print(type(write_alt_targs), write_alt_targs.shape, type(write_alt_targs[1]))
-                    _, batch_loss, write_new_targs, w_batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.read_inps, model_write.logits], 
+                    print(type(write_alt_targs), write_alt_targs.shape)
+                    _, batch_loss, write_new_targs, w_batch_logits = sess.run([model_write.optimizer, model_write.loss_lds, model_write.read_inps, model_write.logits], 
                                                                         feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                                             model_write.alternative_targets: write_alt_targs})
