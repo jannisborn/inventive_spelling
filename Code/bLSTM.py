@@ -64,6 +64,7 @@ class bLSTM(object):
 		#self.pred_seq_len = tf.placeholder(tf.int32, name='predicted_seq_len')
 
 		self.exe = False
+		self.rat = 'Nothing yet'
 
 
 
