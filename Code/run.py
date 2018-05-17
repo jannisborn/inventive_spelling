@@ -691,7 +691,7 @@ if __name__ == '__main__':
                 write_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
                 # Generate character by character (for the entire batch, weirdly)
                 for i in range(y_seq_length):
-                    write_test_logits = sess.run(model_write.logits, model_write.loss, feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
+                    write_test_logits = sess.run(model_write.logits, feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
                     write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                     #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                     write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
