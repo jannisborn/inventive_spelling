@@ -597,10 +597,12 @@ if __name__ == '__main__':
                 for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
                     print(type(write_alt_targs), write_alt_targs.shape, type(write_alt_targs[1]))
-                    _, batch_loss, write_new_targs, w_batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict =
+                    _, batch_loss_write_new_targs, w_batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict =
                                                              {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                              model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                              model_write.alternative_targets: write_alt_targs})
+
+                    print(type(batch_loss_write_new_targs), batch_loss_write_new_targs)
                     write_epoch_loss += batch_loss
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
 
