@@ -443,7 +443,7 @@ if __name__ == '__main__':
 
 
     # builds the scalar summaries of loss and error rate metrics
-    tf.summary.scalar('Seq2Seq Loss', model_write.loss)
+    #tf.summary.scalar('Seq2Seq Loss', model_write.loss)
 
     # builds the histogram of GRU activations
     tf.summary.histogram('GRU activations', model_write.all_logits)
