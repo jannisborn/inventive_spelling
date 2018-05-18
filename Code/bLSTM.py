@@ -156,9 +156,9 @@ class bLSTM(object):
 		with tf.name_scope("optimization_"+ self.task):
 
 			# Loss function
-			if self.learn_type == 'normal':
-				self.loss = tf.contrib.seq2seq.sequence_loss(self.logits, self.targets, tf.ones([self.batch_size, self.output_seq_length]))
-			elif self.learn_type == 'lds':
+			self.loss = tf.contrib.seq2seq.sequence_loss(self.logits, self.targets, tf.ones([self.batch_size, self.output_seq_length]))
+			
+			if self.learn_type == 'lds':
 				print(self.exe, "EXE")
 				self.loss_lds, self.read_inps, self.rat = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, 
 					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets, self.exe)
