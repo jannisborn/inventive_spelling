@@ -58,7 +58,11 @@ if __name__ == '__main__':
                         help='Frequency of iterations before model is saved and stored.')
 
     # Task hyperparameter
+<<<<<<< HEAD
+    parser.add_argument('--task', default='fibel', type=str,
+=======
     parser.add_argument('--task', default='celex', type=str,
+>>>>>>> 29a61b79a0da9afef6c5bfa94acc6d92a41d4cb8
                         help="Sets the task to solve, default is 'TIMIT_P2G', alternatives are 'Dates', 'TIMIT_G2P' "
                         " and later on more...")
     parser.add_argument('--learn_type', default='normal', type=str,
@@ -211,6 +215,23 @@ if __name__ == '__main__':
     elif args.task == 'bas':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
 
+<<<<<<< HEAD
+    elif args.task == 'childlex' and args.learn_type == 'normal':
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.childlex_retrieve(args.learn_type)
+
+    elif args.task == 'childlex' and args.learn_type == 'lds':
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_retrieve(args.learn_type)
+
+    elif args.task == 'fibel' and args.learn_type == 'normal':
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.fibel_retrieve(args.learn_type)
+
+    elif args.task == 'fibel' and args.learn_type == 'lds':
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.fibel_retrieve(args.learn_type)
+        lektions_inds = [9,14,20,28,36,46,58,77,99,121,154,174]
+
+
+    """
+=======
     elif args.task == 'childlex':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.childlex_retrieve()
 
@@ -219,6 +240,7 @@ if __name__ == '__main__':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.fibel_retrieve()
         lektions_inds = [9,14,20,28,36,46,58,77,99,121,154,174]
 
+>>>>>>> 29a61b79a0da9afef6c5bfa94acc6d92a41d4cb8
         # Very different training regime and thus done within this if/else case.
 
         x_dict_size, num_classes, x_seq_length, y_seq_length, dict_num2char_x, dict_num2char_y = utils.set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y)
@@ -360,7 +382,11 @@ if __name__ == '__main__':
         print("DONE!")
         sys.exit(0)
 
+<<<<<<< HEAD
+    """
+=======
 
+>>>>>>> 29a61b79a0da9afef6c5bfa94acc6d92a41d4cb8
 
 
 
