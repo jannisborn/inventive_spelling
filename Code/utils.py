@@ -757,7 +757,7 @@ def childlex_retrieve(learn_type):
         phon_dict = np_dict_to_dict(data['phon_dict'])
         word_dict = np_dict_to_dict(data['word_dict'])
         '''
-        path = '../../Models/data/celex_alt_targets.npy'
+        path = '../../Models/data/childlex_alt_targets.npy'
         print("Loading alternative targets ...")
         alt_targs_raw = np.load(path)
 
@@ -777,7 +777,7 @@ def fibel_retrieve(learn_type):
 
     if learn_type == 'lds':
 
-        path = '../../Models/data/fibel_alt_targets.npy'
+        path = 'data/fibel_alt_targets.npy'
         print("Loading alternative targets ...")
         alt_targs_raw = np.load(path)
 
