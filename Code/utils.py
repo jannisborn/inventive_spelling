@@ -690,13 +690,13 @@ def extract_celex(path):
     return words,phons
 
 
-
+ 
 def celex_retrieve(learn_type):
     """
     Retrives the previously saved data from the CELEX corpus
     """
 
-    data = np.load('../../Models/celex.npz')
+    data = np.load('data/celex.npz')
     #data = np.load('../../Models/data/celex_small.npz')
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
