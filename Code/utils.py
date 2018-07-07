@@ -704,15 +704,9 @@ def celex_retrieve(learn_type):
 
     if learn_type == 'lds':
 
-<<<<<<< HEAD
         #data = np.load('../../Models/data/celex.npz')
         #phon_dict = np_dict_to_dict(data['phon_dict'])
         #word_dict = np_dict_to_dict(data['word_dict'])
-=======
-        data = np.load('../../Models/data/celex_small.npz')
-        phon_dict = np_dict_to_dict(data['phon_dict'])
-        word_dict = np_dict_to_dict(data['word_dict'])
->>>>>>> 29a61b79a0da9afef6c5bfa94acc6d92a41d4cb8
         path = '../../Models/data/celex_alt_targets_small.npy'
         print("Loading alternative targets ...")
         alt_targs_raw = np.load(path)
@@ -748,11 +742,7 @@ def celex_retrieve(learn_type):
         return ( (data['phons'], data['words']) , (phon_dict, word_dict))
 
 
-<<<<<<< HEAD
 def childlex_retrieve(learn_type):
-=======
-def childlex_retrieve():
->>>>>>> 29a61b79a0da9afef6c5bfa94acc6d92a41d4cb8
     """
     Retrives the previously saved data from the childlex database (subset of CELEX)
     """
@@ -761,7 +751,6 @@ def childlex_retrieve():
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-<<<<<<< HEAD
     if learn_type == 'lds':
 
         '''data = np.load('../../Models/data/celex_small.npz')
@@ -781,17 +770,11 @@ def childlex_retrieve():
         return ( (data['phons'], data['words']) , (phon_dict, word_dict))
 
 def fibel_retrieve(learn_type):
-=======
-    return ( (data['phons'], data['words']) , (phon_dict, word_dict))
-
-def fibel_retrieve():
->>>>>>> 29a61b79a0da9afef6c5bfa94acc6d92a41d4cb8
 
     data = np.load('data/fibel.npz')
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-<<<<<<< HEAD
     if learn_type == 'lds':
 
         path = '../../Models/data/fibel_alt_targets.npy'
@@ -805,9 +788,6 @@ def fibel_retrieve():
         return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
     else:
         return ( (data['phons'], data['words']) , (phon_dict, word_dict))
-=======
-    return ( (data['phons'], data['words']) , (phon_dict, word_dict))
->>>>>>> 29a61b79a0da9afef6c5bfa94acc6d92a41d4cb8
 
 
 
