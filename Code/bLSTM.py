@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore",category=FutureWarning)
 
-
+import inspect
 import tensorflow as tf 
 import numpy as np 
 
@@ -162,6 +162,8 @@ class bLSTM(object):
 				print(self.exe, "EXE")
 				self.loss_lds, self.read_inps, self.rat = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, 
 					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets)
+				print("HERE!")
+				print(inspect.getsourcefile(tf.contrib.seq2seq.sequence_loss_lds))
 
 
 			# Optimizer
