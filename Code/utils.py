@@ -16,6 +16,7 @@ def batch_data(x, y, BATCH_SIZE, alt_targs=None):
     start = 0
     x = x[shuffle]
     y = y[shuffle]
+    alt_targs = alt_targs[shuffle]
 
     if alt_targs is None:
 
