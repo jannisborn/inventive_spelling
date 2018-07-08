@@ -403,7 +403,7 @@ if __name__ == '__main__':
             for write_ind in range(len(Y_alt_test_l[word_ind])):
                 Y_alt_test[word_ind,:,write_ind] = np.array(Y_alt_test_l[word_ind][write_ind],dtype=np.int8)
 
-        print(alt_targets.shape, Y_alt_test.shape,'PreShapes')
+        print(X_train.shape, Y_train.shape, Y_alt_train.shape,'PRESHAPES')
 
 
 
