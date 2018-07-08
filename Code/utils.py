@@ -879,7 +879,10 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
     inp_str = []
     label_str = []
     print(inputs.shape,logits.shape,labels.shape,alt_targs.shape)
-
+    print(dict_in)
+    print()
+    print(dict_out)
+    print(inputs[k],logits[k],labels[k])
     for k in range(len(fullPred)):
         out_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in fullPred[k]]))
         inp_str.append(''.join([dict_in[l] if dict_in[l] != '<PAD>' and  dict_in[l] != '<GO>' else '' for l in inputs[k]]))
