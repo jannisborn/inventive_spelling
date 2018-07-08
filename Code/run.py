@@ -602,7 +602,7 @@ if __name__ == '__main__':
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
 
-                utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,[],dict_num2char_x,dict_num2char_y,mode='normal')
+                utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,np.zeros((1,1)),dict_num2char_x,dict_num2char_y,mode='normal')
                 
 
             elif regime == 'lds':
