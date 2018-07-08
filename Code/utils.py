@@ -874,9 +874,6 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
     #Padded target string
     fullTarg = np.copy(labels) 
     # Set pads to 0 - as preparation for edit_distance
-    if '<PAD>' in char2numY:
-        fullPred[fullPred==char2numY['<PAD>']] = 0
-        fullTarg[fullTarg==char2numY['<PAD>']] = 0
 
     out_str = []
     inp_str = []
