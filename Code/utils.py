@@ -891,11 +891,12 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
 
         if mode == 'lds':
             alt_targ_str = []
+
             print(alt_targs[k].shape)
-            print(alt_targs[k,:,0:4])
+            print(np.amin(alt_targs), np.amax(alt_targs))
             for l in range(alt_targs[k].shape[1]):
                 alt_targ_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for m in alt_targs[k,:,l] ]))
-            print("The alternatives were " + alt_targ_str.upper())
+                print("The alternatives were " + alt_targ_str[-1].upper())
 
 
 
