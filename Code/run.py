@@ -612,16 +612,15 @@ if __name__ == '__main__':
 
             elif regime == 'lds':
 
-                plchld = np.reshape(np.arange(174*22*30),[174,22,30])
 
                 for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
-                    _, batch_loss, write_new_targs, w_batch_logits, rat = sess.run([model_write.optimizer, model_write.loss_lds, 
-                        model_write.read_inps, model_write.logits, model_write.rat], 
+                    _, batch_loss, write_new_targs, w_batch_logits, rat, batch_loss_reg = sess.run([model_write.optimizer, model_write.loss_lds, 
+                        model_write.read_inps, model_write.logits, model_write.rat, model_write.loss_reg], 
                                                                         feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                                             model_write.alternative_targets: write_alt_targs})
-
-                    #print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
+                    print("LdS loss is " + round(crossent,2) + " while regular loss would be " + round(crossent_reg,2))
+                    print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
 
 
                     write_epoch_loss += batch_loss
