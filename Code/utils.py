@@ -861,13 +861,42 @@ def lds_compare(prediction, targets, alt_targets):
 
     return new_targets
 
+def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
+    """
+    Method receives the numerical arrays and prints the strings
 
+    If mode = normal, then alt_targs should be set to [], if it is 'lds' the alternative targets are also printed
+    """
 
+    fullPred = logits.argmax(-1) # Prediction string with padding
+   
+    
+    #Padded target string
+    fullTarg = np.copy(labels) 
+    # Set pads to 0 - as preparation for edit_distance
+    if '<PAD>' in char2numY:
+        fullPred[fullPred==char2numY['<PAD>']] = 0
+        fullTarg[fullTarg==char2numY['<PAD>']] = 0
 
+    out_str = []
+    inp_str = []
+    label_str = []
+    print(inputs.shape,logits.shape,labels.shape,alt_targs.shape)
 
-                                               
+    for k in range(len(fullPred))
+        out_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in fullPred[k]]))
+        inp_str.append(''.join([dict_in[l] if dict_in[l] != '<PAD>' and  dict_in[l] != '<GO>' else '' for l in inputs[k]]))
+        label_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in labels[k]]))
 
+        print("The input " + inp_str[-1].upper() + " was written as " + out_str[-1].upper() + " with the target as " + label_str[-1].upper())
 
+        if mode == 'lds':
+            alt_targ_str = []
+            for l in range(len(alt_targs[k])):
+                alt_targ_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for m in alt_targs[k,l] ]))
+            print("The alternatives were " + alt_targ_str.upper())
+            
+        print()
 
 
 

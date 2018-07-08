@@ -601,6 +601,8 @@ if __name__ == '__main__':
                         read_epoch_loss += batch_loss
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
+
+                num2str(write_inp_batch,w_batch_logits,write_out_batch,[],dict_num2char_x,dict_num2char_y,mode='normal')
                 
 
             elif regime == 'lds':
@@ -612,7 +614,8 @@ if __name__ == '__main__':
                                                                         feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                                             model_write.alternative_targets: write_alt_targs})
-                    print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
+
+                    #print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
 
 
                     write_epoch_loss += batch_loss
@@ -630,6 +633,9 @@ if __name__ == '__main__':
                         read_epoch_loss += batch_loss
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
+
+                num2str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y,mode='lds')
+
 
             if epoch % args.save_model == 0:
                 np.savez(save_path + '/write_step' + str(epoch)+'.npz', logits=w_batch_logits, dict=dict_char2num_y, targets=write_out_batch[:,1:])
