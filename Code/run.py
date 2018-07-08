@@ -606,13 +606,9 @@ if __name__ == '__main__':
 
             elif regime == 'lds':
 
-                print("BEFORE BATCH_DATA")
                 plchld = np.reshape(np.arange(174*22*30),[174,22,30])
-                utils.num_to_str(X_train,plchld,Y_train,Y_alt_train,dict_num2char_x,dict_num2char_y,mode='lds')
 
                 for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
-                    print("AFTER BATCH_DATA, BEFORE CLASSIFY")
-                    utils.num_to_str(write_inp_batch,plchld,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y,mode='lds')
                     _, batch_loss, write_new_targs, w_batch_logits, rat = sess.run([model_write.optimizer, model_write.loss_lds, 
                         model_write.read_inps, model_write.logits, model_write.rat], 
                                                                         feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
@@ -638,7 +634,6 @@ if __name__ == '__main__':
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
                 
-                print("AFTER CLASSIFY")
                 utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y,mode='lds')
 
 
