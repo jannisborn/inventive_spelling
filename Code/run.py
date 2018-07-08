@@ -466,8 +466,11 @@ if __name__ == '__main__':
         # shape is an array of tf.Dimension
         shape = variable.get_shape()
         variable_parameters = 1
-        for dim in shape:
-            variable_parameters *= dim.value
+        try:
+            for dim in shape:
+                variable_parameters *= dim.value
+        except ValueError:
+            variable_parameters += 0
         total_parameters += variable_parameters
     print('{} trainable parameters in the network.'.format(total_parameters))
 
