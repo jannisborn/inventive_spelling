@@ -889,8 +889,8 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
 
         if mode == 'lds':
             alt_targ_str = []
-            for l in range(len(alt_targs[k])):
-                alt_targ_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for m in alt_targs[k,l] ]))
+            for l in range(alt_targs[k].shape[1]):
+                alt_targ_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for m in alt_targs[k,:,l] ]))
             print("The alternatives were " + alt_targ_str.upper())
 
         print()
