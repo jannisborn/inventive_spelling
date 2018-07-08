@@ -892,7 +892,7 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
         if mode == 'lds':
             alt_targ_str = []
 
-            z = np.argwhere(Y_alt_train[k]==0) # indices of zeros (alt_targs where padded to have equally sized array)
+            z = np.argwhere(alt_targs[k]==0) # indices of zeros (alt_targs where padded to have equally sized array)
             # position 0,1 is the first row that contains zeros (i.e. not an alternative writing anymore)
             for l in range(z[0,1]):
                 alt_targ_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for m in alt_targs[k,:,l] ]))
