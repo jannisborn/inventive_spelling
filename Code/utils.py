@@ -878,11 +878,10 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
     out_str = []
     inp_str = []
     label_str = []
-    print(inputs.shape,logits.shape,labels.shape,alt_targs.shape)
+    print(inputs.shape,fullPred.shape,labels.shape,alt_targs.shape)
     print(dict_in)
-    print()
     print(dict_out)
-    print(inputs[0:5],logits[:5],labels[:5])
+    print(inputs[0:5],fullPred[:5],labels[:5])
     for k in range(len(fullPred)):
         out_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in fullPred[k]]))
         inp_str.append(''.join([dict_in[l] if dict_in[l] != '<PAD>' and  dict_in[l] != '<GO>' else '' for l in inputs[k]]))
@@ -892,11 +891,10 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
 
         if mode == 'lds':
             alt_targ_str = []
+            print(alt_targs[k,:,l])
             for l in range(alt_targs[k].shape[1]):
                 alt_targ_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for m in alt_targs[k,:,l] ]))
             print("The alternatives were " + alt_targ_str.upper())
-
-        print()
 
 
 
