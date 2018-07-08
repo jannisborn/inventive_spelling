@@ -895,7 +895,7 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
             z = np.argwhere(alt_targs[k]==0) # indices of zeros (alt_targs where padded to have equally sized array)
             # position 0,1 is the first row that contains zeros (i.e. not an alternative writing anymore)
             for l in range(z[0,1]):
-                alt_targ_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for m in alt_targs[k,:,l] ]))
+                alt_targ_str.append(''.join([dict_out[m] if dict_out[m] != '<PAD>' and  dict_out[m] != '<GO>' else '' for m in alt_targs[k,:,l] ]))
             print("The alternatives were " + alt_targ_str.upper())
 
 
