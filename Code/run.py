@@ -104,7 +104,7 @@ if __name__ == '__main__':
                         help="The momentum parameter. Only used in case the momentum optimizer is used.")
     parser.add_argument('--bidirectional', default=True, type=bool,
                         help="Basic unit of encoder is bidirectional by default. Set to False to use regular LSTM units.")
-    parser.add_argument('--dropout', default=0.4, type=float,
+    parser.add_argument('--dropout', default=0.2, type=float,
                         help="Dropout probability of neurons during training.")
     parser.add_argument('--test_size', default=0.05, type=float,
                         help="Percentage of dataset hold back for testing.")
@@ -548,7 +548,7 @@ if __name__ == '__main__':
                     _, batch_loss, write_new_targs, rat_lds, rat_corr, batch_loss_reg, w_batch_logits= sess.run([model_write.optimizer, model_write.loss_lds, model_write.read_inps, 
                         model_write.rat_lds, model_write.rat_corr, model_write.loss_reg, model_write.logits], 
                                     feed_dict = 
-                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:,1:], 
+                                                            {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
                                                             model_write.alternative_targets: write_alt_targs[:,1:,:]})
                     rats_lds.append(rat_lds)
