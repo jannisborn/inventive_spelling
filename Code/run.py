@@ -621,7 +621,7 @@ if __name__ == '__main__':
                                                                         feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                                             model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                    print("LdS loss is " + str(round(batch_loss,2)) + " while regular loss would be " + str(round(batch_loss_reg,2)))
+                    print("LdS loss is " + str(batch_loss) + " while regular loss would be " + str(batch_loss_reg,2)
                     print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
                     utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y,mode='lds')
 
