@@ -65,8 +65,8 @@ class bLSTM(object):
 
 		self.exe = False
 
-		if self.learn_type == 'lds':
-			self.max_spellings = self.alternative_targets.get_shape()[2]
+		#if self.learn_type == 'lds':
+		#	self.max_spellings = self.alternative_targets.get_shape()[2]
 
 
 	def convert_string_to_functions(self):
@@ -163,7 +163,7 @@ class bLSTM(object):
 			
 			if self.learn_type == 'lds':
 				self.loss_lds, self.read_inps, self.rat, self.loss_reg = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, 
-					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets, self.max_spellings)
+					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets)
 
 
 			# Optimizer
