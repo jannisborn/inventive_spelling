@@ -724,11 +724,11 @@ if __name__ == '__main__':
                     write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
 
                 # Now the generated sequence need to be compared with the alternative targets:
-                write_test_new_targs = utils.lds_compare(write_prediction,Y_test, Y_alt_test)
+                write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test, Y_alt_test)
 
 
 
-                write_oldAcc, write_tokenAcc , write_wordAcc = utils.accuracy(write_dec_input[:,1:], write_test_new_targs,dict_char2num_y, mode='test')
+                write_oldAcc, write_tokenAcc , write_wordAcc = utils.accuracy(write_dec_input, write_test_new_targs,dict_char2num_y, mode='test')
                 print('WRITING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(write_tokenAcc, write_wordAcc))
                 testPerf[epoch//args.print_step, 0] = write_tokenAcc
                 testPerf[epoch//args.print_step, 1] = write_wordAcc
