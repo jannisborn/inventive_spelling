@@ -782,6 +782,7 @@ if __name__ == '__main__':
             saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=False)
             if args.reading:
                 saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)
+            np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratio=lds_ratios,lds_loss=lds_losses, reg_loss=reg_losses)
 
         if args.epochs // 2 == epoch and regime == 'lds':
             regime = 'normal'
@@ -797,8 +798,9 @@ if __name__ == '__main__':
 
     print(" Training done, model_write saved in file: %s" % save_path + ' ' + os.path.abspath(save_path))
 
-    np.savetxt(save_path+'/train.txt', trainPerf, delimiter=',')   
-    np.savetxt(save_path+'/test.txt', testPerf, delimiter=',')  
+    #np.savetxt(save_path+'/train.txt', trainPerf, delimiter=',')   
+    #np.savetxt(save_path+'/test.txt', testPerf, delimiter=',')  
+    np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratio=lds_ratios,lds_loss=lds_losses, reg_loss=reg_losses)
 
     if args.show_plot:
         ax = plt.subplot(111) 
