@@ -485,9 +485,11 @@ if __name__ == '__main__':
         utils.retrieve_model()
     else:
         # tensor to initialize the variables
+        print("BEF")
         init_tensor = tf.global_variables_initializer()
         # initializing the variables
         sess.run(init_tensor)
+        print("AF")
 
     #if args.restore:
     #saver.restore(sess, _model_writePath) #Yes, no need to add ".index"
