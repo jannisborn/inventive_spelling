@@ -501,6 +501,10 @@ if __name__ == '__main__':
         trainPerf = np.zeros([args.epochs//args.print_step + 1, 3])
         testPerf = np.zeros([args.epochs//args.print_step + 1, 3])
 
+    lds_ratios = np.zeros((args.epochs,1))
+    lds_losses = np.zeros((args.epochs,1))
+    reg_losses = np.zeros((args.epochs,1))
+
     print('\n Starting training \n ')
     for epoch in range(args.epochs):
 
@@ -532,16 +536,26 @@ if __name__ == '__main__':
 
             elif regime == 'lds':
 
-
+                rats = []
+                lds_loss = []
+                reg_loss = []
                 for batch_i, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
-                    _, batch_loss, write_new_targs, batch_logits, rat = sess.run([model_write.optimizer, model_write.loss_lds, model_write.read_inps, model_write.logits,
-                        model_write.rat], 
+                    _, batch_loss, write_new_targs, batch_logits, rat, loss_reg = sess.run([model_write.optimizer, model_write.loss_lds, model_write.read_inps, model_write.logits,
+                        model_write.rat, model_write.loss_reg], 
                                     feed_dict = 
                                                             {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:,1:], 
                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
                                                             model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                    #print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
+                    rats.append(rat)
+                    lds_loss.append(batch_loss)
+                    reg_loss.append(loss_reg)
+                
+                lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
+                reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
+                lds_ratios[epoch] = sum(rats)/len(rats)
+                print("Ratio of words that were 'correct' in LdS sense: " + str(lds_ratios[epoch]))
+                print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss would be " + str(reg_losses[epoch]))
 
                 if args.reading:
                     read_inp_batch = write_new_targs
@@ -613,7 +627,9 @@ if __name__ == '__main__':
 
             elif regime == 'lds':
 
-
+                rats = []
+                batch_loss = []
+                loss_reg = []
                 for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
                     _, batch_loss, write_new_targs, rat, batch_loss_reg, w_batch_logits = sess.run([model_write.optimizer, model_write.loss_lds, 
@@ -621,8 +637,11 @@ if __name__ == '__main__':
                                                                         feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                                             model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                    print("LdS loss is " + str(batch_loss) + " while regular loss would be " + str(batch_loss_reg))
-                    print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
+                    rats.append(rat)
+                    lds_loss.append(batch_loss)
+                    reg_loss.append(batch_loss_reg)
+                    #print("LdS loss is " + str(batch_loss) + " while regular loss would be " + str(batch_loss_reg))
+                    #print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
                     utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y,mode='lds')
 
 
@@ -642,7 +661,12 @@ if __name__ == '__main__':
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
                 
-                    
+                lds_ratios[epoch] = sum(rats)/len(rats)
+                print("Ratio of words that were 'correct' in LdS sense: " + str(lds_ratios[epoch]))
+                lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
+                reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
+                print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss would be " + str(reg_losses[epoch]))
+
 
 
             if epoch % args.save_model == 0:

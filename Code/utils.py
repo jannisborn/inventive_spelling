@@ -884,7 +884,7 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
         inp_str.append(''.join([dict_in[l] if dict_in[l] != '<PAD>' and  dict_in[l] != '<GO>' else '' for l in inputs[k]]))
         label_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in labels[k]]))
 
-        print("The input " + inp_str[-1].upper() + " was written " + out_str[-1].upper() + " with target " + label_str[-1].upper())
+        #print("The input " + inp_str[-1].upper() + " was written " + out_str[-1].upper() + " with target " + label_str[-1].upper())
 
         
         if mode == 'lds':
@@ -902,8 +902,7 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
             #print("The alternatives were ", alt_targ_str)
             if out_str[-1] in alt_targ_str:
                 print("                    HERE!!!", out_str[-1],' instead of ', label_str[-1])
-                print(FDFDS)
-        
+
 
 
                
