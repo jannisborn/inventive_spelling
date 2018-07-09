@@ -59,7 +59,7 @@ class bLSTM(object):
 		self.inputs = tf.placeholder(tf.int32 , (None,self.input_seq_length),'input')
 		self.outputs = tf.placeholder(tf.int32 , (None,None),'output')
 		self.targets = tf.placeholder(tf.int32 , (None,None),'targets')
-		self.alternative_targets = tf.placeholder(tf.int8, (None,None,None),'alternative_targets') # Orthographically incorrect, but accepted spellings: bs x seq_len x max_alt_targs
+		self.alternative_targets = tf.placeholder(tf.int32, (None,None,None),'alternative_targets') # Orthographically incorrect, but accepted spellings: bs x seq_len x max_alt_targs
 		self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')			# Dropout parameter. Determines what ratio of neurons is used (all per default)
 		#self.pred_seq_len = tf.placeholder(tf.int32, name='predicted_seq_len')
 
