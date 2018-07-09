@@ -539,10 +539,10 @@ if __name__ == '__main__':
                 rats = []
                 lds_loss = []
                 reg_loss = []
-                for batch_i, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
+                for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
-                    _, batch_loss, write_new_targs, batch_logits, rat, loss_reg = sess.run([model_write.optimizer, model_write.loss_lds, model_write.read_inps, model_write.logits,
-                        model_write.rat, model_write.loss_reg], 
+                    _, batch_loss, write_new_targs, rat, batch_loss_reg, w_batch_logits= sess.run([model_write.optimizer, model_write.loss_lds, model_write.read_inps, 
+                        model_write.rat, model_write.loss_reg, model_write.logits], 
                                     feed_dict = 
                                                             {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:,1:], 
                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
@@ -550,35 +550,38 @@ if __name__ == '__main__':
                     rats.append(rat)
                     lds_loss.append(batch_loss)
                     reg_loss.append(loss_reg)
-                
+
+                    utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y,mode='lds')
+
+                    if args.reading:
+                        read_inp_batch = write_new_targs
+                        read_out_batch = write_inp_batch
+                        _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
+                                                        {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch, 
+                                                        model_read.outputs:read_out_batch[:,:-1], model_read.targets:read_out_batch[:,1:]})
+
+                      
                 lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
                 reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
                 lds_ratios[epoch] = sum(rats)/len(rats)
                 print("Ratio of words that were 'correct' in LdS sense: " + str(lds_ratios[epoch]))
                 print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss would be " + str(reg_losses[epoch]))
 
-                if args.reading:
-                    read_inp_batch = write_new_targs
-                    read_out_batch = write_inp_batch
-                    _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
-                                                    {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch, 
-                                                    model_read.outputs:read_out_batch[:,:-1], model_read.targets:read_out_batch[:,1:]})
 
-                
-                """
-                # Alternative
-                dec_input = np.zeros((len(write_inp_batch), 1)) + dict_char2num_y['<GO>']
-                # Generate character by character (for the entire batch, weirdly)
-                for i in range(y_seq_length):
-                    targs = write_out_batch[:,1:2+i]
-                    #print("Does not work", dec_input.shape, targs.shape)
-                    _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
-                                                            {model_write.keep_prob:args.dropout, model_write.inputs:write_inp_batch, 
-                                                            model_write.outputs:dec_input, model_write.targets:targs, model_write.pred_seq_len:i+1})
-                    prediction = batch_logits[:,-1].argmax(axis=-1)
-                    #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
-                    dec_input = np.hstack([dec_input, prediction[:,None]])
-                """
+                    """
+                    # Alternative
+                    dec_input = np.zeros((len(write_inp_batch), 1)) + dict_char2num_y['<GO>']
+                    # Generate character by character (for the entire batch, weirdly)
+                    for i in range(y_seq_length):
+                        targs = write_out_batch[:,1:2+i]
+                        #print("Does not work", dec_input.shape, targs.shape)
+                        _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
+                                                                {model_write.keep_prob:args.dropout, model_write.inputs:write_inp_batch, 
+                                                                model_write.outputs:dec_input, model_write.targets:targs, model_write.pred_seq_len:i+1})
+                        prediction = batch_logits[:,-1].argmax(axis=-1)
+                        #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
+                        dec_input = np.hstack([dec_input, prediction[:,None]])
+                    """
                        
                     
 
@@ -629,7 +632,7 @@ if __name__ == '__main__':
 
                 rats = []
                 lds_loss = []
-                reg_loss = []
+                loss_reg = []
                 for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
                     _, batch_loss, write_new_targs, rat, batch_loss_reg, w_batch_logits = sess.run([model_write.optimizer, model_write.loss_lds, 

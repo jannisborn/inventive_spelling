@@ -16,7 +16,6 @@ def batch_data(x, y, BATCH_SIZE, alt_targs=None):
     start = 0
     x = x[shuffle]
     y = y[shuffle]
-    alt_targs = alt_targs[shuffle]
 
     if alt_targs is None:
 
@@ -25,7 +24,7 @@ def batch_data(x, y, BATCH_SIZE, alt_targs=None):
             start += BATCH_SIZE
 
     else:
-
+        alt_targs = alt_targs[shuffle]
         while start + BATCH_SIZE <= len(x):
             yield x[start:start+BATCH_SIZE], y[start:start+BATCH_SIZE], alt_targs[start:start+BATCH_SIZE]
             start += BATCH_SIZE
