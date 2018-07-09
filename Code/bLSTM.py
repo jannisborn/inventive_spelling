@@ -66,7 +66,7 @@ class bLSTM(object):
 		self.exe = False
 
 		if self.learn_type == 'lds':
-			self.max_spellings = alternative_targets.get_shape()[2]
+			self.max_spellings = self.alternative_targets.get_shape()[2]
 
 
 	def convert_string_to_functions(self):
