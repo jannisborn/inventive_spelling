@@ -549,7 +549,7 @@ if __name__ == '__main__':
                                                             model_write.alternative_targets: write_alt_targs[:,1:,:]})
                     rats.append(rat)
                     lds_loss.append(batch_loss)
-                    reg_loss.append(loss_reg)
+                    reg_loss.append(batch_loss_reg)
 
                     utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y,mode='lds')
 
