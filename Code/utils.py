@@ -872,10 +872,6 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
     fullPred = logits.argmax(-1) # Prediction string with padding
    
     
-    #Padded target string
-    fullTarg = np.copy(labels) 
-    # Set pads to 0 - as preparation for edit_distance
-
     out_str = []
     inp_str = []
     label_str = []
@@ -888,7 +884,7 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
         inp_str.append(''.join([dict_in[l] if dict_in[l] != '<PAD>' and  dict_in[l] != '<GO>' else '' for l in inputs[k]]))
         label_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in labels[k]]))
 
-        print("The input " + inp_str[-1].upper() + " was written as " + out_str[-1].upper() + " with the target as " + label_str[-1].upper())
+        print("The input " + inp_str[-1].upper() + " was written " + out_str[-1].upper() + " with target " + label_str[-1].upper())
 
         if mode == 'lds':
             alt_targ_str = []

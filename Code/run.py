@@ -623,6 +623,7 @@ if __name__ == '__main__':
                                                                             model_write.alternative_targets: write_alt_targs[:,1:,:]})
                     print("LdS loss is " + str(round(batch_loss,2)) + " while regular loss would be " + str(round(batch_loss_reg,2)))
                     print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
+                    utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y,mode='lds')
 
 
                     write_epoch_loss += batch_loss
@@ -641,7 +642,7 @@ if __name__ == '__main__':
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
                 
-                utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y,mode='lds')
+                    
 
 
             if epoch % args.save_model == 0:
@@ -723,7 +724,7 @@ if __name__ == '__main__':
                     write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
 
                 # Now the generated sequence need to be compared with the alternative targets:
-                write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test)
+                write_test_new_targs = utils.lds_compare(X_test,write_test_logits,Y_test, Y_alt_test,dict_num2char_x,dict_num2char_y,mode='normal')
 
 
 
