@@ -828,7 +828,7 @@ def lds_compare(prediction, targets, alt_targets):
     batch_size = targets.shape[0]
     max_alt_spellings = alt_targets.shape[2]
 
-
+    print(prediction.shape,targets.shape,alt_targets.shape)
     new_targets = np.zeros(targets.shape, np.int64)
     counter = []
 
