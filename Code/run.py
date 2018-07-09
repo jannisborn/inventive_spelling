@@ -724,7 +724,7 @@ if __name__ == '__main__':
                     write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
 
                 # Now the generated sequence need to be compared with the alternative targets:
-                write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test, Y_alt_test)
+                write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:])
 
 
 
