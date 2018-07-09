@@ -568,20 +568,20 @@ if __name__ == '__main__':
                 print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss would be " + str(reg_losses[epoch]))
 
 
-                    """
-                    # Alternative
-                    dec_input = np.zeros((len(write_inp_batch), 1)) + dict_char2num_y['<GO>']
-                    # Generate character by character (for the entire batch, weirdly)
-                    for i in range(y_seq_length):
-                        targs = write_out_batch[:,1:2+i]
-                        #print("Does not work", dec_input.shape, targs.shape)
-                        _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
-                                                                {model_write.keep_prob:args.dropout, model_write.inputs:write_inp_batch, 
-                                                                model_write.outputs:dec_input, model_write.targets:targs, model_write.pred_seq_len:i+1})
-                        prediction = batch_logits[:,-1].argmax(axis=-1)
-                        #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
-                        dec_input = np.hstack([dec_input, prediction[:,None]])
-                    """
+                """
+                # Alternative
+                dec_input = np.zeros((len(write_inp_batch), 1)) + dict_char2num_y['<GO>']
+                # Generate character by character (for the entire batch, weirdly)
+                for i in range(y_seq_length):
+                    targs = write_out_batch[:,1:2+i]
+                    #print("Does not work", dec_input.shape, targs.shape)
+                    _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
+                                                            {model_write.keep_prob:args.dropout, model_write.inputs:write_inp_batch, 
+                                                            model_write.outputs:dec_input, model_write.targets:targs, model_write.pred_seq_len:i+1})
+                    prediction = batch_logits[:,-1].argmax(axis=-1)
+                    #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
+                    dec_input = np.hstack([dec_input, prediction[:,None]])
+                """
                        
                     
 
