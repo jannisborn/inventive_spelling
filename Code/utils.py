@@ -901,7 +901,7 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
                 alt_targ_str.append(''.join([dict_out[m] if dict_out[m] != '<PAD>' and  dict_out[m] != '<GO>' else '' for m in alt_targs[k,:,l] ]))
             #print("The alternatives were ", alt_targ_str)
             if out_str[-1] in alt_targ_str:
-                print("HERE!!!", alt_Targ_str)
+                print("                    HERE!!!", alt_Targ_str)
         
 
 
