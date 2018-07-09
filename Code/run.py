@@ -628,7 +628,7 @@ if __name__ == '__main__':
             elif regime == 'lds':
 
                 rats = []
-                batch_loss = []
+                lds_loss = []
                 loss_reg = []
                 for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
