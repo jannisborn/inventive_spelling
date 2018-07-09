@@ -742,7 +742,7 @@ def celex_retrieve(learn_type):
         return ( (data['phons'], data['words']) , (phon_dict, word_dict))
 
 
-def childlex_retrieve(learn_type):
+def childlex_retrieve():
     """
     Retrives the previously saved data from the childlex database (subset of CELEX)
     """
@@ -751,23 +751,23 @@ def childlex_retrieve(learn_type):
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-    if learn_type == 'lds':
+    #if learn_type == 'lds':
 
-        '''data = np.load('../../Models/data/celex_small.npz')
-        phon_dict = np_dict_to_dict(data['phon_dict'])
-        word_dict = np_dict_to_dict(data['word_dict'])
-        '''
-        path = '../../Models/data/childlex_alt_targets.npy'
-        print("Loading alternative targets ...")
-        alt_targs_raw = np.load(path)
+    '''data = np.load('../../Models/data/celex_small.npz')
+    phon_dict = np_dict_to_dict(data['phon_dict'])
+    word_dict = np_dict_to_dict(data['word_dict'])
+    '''
+    path = '../../Models/data/childlex_alt_targets.npy'
+    print("Loading alternative targets ...")
+    alt_targs_raw = np.load(path)
 
 
-        alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
-        print("Alternative targets successfully loaded.")
+    alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
+    print("Alternative targets successfully loaded.")
 
-        return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
-    else:
-        return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+    #    return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
+    #else:
+    return ( (data['phons'], data['words']) , (phon_dict, word_dict))
 
 def fibel_retrieve(learn_type):
 
@@ -775,19 +775,19 @@ def fibel_retrieve(learn_type):
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-    if learn_type == 'lds':
+    #if learn_type == 'lds':
 
-        path = 'data/fibel_alt_targets.npy'
-        print("Loading alternative targets ...")
-        alt_targs_raw = np.load(path)
+    path = 'data/fibel_alt_targets.npy'
+    print("Loading alternative targets ...")
+    alt_targs_raw = np.load(path)
 
 
-        alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
-        print("Alternative targets successfully loaded.")
+    alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
+    print("Alternative targets successfully loaded.")
 
-        return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
-    else:
-        return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+    return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
+    #else:
+    #    return ( (data['phons'], data['words']) , (phon_dict, word_dict))
 
 
 
