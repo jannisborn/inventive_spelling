@@ -539,7 +539,7 @@ if __name__ == '__main__':
                                     feed_dict = 
                                                             {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:,1:], 
                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
-                                                            model_write.alternative_targets: write_alt_targs})
+                                                            model_write.alternative_targets: write_alt_targs[:,1]})
                     #print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
 
                 if args.reading:
@@ -618,7 +618,7 @@ if __name__ == '__main__':
                         model_write.read_inps, model_write.logits, model_write.rat, model_write.loss_reg], 
                                                                         feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
-                                                                            model_write.alternative_targets: write_alt_targs})
+                                                                            model_write.alternative_targets: write_alt_targs[:,1]})
                     print("LdS loss is " + round(crossent,2) + " while regular loss would be " + round(crossent_reg,2))
                     print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
 
