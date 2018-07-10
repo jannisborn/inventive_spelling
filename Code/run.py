@@ -614,7 +614,7 @@ if __name__ == '__main__':
 
             
         #else: # Display performance
-        if epoch % args.print_step == 0 
+        if epoch % args.print_step == 0: 
             # ---------------- SHOW TRAINING PERFORMANCE -------------------------
             
             # Allocate variables
