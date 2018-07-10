@@ -219,7 +219,7 @@ if __name__ == '__main__':
 
     elif args.task == 'childlex':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_retrieve()
-        mas = 43200
+        mas = 100
 
     #elif args.task == 'fibel' and args.learn_type == 'normal':
     #    ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.fibel_retrieve(args.learn_type)
