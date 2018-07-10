@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
 
     theta_min = 10
-    theta_max = 101
+    theta_max = 10
 
 
 
