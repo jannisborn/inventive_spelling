@@ -757,7 +757,7 @@ def childlex_retrieve():
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
     '''
-    path = '../../Models/data/childlex_alt_targets.npy'
+    path = 'data/childlex_alt_targets.npy'
     print("Loading alternative targets ...")
     alt_targs_raw = np.load(path)
 
