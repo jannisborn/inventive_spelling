@@ -769,7 +769,7 @@ def childlex_retrieve():
     #else:
     return ( (data['phons'], data['words']) , (phon_dict, word_dict))
 
-def fibel_retrieve(learn_type):
+def fibel_retrieve():
 
     data = np.load('data/fibel.npz')
     phon_dict = np_dict_to_dict(data['phon_dict'])
@@ -861,7 +861,7 @@ def lds_compare(prediction, targets, alt_targets):
 
     return new_targets
 
-def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
+def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out):
     """
     Method receives the numerical arrays and prints the strings
 
@@ -886,21 +886,21 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out,mode='normal'):
         print("The input " + inp_str[-1].upper() + " was written " + out_str[-1].upper() + " with target " + label_str[-1].upper())
 
         
-        if mode == 'lds':
-            alt_targ_str = []
+        #if mode == 'lds':
+        alt_targ_str = []
 
-            z = np.argwhere(alt_targs[k]==0) # indices of zeros (alt_targs where padded to have equally sized array)
-            # position 0,1 is the first row that contains zeros (i.e. not an alternative writing anymore)
-            try:
-                num_wrt = z[0,1]
-            except IndexError: # for the only word with no zero rows
-                num_wrt = len(alt_targs[k])
+        z = np.argwhere(alt_targs[k]==0) # indices of zeros (alt_targs where padded to have equally sized array)
+        # position 0,1 is the first row that contains zeros (i.e. not an alternative writing anymore)
+        try:
+            num_wrt = z[0,1]
+        except IndexError: # for the only word with no zero rows
+            num_wrt = len(alt_targs[k])
 
-            for l in range(num_wrt):
-                alt_targ_str.append(''.join([dict_out[m] if dict_out[m] != '<PAD>' and  dict_out[m] != '<GO>' else '' for m in alt_targs[k,:,l] ]))
-            #print("The alternatives were ", alt_targ_str)
-            if out_str[-1] in alt_targ_str:
-                print("                    HERE!!!", out_str[-1],' instead of ', label_str[-1])
+        for l in range(num_wrt):
+            alt_targ_str.append(''.join([dict_out[m] if dict_out[m] != '<PAD>' and  dict_out[m] != '<GO>' else '' for m in alt_targs[k,:,l] ]))
+        #print("The alternatives were ", alt_targ_str)
+        if out_str[-1] in alt_targ_str:
+            print("                    HERE!!!", out_str[-1],' instead of ', label_str[-1])
 
 
 

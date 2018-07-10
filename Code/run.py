@@ -385,25 +385,25 @@ if __name__ == '__main__':
     # Split data into training and testing
     indices = range(len(inputs))
     
-    if args.learn_type == 'normal':
-        X_train, X_test,Y_train, Y_test, indices_train, indices_test = train_test_split(inputs, targets, indices, test_size=args.test_size, random_state=args.seed)
-    elif args.learn_type == 'lds':
-        X_train, X_test,Y_train, Y_test, Y_alt_train_l, Y_alt_test_l, indices_train, indices_test = train_test_split(inputs, targets, alt_targets, indices, test_size=args.test_size, random_state=args.seed)
-        max_len = max([len(l) for l in Y_alt_train_l])
-        inp_seq_len = len(Y_alt_train_l[1][0])
-        Y_alt_train = np.zeros([len(Y_alt_train_l), inp_seq_len, max_len], dtype=np.int8)
-        for word_ind in range(len(Y_alt_train_l)):
-            for write_ind in range(len(Y_alt_train_l[word_ind])):
-                Y_alt_train[word_ind,:,write_ind] = np.array(Y_alt_train_l[word_ind][write_ind],dtype=np.int8)
+    #if args.learn_type == 'normal':
+    X_train, X_test,Y_train, Y_test, indices_train, indices_test = train_test_split(inputs, targets, indices, test_size=args.test_size, random_state=args.seed)
+    #elif args.learn_type == 'lds':
+    X_train, X_test,Y_train, Y_test, Y_alt_train_l, Y_alt_test_l, indices_train, indices_test = train_test_split(inputs, targets, alt_targets, indices, test_size=args.test_size, random_state=args.seed)
+    max_len = max([len(l) for l in Y_alt_train_l])
+    inp_seq_len = len(Y_alt_train_l[1][0])
+    Y_alt_train = np.zeros([len(Y_alt_train_l), inp_seq_len, max_len], dtype=np.int8)
+    for word_ind in range(len(Y_alt_train_l)):
+        for write_ind in range(len(Y_alt_train_l[word_ind])):
+            Y_alt_train[word_ind,:,write_ind] = np.array(Y_alt_train_l[word_ind][write_ind],dtype=np.int8)
 
-        max_len = max([len(l) for l in Y_alt_test_l])
-        inp_seq_len = len(Y_alt_test_l[1][0])
-        Y_alt_test = np.zeros([len(Y_alt_test_l), inp_seq_len, max_len], dtype=np.int8)
-        for word_ind in range(len(Y_alt_test_l)):
-            for write_ind in range(len(Y_alt_test_l[word_ind])):
-                Y_alt_test[word_ind,:,write_ind] = np.array(Y_alt_test_l[word_ind][write_ind],dtype=np.int8)
+    max_len = max([len(l) for l in Y_alt_test_l])
+    inp_seq_len = len(Y_alt_test_l[1][0])
+    Y_alt_test = np.zeros([len(Y_alt_test_l), inp_seq_len, max_len], dtype=np.int8)
+    for word_ind in range(len(Y_alt_test_l)):
+        for write_ind in range(len(Y_alt_test_l[word_ind])):
+            Y_alt_test[word_ind,:,write_ind] = np.array(Y_alt_test_l[word_ind][write_ind],dtype=np.int8)
 
-        print(X_train.shape, Y_train.shape, Y_alt_train.shape,'PRESHAPES')
+    print(X_train.shape, Y_train.shape, Y_alt_train.shape,'PRESHAPES')
 
 
 
@@ -536,6 +536,8 @@ if __name__ == '__main__':
                     lds_loss.append(loss_lds)
                     reg_loss.append(batch_loss)
 
+                    utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
+
 
                     if args.reading:
 
@@ -579,24 +581,24 @@ if __name__ == '__main__':
             corr_ratios[epoch] = sum(rats_corr)/len(rats_corr)
 
             print("Ratio correct  words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
-            print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss would be " + str(reg_losses[epoch]))
+            print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
 
 
-                """
-                # Alternative
-                dec_input = np.zeros((len(write_inp_batch), 1)) + dict_char2num_y['<GO>']
-                # Generate character by character (for the entire batch, weirdly)
-                for i in range(y_seq_length):
-                    targs = write_out_batch[:,1:2+i]
-                    #print("Does not work", dec_input.shape, targs.shape)
-                    _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
-                                                            {model_write.keep_prob:args.dropout, model_write.inputs:write_inp_batch, 
-                                                            model_write.outputs:dec_input, model_write.targets:targs, model_write.pred_seq_len:i+1})
-                    prediction = batch_logits[:,-1].argmax(axis=-1)
-                    #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
-                    dec_input = np.hstack([dec_input, prediction[:,None]])
-                """
-                       
+            """
+            # Alternative
+            dec_input = np.zeros((len(write_inp_batch), 1)) + dict_char2num_y['<GO>']
+            # Generate character by character (for the entire batch, weirdly)
+            for i in range(y_seq_length):
+                targs = write_out_batch[:,1:2+i]
+                #print("Does not work", dec_input.shape, targs.shape)
+                _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
+                                                        {model_write.keep_prob:args.dropout, model_write.inputs:write_inp_batch, 
+                                                        model_write.outputs:dec_input, model_write.targets:targs, model_write.pred_seq_len:i+1})
+                prediction = batch_logits[:,-1].argmax(axis=-1)
+                #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
+                dec_input = np.hstack([dec_input, prediction[:,None]])
+            """
+                   
                     
 
 
@@ -625,7 +627,7 @@ if __name__ == '__main__':
             if regime == 'normal':
 
                 for k, (write_inp_batch, write_out_batch,write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
-                    _, batch_loss, batch_logits, loss_lds, rat_lds, rat_corr = sess.run([model_write.optimizer, model_write.loss, model_write.logits, 
+                    _, batch_loss, w_batch_logits, loss_lds, rat_lds, rat_corr = sess.run([model_write.optimizer, model_write.loss, model_write.logits, 
                         model_write.loss_lds, model_write.rat_lds, model_write.rat_corr], feed_dict =
                                                              {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                              model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
@@ -637,6 +639,9 @@ if __name__ == '__main__':
 
                     write_epoch_loss += batch_loss
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
+
+                    utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
+
 
                     # Test reading
                     if args.reading:
@@ -650,7 +655,6 @@ if __name__ == '__main__':
                         read_epoch_loss += batch_loss
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
-                utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
                 
 
             elif regime == 'lds':
@@ -694,7 +698,7 @@ if __name__ == '__main__':
             lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
             reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
 
-            print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss would be " + str(reg_losses[epoch]))
+            print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss is " + str(reg_losses[epoch]))
 
 
 
