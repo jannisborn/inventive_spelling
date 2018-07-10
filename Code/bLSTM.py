@@ -163,13 +163,8 @@ class bLSTM(object):
 			# Loss function
 			self.loss = tf.contrib.seq2seq.sequence_loss(self.logits, self.targets, tf.ones([self.batch_size, self.output_seq_length]))
 			
-			if self.learn_type == 'lds':
-				self.loss_lds, self.read_inps, self.rat_lds, self.rat_corr, self.loss_reg = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, 
+			self.loss_lds, self.read_inps, self.rat_lds, self.rat_corr, self.loss_reg = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, 
 					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets, self.max_alt_spellings)
-			else:
-				self.loss_lds, self.read_inps, self.rat_lds, self.rat_corr, self.loss_reg = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, 
-					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets, self.max_alt_spellings)
-
 
 			# Optimizer
 			if self.optimization == 'GD':
@@ -185,10 +180,15 @@ class bLSTM(object):
 				self.optimizer = tf.train.AdadeltaOptimizer().minimize(self.loss)
 			elif self.optimization == 'Adagrad':
 				self.optimizer = tf.train.AdagradOptimizer(self.learning_rate).minimize(self.loss)
-			elif self.optimization == 'RMSProp' and self.learn_type == 'normal':
+			#elif self.optimization == 'RMSProp' and self.learn_type == 'normal':
+			#	self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss)
+			#elif self.optimization == 'RMSProp' and self.learn_type == 'lds':
+			#	self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss_lds)
+
+			elif self.optimization == 'RMSProp':
 				self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss)
-			elif self.optimization == 'RMSProp' and self.learn_type == 'lds':
-				self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss_lds)
+				self.lds_optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss_lds)
+
 
 
 				# Clip gradients?
