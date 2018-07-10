@@ -121,6 +121,8 @@ if __name__ == '__main__':
                         help='If GPU options is set to 1, sets GPU fraction')
 
 
+    theta_min = 99
+    theta_max = 102
 
 
 
@@ -539,7 +541,7 @@ if __name__ == '__main__':
                     reg_loss.append(batch_loss)
 
 
-                    if epoch > 50:
+                    if epoch > theta_min and epoch < theta_max:
 
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
@@ -570,7 +572,7 @@ if __name__ == '__main__':
                     lds_loss.append(batch_loss)
                     reg_loss.append(batch_loss_reg)
 
-                    if epoch > 50:
+                    if epoch > theta_min and epoch < theta_max:
 
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
@@ -647,7 +649,7 @@ if __name__ == '__main__':
                     write_epoch_loss += batch_loss
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
 
-                    if epoch > 50:
+                    if epoch > theta_min and epoch < theta_max:
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
 
@@ -682,7 +684,7 @@ if __name__ == '__main__':
                     #print("LdS loss is " + str(batch_loss) + " while regular loss would be " + str(batch_loss_reg))
                     #print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
 
-                    if epoch > 50:
+                    if epoch > theta_min and epoch < theta_max:
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
 
