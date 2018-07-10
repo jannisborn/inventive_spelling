@@ -121,7 +121,7 @@ if __name__ == '__main__':
                         help='If GPU options is set to 1, sets GPU fraction')
 
 
-    theta_min = 99
+    theta_min = 102
     theta_max = 102
 
 
