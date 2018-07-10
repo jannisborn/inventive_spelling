@@ -765,9 +765,9 @@ def childlex_retrieve():
     alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
     print("Alternative targets successfully loaded.")
 
-    #    return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
+    return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
     #else:
-    return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+    #return ( (data['phons'], data['words']) , (phon_dict, word_dict))
 
 def fibel_retrieve():
 

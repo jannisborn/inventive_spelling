@@ -216,6 +216,7 @@ if __name__ == '__main__':
 
     elif args.task == 'childlex':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_retrieve()
+        mas = 43200
 
     #elif args.task == 'fibel' and args.learn_type == 'normal':
     #    ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.fibel_retrieve(args.learn_type)
@@ -223,6 +224,7 @@ if __name__ == '__main__':
     elif args.task == 'fibel':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.fibel_retrieve()
         lektions_inds = [9,14,20,28,36,46,58,77,99,121,154,174]
+        mas = 810
 
 
     """
@@ -416,7 +418,7 @@ if __name__ == '__main__':
     with tf.variable_scope('writing'):
 
         model_write = bLSTM(x_seq_length, y_seq_length, x_dict_size, num_classes, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes, args.batch_size,
-            args.learn_type, 'write', print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, LSTM_initializer=args.LSTM_initializer, 
+            args.learn_type, 'write', mas, print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, LSTM_initializer=args.LSTM_initializer, 
             momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
         model_write.forward()
         model_write.backward()
@@ -430,7 +432,7 @@ if __name__ == '__main__':
     if args.reading:
         with tf.variable_scope('reading'):
             model_read = bLSTM(y_seq_length, x_seq_length, num_classes, x_dict_size, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes,
-                args.batch_size, 'normal', 'read',print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, 
+                args.batch_size, 'normal', 'read', mas, print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, 
                 LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
             model_read.forward()
             model_read.backward()
@@ -523,12 +525,12 @@ if __name__ == '__main__':
             reg_loss = []
             if regime == 'normal':
             
-                for batch_i, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size,Y_alt_train)):
+                for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size,Y_alt_train)):
                 
                 # Train Writing
-                    _, batch_loss, batch_logits, loss_lds, rat_lds, rat_corr = sess.run([model_write.optimizer, model_write.loss, model_write.logits, 
+                    _, batch_loss, w_batch_logits, loss_lds, rat_lds, rat_corr = sess.run([model_write.optimizer, model_write.loss, model_write.logits, 
                         model_write.loss_lds, model_write.rat_lds, model_write.rat_corr], feed_dict = 
-                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:, 1:], 
+                                                            {model_write.keep_prob: 1.0, model_write.inputs: write_inp_batch[:, 1:], 
                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                             model_write.alternative_targets: write_alt_targs[:,1:,:]})
                     rats_lds.append(rat_lds)
@@ -536,7 +538,10 @@ if __name__ == '__main__':
                     lds_loss.append(loss_lds)
                     reg_loss.append(batch_loss)
 
-                    utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
+
+                    if epoch > 50:
+
+                        utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
 
                     if args.reading:
@@ -565,7 +570,9 @@ if __name__ == '__main__':
                     lds_loss.append(batch_loss)
                     reg_loss.append(batch_loss_reg)
 
-                    utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
+                    if epoch > 50:
+
+                        utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
                     if args.reading:
                         read_inp_batch = write_new_targs
@@ -640,7 +647,8 @@ if __name__ == '__main__':
                     write_epoch_loss += batch_loss
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
 
-                    utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
+                    if epoch > 50:
+                        utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
 
                     # Test reading
@@ -673,7 +681,9 @@ if __name__ == '__main__':
                     reg_loss.append(batch_loss_reg)
                     #print("LdS loss is " + str(batch_loss) + " while regular loss would be " + str(batch_loss_reg))
                     #print("Ratio of words that were 'correct' in LdS sense: " + str(rat))
-                    utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
+
+                    if epoch > 50:
+                        utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
 
                     write_epoch_loss += batch_loss

@@ -19,7 +19,7 @@ from tensorflow.contrib.rnn import stack_bidirectional_dynamic_rnn as bi_rnn
 class bLSTM(object):
 
 	def __init__(self, input_seq_length, output_seq_length, input_dict_size, num_classes, input_embed_size, output_embed_size, num_layers, num_LSTM_cells, batch_size, 
-		learn_type, task, print_ratio=False, optimization='RMSProp', learning_rate=1e-3, LSTM_initializer=None, momentum=0.01, activation_fn=None, bidirectional=True):
+		learn_type, task, max_alt_spellings, print_ratio=False, optimization='RMSProp', learning_rate=1e-3, LSTM_initializer=None, momentum=0.01, activation_fn=None, bidirectional=True):
 
 		# Task dependent hyperparamter
 		self.input_seq_length = input_seq_length        # How long is the input sequence (all have equal length, due to padding)
@@ -53,6 +53,8 @@ class bLSTM(object):
 
 		# String to function conversion
 		self.convert_string_to_functions()
+
+		self.max_alt_spellings = max_alt_spellings
 
 
 		# Placeholder
@@ -163,10 +165,10 @@ class bLSTM(object):
 			
 			if self.learn_type == 'lds':
 				self.loss_lds, self.read_inps, self.rat_lds, self.rat_corr, self.loss_reg = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, 
-					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets)
+					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets, self.max_alt_spellings)
 			else:
 				self.loss_lds, self.read_inps, self.rat_lds, self.rat_corr, self.loss_reg = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, 
-					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets)
+					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets, self.max_alt_spellings)
 
 
 			# Optimizer
