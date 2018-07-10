@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from test_tube import Experiment
+from time import time
 
 # Import my files
 import utils
@@ -516,7 +517,7 @@ if __name__ == '__main__':
     for epoch in range(args.epochs):
 
         print('Epoch ', epoch + 1)
-            
+        t = time()    
         # Regular training (do not show performance)
         if epoch % args.print_step != 0 :
 
@@ -632,6 +633,8 @@ if __name__ == '__main__':
             lds_loss = []
             reg_loss = []
 
+            #print("Time it took til initializing: ", time()-t)
+            t = time()
 
             if regime == 'normal':
 
@@ -641,6 +644,10 @@ if __name__ == '__main__':
                                                              {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                              model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                             model_write.alternative_targets: write_alt_targs[:,1:,:]})
+
+                    #print("Time it took to run one batch for reading: ", time()-t)
+                    tt = time()
+
                     rats_lds.append(rat_lds)
                     rats_corr.append(rat_corr)
                     lds_loss.append(loss_lds)
@@ -649,9 +656,13 @@ if __name__ == '__main__':
                     write_epoch_loss += batch_loss
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
 
+
+
                     if epoch > theta_min and epoch < theta_max:
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
+                    #print("Time it took compute analysis: ", time()-tt)
+                    tt = time()
 
                     # Test reading
                     if args.reading:
@@ -662,10 +673,15 @@ if __name__ == '__main__':
                         _, batch_loss, r_batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict =
                                                              {model_read.keep_prob:1.0, model_read.inputs: read_inp_batch[:,1:], 
                                                              model_read.outputs: read_out_batch[:, :-1], model_read.targets: read_out_batch[:, 1:]})   
+
+                        #print("Time it took to run one batch for reading: ", time()-t)
+                        tt = time()
+
                         read_epoch_loss += batch_loss
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
-                
+                        #print("Time it took compute analysis: ", time()-tt)
+
 
             elif regime == 'lds':
                 
@@ -731,6 +747,10 @@ if __name__ == '__main__':
                 trainPerf[epoch//args.print_step, 3] = np.mean(read_token_accs)
                 trainPerf[epoch//args.print_step, 4] = np.mean(read_word_accs)
                 trainPerf[epoch//args.print_step, 5] = np.mean(read_old_accs)
+
+
+            print("Time that epoch took: ", time()-t)
+
 
             """
             # TESTING NOT PROPERLY (Feeding target as output)
@@ -826,7 +846,7 @@ if __name__ == '__main__':
                 saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)
                 np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratio=lds_ratios,lds_loss=lds_losses, 
                     reg_loss=reg_losses,corr_ratio=corr_ratios)
-        if args.epochs // 2 == epoch and regime == 'lds':
+        if args.epochs // 3 == epoch and regime == 'lds':
             regime = 'normal'
             model_write.learn_type = 'normal'
             print("Training regime changed to normal")
