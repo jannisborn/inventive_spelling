@@ -678,7 +678,6 @@ if __name__ == '__main__':
 
                 for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
-                    print(k)
 
                     _, batch_loss, write_new_targs, rat_lds, rat_corr, batch_loss_reg, w_batch_logits = sess.run([model_write.lds_optimizer, model_write.loss_lds, 
                         model_write.read_inps, model_write.rat_lds, model_write.rat_corr, model_write.loss_reg, model_write.logits], 
@@ -692,9 +691,7 @@ if __name__ == '__main__':
 
 
                     write_epoch_loss += batch_loss
-                    t=time()
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
-                    print(time()-t)
 
                     # Test reading
                     if args.reading:
