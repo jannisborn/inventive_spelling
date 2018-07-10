@@ -633,7 +633,7 @@ if __name__ == '__main__':
             lds_loss = []
             reg_loss = []
 
-            print("Time it took til initializing: ", time()-t)
+            #print("Time it took til initializing: ", time()-t)
             t = time()
 
             if regime == 'normal':
@@ -645,7 +645,7 @@ if __name__ == '__main__':
                                                              model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                             model_write.alternative_targets: write_alt_targs[:,1:,:]})
 
-                    print("Time it took to run one batch for reading: ", time()-t)
+                    #print("Time it took to run one batch for reading: ", time()-t)
                     tt = time()
 
                     rats_lds.append(rat_lds)
@@ -661,7 +661,7 @@ if __name__ == '__main__':
                     if epoch > theta_min and epoch < theta_max:
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
-                    print("Time it took compute analysis: ", time()-tt)
+                    #print("Time it took compute analysis: ", time()-tt)
                     tt = time()
 
                     # Test reading
@@ -674,7 +674,7 @@ if __name__ == '__main__':
                                                              {model_read.keep_prob:1.0, model_read.inputs: read_inp_batch[:,1:], 
                                                              model_read.outputs: read_out_batch[:, :-1], model_read.targets: read_out_batch[:, 1:]})   
 
-                        print("Time it took to run one batch for reading: ", time()-t)
+                        #print("Time it took to run one batch for reading: ", time()-t)
                         tt = time()
 
                         read_epoch_loss += batch_loss
@@ -749,7 +749,7 @@ if __name__ == '__main__':
                 trainPerf[epoch//args.print_step, 5] = np.mean(read_old_accs)
 
 
-            print("Time that epoch took: ", time()-t)
+            #print("Time that epoch took: ", time()-t)
 
 
             """
