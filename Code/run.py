@@ -903,7 +903,7 @@ if __name__ == '__main__':
                     testPerf[epoch//args.print_step, 2] = read_tokenAcc
                     testPerf[epoch//args.print_step, 3] = read_wordAcc
 
-                    read_losses[epoch//args.print_step] = read_test_loss
+                    #read_losses[epoch//args.print_step] = read_test_loss
 
             elif regime == 'lds':
 
@@ -966,7 +966,7 @@ if __name__ == '__main__':
                     dists, read_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
                             feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
                     read_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
-                    read_losses[epoch//args.print_step] = read_test_loss
+                    #read_losses[epoch//args.print_step] = read_test_loss
 
                     print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
                     #print('OLD READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc_o, read_wordAcc_o))
