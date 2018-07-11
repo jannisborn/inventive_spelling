@@ -787,8 +787,8 @@ if __name__ == '__main__':
             trainPerf[epoch//args.print_step, 0] = np.mean(write_token_accs)
             trainPerf[epoch//args.print_step, 1] = np.mean(write_word_accs)
             trainPerf[epoch//args.print_step, 2] = np.mean(write_old_accs)
-            print('NEW!!! WRITING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
-                  .format(write_epoch_loss, np.mean(write_token_accs_2), np.mean(write_word_accs_2), np.mean(write_old_accs_2)))
+            #print('NEW!!! WRITING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
+            #      .format(write_epoch_loss, np.mean(write_token_accs_2), np.mean(write_word_accs_2), np.mean(write_old_accs_2)))
             if args.reading:
                 print('READING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
                       .format(read_epoch_loss, np.mean(read_token_accs), np.mean(read_word_accs), np.mean(read_old_accs)))
