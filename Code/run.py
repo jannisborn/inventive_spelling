@@ -124,7 +124,7 @@ if __name__ == '__main__':
 
 
     theta_min = 20
-    theta_max = 110
+    theta_max = 20
 
 
 
