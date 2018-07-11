@@ -851,9 +851,11 @@ def get_last_id(dataset):
 
     try:
         folders = next(os.walk(path))[1]
+        IDs = [int(s) for folder in folders for s in folder.split('_') if s.isdigit()]
+
     except StopIteration:
+        IDs = [6,7]
         pass
-    IDs = [int(s) for folder in folders for s in folder.split('_') if s.isdigit()]
 
     return max(IDs)
 

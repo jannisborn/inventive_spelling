@@ -21,17 +21,20 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser()
 
-	parser.add_argument('--dataset', default='celex', type=str,
+	parser.add_argument('--dataset', default='childlex', type=str,
 						help='The dataset on which the model was trained, from {celex, bas, bas_p2g_r}')
 	parser.add_argument('--learn_type', default='normal', type=str,
 						help='The used learning paradigm. Choose from {normal, lds}.')
 	parser.add_argument('--task', default='read', type=str,
 						help="The task the model solved. Choose from {write, read}.")
 
-	args = parser.parse_args()
+	#args = parser.parse_args()
 
-	parser.add_argument('--id', default=utils.get_last_id(args.dataset), type=int,
-						help='The ID of the model that should be examined. Per default the last in the folder')
+	#parser.add_argument('--id', default=utils.get_last_id(args.dataset), type=int,
+	#					help='The ID of the model that should be examined. Per default the last in the folder')
+
+	parser.add_argument('--id', default=0, type=int,
+						help='The ID of the model that should be examined. Per default 0')
 	parser.add_argument('--epochs', default=None, type=int, 
 						help="The timestamp (in epochs) of the model. Default=None (after last epoch).")
 
@@ -63,7 +66,7 @@ class evaluation(object):
 
 		# Receives the path to the folder of a stored model
 		self.root_local = os.path.expanduser("~")+'/Dropbox/GitHub/LSTM/'
-		self.path = self.root_local + 'Models/' + self.dataset + '/' + self.learn_type + '_run_' + str(self.id) + '/'
+		self.path = self.root_local + 'Models/' + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
 
 		# Retrieve relevant data
 		self.retrieve_dicts()

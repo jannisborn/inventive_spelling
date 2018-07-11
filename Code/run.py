@@ -976,10 +976,10 @@ if __name__ == '__main__':
                     testPerf[epoch//args.print_step, 3] = read_wordAcc
             
 
-        if epoch % args.save_model == 0:
-            saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=False)
+        if epoch % args.save_model == 0 and epoch > 0:
+            saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=True)
             if args.reading:
-                saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)
+                saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=True)
                 np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratio=lds_ratios,lds_loss=lds_losses, 
                     reg_loss=reg_losses,corr_ratio=corr_ratios, read_losses=read_losses)
         if args.epochs // 2 == epoch and regime == 'lds':
@@ -989,9 +989,9 @@ if __name__ == '__main__':
 
 
                     
-    saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=False)
+    saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=True)
     if args.reading:
-        saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)           
+        saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=True)           
                 
 
     print(" Training done, model_write saved in file: %s" % save_path + ' ' + os.path.abspath(save_path))
