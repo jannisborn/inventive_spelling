@@ -798,7 +798,7 @@ if __name__ == '__main__':
 
 
 
-            if epoch % args.save_model == 0:
+            if epoch % args.save_model == 0 and epoch > 1:
                 np.savez(save_path + '/write_step' + str(epoch)+'.npz', logits=w_batch_logits, dict=dict_char2num_y, targets=write_out_batch[:,1:])
                 np.savez(save_path + '/read_step' + str(epoch)+'.npz', logits=r_batch_logits, dict=dict_char2num_x, targets=read_out_batch[:,1:])
 
