@@ -105,7 +105,7 @@ if __name__ == '__main__':
                         help="The momentum parameter. Only used in case the momentum optimizer is used.")
     parser.add_argument('--bidirectional', default=True, type=bool,
                         help="Basic unit of encoder is bidirectional by default. Set to False to use regular LSTM units.")
-    parser.add_argument('--dropout', default=0.3, type=float,
+    parser.add_argument('--dropout', default=0.95, type=float,
                         help="Dropout probability of neurons during training.")
     parser.add_argument('--test_size', default=0.05, type=float,
                         help="Percentage of dataset hold back for testing.")
@@ -568,6 +568,8 @@ if __name__ == '__main__':
                                                         {model_write.keep_prob:args.dropout, model_write.inputs: write_inp_batch[:,1:], 
                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
+
+
                 rats_lds.append(rat_lds)
                 rats_corr.append(rat_corr)
                 lds_loss.append(batch_loss)
@@ -617,6 +619,11 @@ if __name__ == '__main__':
         if epoch % args.print_step == 0: 
             # ---------------- SHOW TRAINING PERFORMANCE -------------------------
             
+            rats_lds = []
+            rats_corr = []
+            lds_loss = []
+            reg_loss = []
+
             # Allocate variables
             write_word_accs = np.zeros(len(X_train)// args.batch_size)
             write_token_accs = np.zeros(len(X_train)// args.batch_size)
@@ -646,6 +653,10 @@ if __name__ == '__main__':
                     write_epoch_loss += batch_loss
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
 
+                    rats_lds.append(rat_lds)
+                    rats_corr.append(rat_corr)
+                    lds_loss.append(loss_lds)
+                    reg_loss.append(batch_loss)
 
 
                     if epoch > theta_min and epoch < theta_max:
@@ -685,6 +696,11 @@ if __name__ == '__main__':
                                                                             model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                                             model_write.alternative_targets: write_alt_targs[:,1:,:]})
 
+                    rats_lds.append(rat_lds)
+                    rats_corr.append(rat_corr)
+                    lds_loss.append(batch_loss)
+                    reg_loss.append(batch_loss_reg)
+
 
                     if epoch > theta_min and epoch < theta_max:
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
@@ -706,7 +722,14 @@ if __name__ == '__main__':
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
                 
-           
+            lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
+            reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
+            lds_ratios[epoch] = sum(rats_lds)/len(rats_lds)
+            corr_ratios[epoch] = sum(rats_corr)/len(rats_corr)
+
+            print("Displayed run - Ratio correct  words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
+            print("Displayed run - LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
+
 
 
             if epoch % args.save_model == 0:
