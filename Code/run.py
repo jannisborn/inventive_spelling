@@ -882,12 +882,11 @@ if __name__ == '__main__':
                     read_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_x['<GO>']
                     # Generate character by character (for the entire batch, weirdly)
                     for i in range(x_seq_length):
-                        print(i)
-                        read_test_logits, read_test_loss = sess.run([model_read.logits, model_read.loss], 
-                            feed_dict={model_read.keep_prob:1.0, model_read.inputs:Y_test[:,1:], model_read.outputs:read_dec_input,
-                             model_read.targets:Y_test[:,1:]})
+                        #print(i)
+                        read_test_logits = sess.run([model_read.logits, model_read.loss], 
+                            feed_dict={model_read.keep_prob:1.0, model_read.inputs:Y_test[:,1:], model_read.outputs:read_dec_input})
                         read_prediction = read_test_logits[:,-1].argmax(axis=-1)
-                        print("W")
+                        #print("W")
                         #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                         read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
                     #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
@@ -955,7 +954,7 @@ if __name__ == '__main__':
                     read_test_new_inp = write_test_new_targs
                     # Generate character by character (for the entire batch, weirdly)
                     for i in range(x_seq_length):
-                        read_test_logits, read_test_loss = sess.run([model_read.logits, model_read.loss], feed_dict={model_read.keep_prob:1.0, 
+                        read_test_logits = sess.run(model_read.logits, feed_dict={model_read.keep_prob:1.0, 
                                 model_read.inputs:read_test_new_inp, model_read.outputs:read_dec_input})
                         read_prediction = read_test_logits[:,-1].argmax(axis=-1)
                         #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
