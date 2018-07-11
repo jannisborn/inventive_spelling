@@ -637,7 +637,6 @@ if __name__ == '__main__':
                 
 
             #print("Time it took til initializing: ", time()-t)
-            t = time()
 
             if regime == 'normal':
 
@@ -679,9 +678,10 @@ if __name__ == '__main__':
                         #print("Time it took to run one batch for reading: ", time()-t)
                         t = time()
 
-                        read_epoch_loss += batch_loss
+                        read_epoch_loss += batch_lossx
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
+                        print("Time it took compute analysis: ", time()-t+tt)
 
 
             elif regime == 'lds':
@@ -708,7 +708,7 @@ if __name__ == '__main__':
                     write_epoch_loss += batch_loss
                     t=time()
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
-                    print("Time it took compute analysis: ", time()-t+tt)
+                    tt=time()-t
 
                     # Test reading
                     if args.reading:
@@ -723,6 +723,7 @@ if __name__ == '__main__':
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         t=time()
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
+                        print("Time it took compute analysis: ", time()-t+tt)
 
                 
             lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
