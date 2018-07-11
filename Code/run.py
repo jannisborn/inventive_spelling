@@ -847,7 +847,8 @@ if __name__ == '__main__':
                 for i in range(y_seq_length):
                     write_test_logits, write_loss_lds, write_loss, rat_lds, rat_corr = sess.run([model_write.logits, 
                         model_write.loss_lds, model_write.loss_reg, model_write.rat_lds, model_write.rat_corr], 
-                        feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
+                        feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input,
+                        model_write.alternative_targets: Y_alt_test[:,1:,:]})
 
                     write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                     #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
@@ -904,7 +905,8 @@ if __name__ == '__main__':
                 for i in range(y_seq_length):
                     write_test_logits, write_loss_lds, write_loss, rat_lds, rat_corr = sess.run([model_write.logits,
                         model_write.loss_lds, model_write.loss_reg, model_write.rat_lds, model_write.rat_corr],
-                        feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
+                        feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input,
+                        model_write.alternative_targets: Y_alt_test[:,1:,:]})
                     write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                     #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                     write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
