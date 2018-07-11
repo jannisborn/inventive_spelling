@@ -651,19 +651,20 @@ if __name__ == '__main__':
                     #print("Time it took to run one batch for reading: ", time()-t)
 
                     write_epoch_loss += batch_loss
+                    t=time()
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
+                    tt=time()-t
+
 
                     rats_lds.append(rat_lds)
                     rats_corr.append(rat_corr)
                     lds_loss.append(loss_lds)
                     reg_loss.append(batch_loss)
 
-                    t=time()
                     if epoch > theta_min and epoch < theta_max:
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
                     #print("Time it took compute analysis: ", time()-tt)
-                    tt = t-time()
 
                     # Test reading
                     if args.reading:
@@ -681,7 +682,6 @@ if __name__ == '__main__':
                         read_epoch_loss += batch_loss
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
-                        print("Time it took compute analysis: ", time()-t+tt)
 
 
             elif regime == 'lds':
@@ -701,13 +701,14 @@ if __name__ == '__main__':
                     lds_loss.append(batch_loss)
                     reg_loss.append(batch_loss_reg)
 
-
                     if epoch > theta_min and epoch < theta_max:
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
 
                     write_epoch_loss += batch_loss
+                    t=time()
                     write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
+                    print("Time it took compute analysis: ", time()-t+tt)
 
                     # Test reading
                     if args.reading:
@@ -720,7 +721,9 @@ if __name__ == '__main__':
                                                              model_read.outputs: read_out_batch[:, :-1], model_read.targets: read_out_batch[:, 1:]})   
                         read_epoch_loss += batch_loss
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
+                        t=time()
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
+
                 
             lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
             reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
