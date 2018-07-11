@@ -845,24 +845,25 @@ if __name__ == '__main__':
                 write_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
                 # Generate character by character (for the entire batch, weirdly)
                 for i in range(y_seq_length):
-                    #write_test_logits, write_loss_lds, write_loss, rat_lds, rat_corr = sess.run([model_write.logits, 
-                    #    model_write.loss_lds, model_write.loss_reg, model_write.rat_lds, model_write.rat_corr], 
-                    print(i)
-                    write_test_logits, write_loss, = sess.run([model_write.logits,  model_write.loss_reg], 
-                        feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input,
-                        model_write.targets: Y_test[:, 1:],
-                        model_write.alternative_targets: Y_alt_test[:,1:,:]})
-                    print("Y!")
+ 
+                    #print(i)
+                    #write_test_logits, write_loss, = sess.run([model_write.logits,  model_write.loss_reg], 
+                    #    feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input,
+                    #    model_write.targets: Y_test[:, 1:],
+                    #    model_write.alternative_targets: Y_alt_test[:,1:,:]})
+                    write_test_logits = sess.run(model_write.logits, 
+                        feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
+                    #print("Y!")
                     write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                     #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                     write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
                 #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
                 #write_oldAcc_o, write_tokenAcc_o , write_wordAcc_o = utils.accuracy(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
                
-                lds_ratios_test[epoch//args.print_step] = rat_lds
-                corr_ratios_test[epoch//args.print_step] = rat_corr
-                lds_losses_test[epoch//args.print_step] = write_loss_lds
-                reg_losses_test[epoch//args.print_step] = write_loss
+                #lds_ratios_test[epoch//args.print_step] = rat_lds
+                #corr_ratios_test[epoch//args.print_step] = rat_corr
+                #lds_losses_test[epoch//args.print_step] = write_loss_lds
+                #reg_losses_test[epoch//args.print_step] = write_loss
 
 
                 write_oldAcc, fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
@@ -881,8 +882,10 @@ if __name__ == '__main__':
                     read_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_x['<GO>']
                     # Generate character by character (for the entire batch, weirdly)
                     for i in range(x_seq_length):
+                        print(i)
                         read_test_logits, read_test_loss = sess.run([model_read.logits, model_read.loss], feed_dict={model_read.keep_prob:1.0, model_read.inputs:Y_test[:,1:], model_read.outputs:read_dec_input})
                         read_prediction = read_test_logits[:,-1].argmax(axis=-1)
+                        print("W")
                         #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                         read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
                     #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
@@ -906,11 +909,16 @@ if __name__ == '__main__':
                 write_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
                 # Generate character by character (for the entire batch, weirdly)
                 for i in range(y_seq_length):
+                    """
                     write_test_logits, write_loss_lds, write_loss, rat_lds, rat_corr = sess.run([model_write.logits,
                         model_write.loss_lds, model_write.loss_reg, model_write.rat_lds, model_write.rat_corr],
                         feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input,
                         model_write.targets: Y_test[:, 1:],
                         model_write.alternative_targets: Y_alt_test[:,1:,:]})
+                    """
+
+                    write_test_logits = sess.run(model_write.logits, 
+                        feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
                     write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                     #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                     write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
@@ -919,10 +927,10 @@ if __name__ == '__main__':
                 write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:])
 
 
-                lds_ratios_test[epoch//args.print_step] = rat_lds
-                corr_ratios_test[epoch//args.print_step] = rat_corr
-                lds_losses_test[epoch//args.print_step] = write_loss_lds
-                reg_losses_test[epoch//args.print_step] = write_loss
+                #lds_ratios_test[epoch//args.print_step] = rat_lds
+                #corr_ratios_test[epoch//args.print_step] = rat_corr
+                #lds_losses_test[epoch//args.print_step] = write_loss_lds
+                #reg_losses_test[epoch//args.print_step] = write_loss
 
 
 
