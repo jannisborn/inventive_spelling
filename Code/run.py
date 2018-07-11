@@ -505,14 +505,23 @@ if __name__ == '__main__':
     if args.reading:
         trainPerf = np.zeros([args.epochs//args.print_step + 1, 6])
         testPerf = np.zeros([args.epochs//args.print_step + 1, 6])
+        read_losses = np.zeros((args.epochs,1))
+        read_losses_test = np.zeros((args.epochs//args.print_step + 1,1))
+
     else:
         trainPerf = np.zeros([args.epochs//args.print_step + 1, 3])
         testPerf = np.zeros([args.epochs//args.print_step + 1, 3])
+        
 
     lds_ratios = np.zeros((args.epochs,1))
     corr_ratios = np.zeros((args.epochs,1))
     lds_losses = np.zeros((args.epochs,1))
     reg_losses = np.zeros((args.epochs,1))
+
+    lds_ratios_test = np.zeros((args.epochs//args.print_step + 1,1))
+    corr_ratios_test = np.zeros((args.epochs//args.print_step + 1,1))
+    lds_losses_test = np.zeros((args.epochs//args.print_step + 1,1))
+    reg_losses_test = np.zeros((args.epochs//args.print_step + 1,1))
 
 
     # Accuracy object
@@ -536,6 +545,8 @@ if __name__ == '__main__':
         rats_corr = []
         lds_loss = []
         reg_loss = []
+        read_loss = []
+
         if regime == 'normal':
         
             for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size,Y_alt_train)):
@@ -567,6 +578,8 @@ if __name__ == '__main__':
                                                     {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch[:,1:], 
                                                     model_read.outputs:read_out_batch[:,:-1], model_read.targets:read_out_batch[:,1:]})
 
+                    read_loss.append(batch_loss)
+
         elif regime == 'lds':
 
 
@@ -595,12 +608,14 @@ if __name__ == '__main__':
                     _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
                                                     {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch, 
                                                     model_read.outputs:read_out_batch[:,:-1], model_read.targets:read_out_batch[:,1:]})
+                    read_loss.append(batch_loss)
 
                   
         lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
         reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
         lds_ratios[epoch] = sum(rats_lds)/len(rats_lds)
         corr_ratios[epoch] = sum(rats_corr)/len(rats_corr)
+        read_losses[epoch] = sum(read_loss)/len(read_loss)
 
         print("Ratio correct  words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
         print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
@@ -633,6 +648,7 @@ if __name__ == '__main__':
             rats_corr = []
             lds_loss = []
             reg_loss = []
+            read_loss = []
 
             # Allocate variables
             write_word_accs = np.zeros(len(X_train)// args.batch_size)
@@ -699,6 +715,7 @@ if __name__ == '__main__':
 
                         #print("Time it took to run one batch for reading: ", time()-t)
                         t = time()
+                        read_loss.append(batch_loss)
 
                         read_epoch_loss += batch_loss
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
@@ -758,6 +775,7 @@ if __name__ == '__main__':
                         #t=time()
                         #read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
                         #print("Time it took compute analysis: ", time()-t+tt)
+                        read_loss.append(batch_loss)
 
                         read_old_accs[k], fullPred, fullTarg = utils.accuracy_prepare(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
                     
@@ -771,6 +789,7 @@ if __name__ == '__main__':
             reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
             lds_ratios[epoch] = sum(rats_lds)/len(rats_lds)
             corr_ratios[epoch] = sum(rats_corr)/len(rats_corr)
+            read_losses[epoch] = sum(read_loss)/len(read_loss)
 
             print("Displayed run - Ratio correct  words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
             print("Displayed run - LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
@@ -820,18 +839,28 @@ if __name__ == '__main__':
 
             # --------------- SHOW TESTING PERFORMANCE -----------------------------------
 
+
             if regime == 'normal':
 
                 write_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
                 # Generate character by character (for the entire batch, weirdly)
                 for i in range(y_seq_length):
-                    write_test_logits = sess.run(model_write.logits, feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
+                    write_test_logits, write_loss_lds, write_loss, rat_lds, rat_corr = sess.run([model_write.logits, 
+                        model_write.loss_lds, model_write.loss_reg, model_write.rat_lds, model_write.rat_corr], 
+                        feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
+
                     write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                     #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                     write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
                 #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
                 #write_oldAcc_o, write_tokenAcc_o , write_wordAcc_o = utils.accuracy(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
-                
+               
+                lds_ratios_test[epoch//args.print_step] = rat_lds
+                corr_ratios_test[epoch//args.print_step] = rat_corr
+                lds_losses_test[epoch//args.print_step] = write_loss_lds
+                reg_losses_test[epoch//args.print_step] = write_loss
+
+
                 write_oldAcc, fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
                 dists, write_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
@@ -848,7 +877,7 @@ if __name__ == '__main__':
                     read_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_x['<GO>']
                     # Generate character by character (for the entire batch, weirdly)
                     for i in range(x_seq_length):
-                        read_test_logits = sess.run(model_read.logits, feed_dict={model_read.keep_prob:1.0, model_read.inputs:Y_test[:,1:], model_read.outputs:read_dec_input})
+                        read_test_logits, read_test_loss = sess.run([model_read.logits, model_read.loss], feed_dict={model_read.keep_prob:1.0, model_read.inputs:Y_test[:,1:], model_read.outputs:read_dec_input})
                         read_prediction = read_test_logits[:,-1].argmax(axis=-1)
                         #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                         read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
@@ -863,21 +892,31 @@ if __name__ == '__main__':
                     print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
                     #print('OLD - READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc_o, read_wordAcc_o))
 
-                    testPerf[epoch//args.print_step, 0] = read_tokenAcc
-                    testPerf[epoch//args.print_step, 1] = read_wordAcc
+                    testPerf[epoch//args.print_step, 2] = read_tokenAcc
+                    testPerf[epoch//args.print_step, 3] = read_wordAcc
+
+                    read_losses[epoch//args.print_step] = read_test_loss
 
             elif regime == 'lds':
 
                 write_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
                 # Generate character by character (for the entire batch, weirdly)
                 for i in range(y_seq_length):
-                    write_test_logits = sess.run(model_write.logits, feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
+                    write_test_logits, write_loss_lds, write_loss, rat_lds, rat_corr = sess.run([model_write.logits,
+                        model_write.loss_lds, model_write.loss_reg, model_write.rat_lds, model_write.rat_corr],
+                        feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
                     write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                     #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                     write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
 
                 # Now the generated sequence need to be compared with the alternative targets:
                 write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:])
+
+
+                lds_ratios_test[epoch//args.print_step] = rat_lds
+                corr_ratios_test[epoch//args.print_step] = rat_corr
+                lds_losses_test[epoch//args.print_step] = write_loss_lds
+                reg_losses_test[epoch//args.print_step] = write_loss
 
 
 
@@ -900,7 +939,7 @@ if __name__ == '__main__':
                     read_test_new_inp = write_test_new_targs
                     # Generate character by character (for the entire batch, weirdly)
                     for i in range(x_seq_length):
-                        read_test_logits = sess.run(model_read.logits, feed_dict={model_read.keep_prob:1.0, 
+                        read_test_logits, read_test_loss = sess.run([model_read.logits, model_read.loss], feed_dict={model_read.keep_prob:1.0, 
                                 model_read.inputs:read_test_new_inp, model_read.outputs:read_dec_input})
                         read_prediction = read_test_logits[:,-1].argmax(axis=-1)
                         #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
@@ -912,11 +951,12 @@ if __name__ == '__main__':
                     dists, read_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
                             feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
                     read_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
+                    read_losses[epoch//args.print_step] = read_test_loss
 
                     print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
                     #print('OLD READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc_o, read_wordAcc_o))
-                    testPerf[epoch//args.print_step, 0] = read_tokenAcc
-                    testPerf[epoch//args.print_step, 1] = read_wordAcc
+                    testPerf[epoch//args.print_step, 2] = read_tokenAcc
+                    testPerf[epoch//args.print_step, 3] = read_wordAcc
             
 
         if epoch % args.save_model == 0:
