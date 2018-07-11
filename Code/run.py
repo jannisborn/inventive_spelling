@@ -105,7 +105,7 @@ if __name__ == '__main__':
                         help="The momentum parameter. Only used in case the momentum optimizer is used.")
     parser.add_argument('--bidirectional', default=True, type=bool,
                         help="Basic unit of encoder is bidirectional by default. Set to False to use regular LSTM units.")
-    parser.add_argument('--dropout', default=0.95, type=float,
+    parser.add_argument('--dropout', default=1.0, type=float,
                         help="Dropout probability of neurons during training.")
     parser.add_argument('--test_size', default=0.05, type=float,
                         help="Percentage of dataset hold back for testing.")
@@ -660,7 +660,7 @@ if __name__ == '__main__':
                     lds_loss.append(loss_lds)
                     reg_loss.append(batch_loss)
 
-                    if epoch > theta_min and epoch < theta_max:
+                    if epoch > 10 and epoch < 500:
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
                     #print("Time it took compute analysis: ", time()-tt)
@@ -681,7 +681,7 @@ if __name__ == '__main__':
                         read_epoch_loss += batch_lossx
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
-                        print("Time it took compute analysis: ", time()-t+tt)
+                        #print("Time it took compute analysis: ", time()-t+tt)
 
 
             elif regime == 'lds':
@@ -701,7 +701,7 @@ if __name__ == '__main__':
                     lds_loss.append(batch_loss)
                     reg_loss.append(batch_loss_reg)
 
-                    if epoch > theta_min and epoch < theta_max:
+                    if epoch > 10 and epoch < 500:
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
 
@@ -723,7 +723,7 @@ if __name__ == '__main__':
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         t=time()
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
-                        print("Time it took compute analysis: ", time()-t+tt)
+                        #print("Time it took compute analysis: ", time()-t+tt)
 
                 
             lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
