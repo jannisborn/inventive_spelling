@@ -61,7 +61,7 @@ def accuracy(logits, labels, char2numY, mode='train'):
             
     # Initial measure in file
     oldAcc = np.mean(fullPred == fullTarg)     
-
+    print(fullPred.shape,fullTarg.shape)
     with tf.Session() as sess2:
     
         # Compute accuracy based on Levensthein Distance (without Padding) 
@@ -70,6 +70,56 @@ def accuracy(logits, labels, char2numY, mode='train'):
         tokenAcc = 1 - tf.reduce_mean(dists).eval(session=sess2)
     wordAcc = np.count_nonzero(dists==0) / len(dists)
     return oldAcc, tokenAcc, wordAcc
+
+
+def accuracy_prepare(logits, labels, char2numY, mode='train'):
+
+    # Error handling and mode setting
+    if mode =='train':
+        fullPred = logits.argmax(-1) # Prediction string with padding
+    elif mode == 'test':
+        fullPred = np.copy(logits.astype(int))
+    else:
+        print("Please specify 'mode' as either 'train' or 'test'. ")
+
+    #print(logits.shape, labels.shape)
+    #print(logits.dtype, labels.dtype)
+    
+    #Padded target string
+    fullTarg = np.copy(labels) 
+    # Set pads to 0 - as preparation for edit_distance
+    if '<PAD>' in char2numY:
+        fullPred[fullPred==char2numY['<PAD>']] = 0
+        fullTarg[fullTarg==char2numY['<PAD>']] = 0
+            
+    # Initial measure in file
+    oldAcc = np.mean(fullPred == fullTarg)  
+
+    return oldAcc, fullPred, fullTarg
+
+
+
+class acc_new(object):
+
+    def __init__(self):
+
+        self.fullPred = tf.placeholder(tf.int64,(None,None))
+        self.fullTarg = tf.placeholder(tf.int64,(None,None))
+
+    def accuracy(self):
+
+        self.dists = tf.edit_distance(self.dense_to_sparse(self.fullPred), self.dense_to_sparse(self.fullTarg))
+        self.token_acc = 1 - tf.reduce_mean(self.dists)
+
+    def dense_to_sparse(self,denseTensor):
+
+        # Non-Zero indices of dense tensor
+        idx = tf.where(tf.not_equal(denseTensor,0))
+        # Create sparse tensor
+        sparseTensor = tf.SparseTensor(idx, tf.gather_nd(denseTensor,idx), tf.cast(tf.shape(denseTensor),tf.int64))
+        return sparseTensor
+
+
             
 
 def dense_to_sparse(denseTensor):
