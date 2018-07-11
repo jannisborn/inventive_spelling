@@ -123,8 +123,8 @@ if __name__ == '__main__':
                         help='If GPU options is set to 1, sets GPU fraction')
 
 
-    theta_min = 10
-    theta_max = 10
+    theta_min = 20
+    theta_max = 110
 
 
 
@@ -600,7 +600,9 @@ if __name__ == '__main__':
 
                 if epoch > theta_min and epoch < theta_max:
 
-                    utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
+                    r = utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
+                    print("Original target was ", write_out_batch[r,:], "New target is ", write_new_targs[r,:])
+                    print("Another word: ", write_out_batch[r-1,:], "New target is ", write_new_targs[r-1,:])
 
                 if args.reading:
                     read_inp_batch = write_new_targs
@@ -791,7 +793,7 @@ if __name__ == '__main__':
             corr_ratios[epoch] = sum(rats_corr)/len(rats_corr)
             read_losses[epoch] = sum(read_loss)/len(read_loss)
 
-            print("Displayed run - Ratio correct  words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
+            print("Displayed run - Ratio correct words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
             print("Displayed run - LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
 
 

@@ -951,6 +951,9 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out):
         #print("The alternatives were ", alt_targ_str)
         if out_str[-1] in alt_targ_str:
             print("                    HERE!!!", out_str[-1],' instead of ', label_str[-1])
+            r = k
+
+    return r
 
 
 
