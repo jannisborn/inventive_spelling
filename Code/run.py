@@ -883,7 +883,7 @@ if __name__ == '__main__':
                     # Generate character by character (for the entire batch, weirdly)
                     for i in range(x_seq_length):
                         #print(i)
-                        read_test_logits = sess.run([model_read.logits, model_read.loss], 
+                        read_test_logits = sess.run(model_read.logits, 
                             feed_dict={model_read.keep_prob:1.0, model_read.inputs:Y_test[:,1:], model_read.outputs:read_dec_input})
                         read_prediction = read_test_logits[:,-1].argmax(axis=-1)
                         #print("W")
