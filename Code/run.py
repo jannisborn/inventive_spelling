@@ -658,12 +658,12 @@ if __name__ == '__main__':
                     lds_loss.append(loss_lds)
                     reg_loss.append(batch_loss)
 
-
+                    t=time()
                     if epoch > theta_min and epoch < theta_max:
                         utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
                     #print("Time it took compute analysis: ", time()-tt)
-                    tt = time()
+                    tt = t-time()
 
                     # Test reading
                     if args.reading:
@@ -676,12 +676,12 @@ if __name__ == '__main__':
                                                              model_read.outputs: read_out_batch[:, :-1], model_read.targets: read_out_batch[:, 1:]})   
 
                         #print("Time it took to run one batch for reading: ", time()-t)
-                        tt = time()
+                        t = time()
 
                         read_epoch_loss += batch_loss
                         #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
                         read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
-                        #print("Time it took compute analysis: ", time()-tt)
+                        print("Time it took compute analysis: ", time()-t+tt)
 
 
             elif regime == 'lds':
