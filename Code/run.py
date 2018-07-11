@@ -925,7 +925,7 @@ if __name__ == '__main__':
                 saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)
                 np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratio=lds_ratios,lds_loss=lds_losses, 
                     reg_loss=reg_losses,corr_ratio=corr_ratios)
-        if args.epochs // 3 == epoch and regime == 'lds':
+        if args.epochs // 2 == epoch and regime == 'lds':
             regime = 'normal'
             model_write.learn_type = 'normal'
             print("Training regime changed to normal")
