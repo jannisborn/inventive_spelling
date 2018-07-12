@@ -245,7 +245,7 @@ class evaluation(object):
 
 			print()
 			# Restore model
-			saver = tf.train.Saver()
+			saver = tf.train.Saver(tf.trainable_variables())
 			saver.restore(sess,tf.train.latest_checkpoint(self.path))
 
 

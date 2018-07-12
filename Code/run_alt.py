@@ -2,7 +2,7 @@
 # Write a .txt file that reads in all the input arguments.
 # tqdm?
 
-
+########### THIS VERSION RUNS!
 
 
 ###################     IMPORTING      ######################
@@ -65,7 +65,7 @@ if __name__ == '__main__':
                         " and later on more...")
     parser.add_argument('--learn_type', default='normal', type=str,
                         help="Determines the training regime. Choose from set {'normal', 'lds'}.")
-    parser.add_argument('--reading', default=True, type=bool,
+    parser.add_argument('--reading', default=False, type=bool,
                         help="Specifies whether reading task is also accomplished. Default is False. ")
 
 
@@ -432,7 +432,7 @@ if __name__ == '__main__':
         #    if k.name.startswith("writing"):
         #        print("HEY",k.name)
 
-        #saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=10)
+        saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=10)
 
 
 
@@ -444,7 +444,7 @@ if __name__ == '__main__':
                 LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
             model_read.forward()
             model_read.backward()
-            #saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=10)
+            saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=10)
 
 
     exp = Experiment(name='', save_dir=test_tube)
@@ -458,7 +458,6 @@ if __name__ == '__main__':
 
     #saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=None)) # Add ops to save and restore all the variables.
 
-    """
     # builds the histogram of the parameter values for viewing in tensorboard
     for var in tf.trainable_variables():
         tf.summary.histogram(var.name, var)
@@ -484,7 +483,7 @@ if __name__ == '__main__':
     merged = tf.summary.merge_all()
     train_writer = tf.summary.FileWriter(save_path + '/train', sess.graph)
     test_writer = tf.summary.FileWriter(save_path + '/test')
-    """
+
 
 
 
@@ -495,8 +494,6 @@ if __name__ == '__main__':
         init_tensor = tf.global_variables_initializer()
         # initializing the variables
         sess.run(init_tensor)
-
-        saver = tf.train.Saver()
 
     #if args.restore:
     #saver.restore(sess, _model_writePath) #Yes, no need to add ".index"
@@ -980,13 +977,11 @@ if __name__ == '__main__':
             
 
         if epoch % args.save_model == 0 and epoch > 0:
-            #saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=True)
-            #if args.reading:
-            #    saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=True)
-            np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratio=lds_ratios,lds_loss=lds_losses, 
+            saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=True)
+            if args.reading:
+                saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=True)
+                np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratio=lds_ratios,lds_loss=lds_losses, 
                     reg_loss=reg_losses,corr_ratio=corr_ratios, read_losses=read_losses)
-            saver.save(sess, save_path + '/my_test_model',global_step=epoch)
-
         if args.epochs // 2 == epoch and regime == 'lds':
             regime = 'normal'
             model_write.learn_type = 'normal'
@@ -994,12 +989,10 @@ if __name__ == '__main__':
 
 
                     
-    #saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=True)
-    #if args.reading:
-    #    saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=True)           
-    
-    saver.save(sess, save_path + '/my_test_model',global_step=epoch)
-  
+    saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=True)
+    if args.reading:
+        saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=True)           
+                
 
     print(" Training done, model_write saved in file: %s" % save_path + ' ' + os.path.abspath(save_path))
 
