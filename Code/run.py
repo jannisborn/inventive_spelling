@@ -418,7 +418,7 @@ if __name__ == '__main__':
     ############## PREPARATION FOR TRAINING ##############
 
     regime = args.learn_type
-    tf.reset_default_graph()
+    #tf.reset_default_graph()
     with tf.variable_scope('writing'):
         model_write = bLSTM(x_seq_length, y_seq_length, x_dict_size, num_classes, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes, args.batch_size,
             args.learn_type, 'write', mas, print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, LSTM_initializer=args.LSTM_initializer, 
