@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser()
 
-	parser.add_argument('--dataset', default='childlex', type=str,
+	parser.add_argument('--dataset', default='fibel', type=str,
 						help='The dataset on which the model was trained, from {celex, bas, bas_p2g_r}')
 	parser.add_argument('--learn_type', default='normal', type=str,
 						help='The used learning paradigm. Choose from {normal, lds}.')

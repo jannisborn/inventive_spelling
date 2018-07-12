@@ -65,7 +65,7 @@ if __name__ == '__main__':
                         " and later on more...")
     parser.add_argument('--learn_type', default='normal', type=str,
                         help="Determines the training regime. Choose from set {'normal', 'lds'}.")
-    parser.add_argument('--reading', default=True, type=bool,
+    parser.add_argument('--reading', default=False, type=bool,
                         help="Specifies whether reading task is also accomplished. Default is False. ")
 
 
