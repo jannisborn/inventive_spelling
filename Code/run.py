@@ -427,6 +427,10 @@ if __name__ == '__main__':
         model_write.backward()
         model_write.exe = True
 
+        #for k in tf.global_variables():
+        #    if k.name.startswith("writing"):
+        #        print("HEY",k.name)
+
         saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=10)
 
 

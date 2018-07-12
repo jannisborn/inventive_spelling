@@ -25,7 +25,7 @@ if __name__ == '__main__':
 						help='The dataset on which the model was trained, from {celex, bas, bas_p2g_r}')
 	parser.add_argument('--learn_type', default='normal', type=str,
 						help='The used learning paradigm. Choose from {normal, lds}.')
-	parser.add_argument('--task', default='read', type=str,
+	parser.add_argument('--task', default='write', type=str,
 						help="The task the model solved. Choose from {write, read}.")
 
 	#args = parser.parse_args()
@@ -73,16 +73,18 @@ class evaluation(object):
 		self.retrieve_model_args()
 		self.retrieve_model()
 
-		#self.show_mistakes()
-		#print("Training mistakes saved.")
-		#self.show_mistakes('test')
-		#self.plot_pca(mode='input')
-		#self.plot_pca(mode='output')
 
-		#self.plot_tsne(mode='input')
-		#self.plot_tsne(mode='output')
 
-		self.predict_input()
+		self.show_mistakes()
+		print("Training mistakes saved.")
+		self.show_mistakes('test')
+		self.plot_pca(mode='input')
+		self.plot_pca(mode='output')
+
+		self.plot_tsne(mode='input')
+		self.plot_tsne(mode='output')
+
+		#self.predict_input()
 
 
 
@@ -177,7 +179,8 @@ class evaluation(object):
 		with tf.Session() as sess:
 
 			# Restore model
-			saver = tf.train.Saver(tf.global_variables())
+			print(self.path)
+			saver = tf.train.Saver(tf.trainable_variables())
 			saver.restore(sess,tf.train.latest_checkpoint(self.path))
 
 			while loop:
@@ -236,9 +239,13 @@ class evaluation(object):
 		out = 'spoken' if self.task == 'write' else 'written'
 
 		with tf.Session() as sess:
+			print()
+			for k in tf.global_variables():
+				print("HEY",k.name)
 
+			print()
 			# Restore model
-			saver = tf.train.Saver(tf.global_variables())
+			saver = tf.train.Saver()
 			saver.restore(sess,tf.train.latest_checkpoint(self.path))
 
 
