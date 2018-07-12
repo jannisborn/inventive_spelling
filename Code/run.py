@@ -620,7 +620,8 @@ if __name__ == '__main__':
         reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
         lds_ratios[epoch] = sum(rats_lds)/len(rats_lds)
         corr_ratios[epoch] = sum(rats_corr)/len(rats_corr)
-        read_losses[epoch] = sum(read_loss)/len(read_loss)
+        if args.reading:
+            read_losses[epoch] = sum(read_loss)/len(read_loss)
 
         print("Ratio correct  words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
         print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
@@ -794,7 +795,8 @@ if __name__ == '__main__':
             reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
             lds_ratios[epoch] = sum(rats_lds)/len(rats_lds)
             corr_ratios[epoch] = sum(rats_corr)/len(rats_corr)
-            read_losses[epoch] = sum(read_loss)/len(read_loss)
+            if args.reading:
+                read_losses[epoch] = sum(read_loss)/len(read_loss)
 
             print("Displayed run - Ratio correct words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
             print("Displayed run - LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
