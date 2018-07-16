@@ -73,6 +73,11 @@ class evaluation(object):
 		self.retrieve_model_args()
 		self.retrieve_model()
 
+		self.lds_id = 250
+		self.id = 499
+
+
+
 
 
 		self.show_mistakes()
@@ -148,6 +153,10 @@ class evaluation(object):
 		self.output_dict = {key:data['word_dict'].item().get(key) for key in data['word_dict'].item()} if self.task == 'write' else  {key:data['phon_dict'].item().get(key) for key in data['phon_dict'].item()}
 
 		self.output_dict_rev = dict(zip(self.output_dict.values(), self.output_dict.keys()))
+
+		print("INPUT DICT", self.input_dict)
+		print()
+		print("OUTPUT DICT", self.output_dict)
 
 	def retrieve_model(self):
 		"""
@@ -239,14 +248,15 @@ class evaluation(object):
 		out = 'spoken' if self.task == 'write' else 'written'
 
 		with tf.Session() as sess:
-			print()
-			for k in tf.global_variables():
-				print("HEY",k.name)
 
-			print()
 			# Restore model
-			saver = tf.train.Saver(tf.trainable_variables())
-			saver.restore(sess,tf.train.latest_checkpoint(self.path))
+			#saver = tf.train.Saver(tf.trainable_variables())
+			#saver.restore(sess,tf.train.latest_checkpoint(self.path))
+			saver = tf.train.import_meta_graph('my_test_model-'+str(self.id)+'.meta')
+			saver.restore(sess,tf.train.latest_checkpoint('./'))
+
+			variables_names = [v.name for v in tf.trainable_variables()]
+			values = sess.run(variables_names)
 
 
 			# Iterate over dataset and print all wrong predictions
@@ -303,8 +313,22 @@ class evaluation(object):
 
 		with tf.Session() as sess:
 
-			saver = tf.train.Saver(tf.global_variables())
-			saver.restore(sess,tf.train.latest_checkpoint(self.path))
+			#saver = tf.train.Saver(tf.global_variables())
+			#saver.restore(sess,tf.train.latest_checkpoint(self.path))
+			saver = tf.train.import_meta_graph('my_test_model-'+str(self.id)+'.meta')
+			saver.restore(sess,tf.train.latest_checkpoint('./'))
+
+			variables_names = [v.name for v in tf.trainable_variables()]
+			values = sess.run(variables_names)
+
+			for k, v in zip(variables_names, values):
+				if 'writing/encoding_write/enc_embedding' in k:
+				    print("Variable: ", k)
+				    print("Shape: ", v.shape)
+				    print(v)
+				    print()
+
+
 
 			if mode=='input':
 				weight_vectors = self.net.input_embedding.eval()

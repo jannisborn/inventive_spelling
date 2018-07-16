@@ -746,49 +746,17 @@ def celex_retrieve(learn_type):
     """
 
     data = np.load('data/celex.npz')
-    #data = np.load('../../Models/data/celex_small.npz')
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
-    
 
-    if learn_type == 'lds':
+    path = 'data/celex_alt_targets.npy'
+    print("Loading alternative targets ...")
+    alt_targs_raw = np.load(path)
 
-        #data = np.load('../../Models/data/celex.npz')
-        #phon_dict = np_dict_to_dict(data['phon_dict'])
-        #word_dict = np_dict_to_dict(data['word_dict'])
-        path = '../../Models/data/celex_alt_targets_small.npy'
-        print("Loading alternative targets ...")
-        alt_targs_raw = np.load(path)
+    alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
+    print("Alternative targets successfully loaded.")
 
-        ## Workaround due to pickle bug (cannot save npy files > 2GB)
-        """
-        max_bytes = 2**31 - 1
-        input_size = os.path.getsize(filepath)
-        bytes_in = bytearray(0)
-        with open(filepath, 'rb') as f_in:
-            for _ in range(0, input_size, max_bytes):
-                bytes_in += f_in.read(max_bytes)
-        alt_targs_raw = pickle.loads(bytes_in) # Takes a couple of minutes
-        
-        """
-
-        ## Workaround to avoid returning a np object (array of lists) -> Yields memory error
-        """
-        max_len = max([len(l) for l in alt_targs_raw])
-        inp_seq_len = len(alt_targs_raw[1][0])
-        alt_targs = np.zeros([len(alt_targs_raw), inp_seq_len, max_len], dtype=np.int8)
-        for word_ind in range(len(alt_targs_raw)):
-            for write_ind in range(len(alt_targs_raw[word_ind])):
-                alt_targs[word_ind,:,write_ind] = np.array(alt_targs_raw[word_ind][write_ind],dtype=np.int8)
-
-        """
-
-        alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
-        print("Alternative targets successfully loaded.")
-
-        return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
-    else:
-        return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+    return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
 
 
 def childlex_retrieve():
@@ -800,12 +768,6 @@ def childlex_retrieve():
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-    #if learn_type == 'lds':
-
-    '''data = np.load('../../Models/data/celex_small.npz')
-    phon_dict = np_dict_to_dict(data['phon_dict'])
-    word_dict = np_dict_to_dict(data['word_dict'])
-    '''
     path = 'data/childlex_alt_targets.npy'
     print("Loading alternative targets ...")
     alt_targs_raw = np.load(path)
@@ -815,8 +777,7 @@ def childlex_retrieve():
     print("Alternative targets successfully loaded.")
 
     return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
-    #else:
-    #return ( (data['phons'], data['words']) , (phon_dict, word_dict))
+
 
 def fibel_retrieve():
 

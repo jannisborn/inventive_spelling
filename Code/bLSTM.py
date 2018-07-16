@@ -175,6 +175,7 @@ class bLSTM(object):
 			elif self.optimization == 'Adam':
 				print("No learning rate to set.")
 				self.optimizer = tf.train.AdamOptimizer().minimize(self.loss)
+				self.lds_optimizer = tf.train.AdamOptimizer().minimize(self.loss_lds)
 			elif self.optimization == 'Adadelta':
 				print("No learning rate to set.")
 				self.optimizer = tf.train.AdadeltaOptimizer().minimize(self.loss)
