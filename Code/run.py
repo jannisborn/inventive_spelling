@@ -943,10 +943,14 @@ if __name__ == '__main__':
 
                 #write_oldAcc_o, write_tokenAcc_o , write_wordAcc_o = utils.accuracy(write_dec_input, write_test_new_targs,dict_char2num_y, mode='test')
 
-                write_oldAcc, fullPred, fullTarg = utils.accuracy_prepare(write_dec_input, write_test_new_targs,dict_char2num_y, mode='test')
+                write_oldAcc, fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], write_test_new_targs,dict_char2num_y, mode='test')
                 dists, write_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
                 write_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
+
+
+
+
 
                 print('WRITING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(write_tokenAcc, write_wordAcc))
                 #print('OLD WRITING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(write_tokenAcc_o, write_wordAcc_o))
