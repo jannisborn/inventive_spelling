@@ -49,8 +49,6 @@ def accuracy(logits, labels, char2numY, mode='train'):
     else:
         print("Please specify 'mode' as either 'train' or 'test'. ")
 
-    #print(logits.shape, labels.shape)
-    #print(logits.dtype, labels.dtype)
     
     #Padded target string
     fullTarg = np.copy(labels) 
