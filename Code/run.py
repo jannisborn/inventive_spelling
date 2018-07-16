@@ -212,7 +212,7 @@ if __name__ == '__main__':
     
     elif args.task == 'celex' :
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_retrieve(args.learn_type)
-        bas = 500
+        mas = 500
 
     elif args.task == 'bas':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
