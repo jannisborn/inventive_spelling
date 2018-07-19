@@ -898,14 +898,14 @@ def comp_reading(new_input,real_input,dict_word):
 
     for k in range(len(new_input)):
 
-        if new_input[k] != real_input[k]:
+        if any(new_input[k,:] != real_input[k,:]):
 
             real_word = ''.join([dict_word[l] if l!= 0 and dict_word[l] != '<PAD>' and  dict_word[l] != '<GO>' else '' for l in real_input[k]])
             new_word = ''.join([dict_word[l] if l!= 0 and dict_word[l] != '<PAD>' and  dict_word[l] != '<GO>' else '' for l in new_input[k]])
 
             print("Instead of the word ", real_word," the word ", new_word, " is read.")
 
-            
+
 
 
                
