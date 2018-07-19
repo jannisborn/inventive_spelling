@@ -150,7 +150,7 @@ class bLSTM(object):
 
 
 			# Fully connected layer of the decoder outputs to the predictions
-			self.fc1 = tf.contrib.layers.fully_connected(self.dec_outputs, num_outputs=1024, activation_fn=self.activation_fn) 
+			self.fc1 = tf.contrib.layers.fully_connected(self.dec_outputs, num_outputs=64, activation_fn=self.activation_fn) 
 			self.drop = tf.contrib.layers.dropout(self.fc1, self.keep_prob) 
 
 			self.logits = tf.contrib.layers.fully_connected(self.drop,num_outputs=self.num_classes, activation_fn=self.activation_fn)

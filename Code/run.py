@@ -90,7 +90,7 @@ if __name__ == '__main__':
                         help='The feature space dimensionality for the input characters')
     parser.add_argument('--output_embed_size', default=64, type=int,
                         help='The feature space dimensionality for the output characters')
-    parser.add_argument('--num_nodes', default=128, type=int,
+    parser.add_argument('--num_nodes', default=64, type=int,
                         help='The number of LSTM nodes per layer in both encoder and decoder')
     parser.add_argument('--num_layers', default=1, type=int,
                         help='The number of layers in both encoder and decoder')
