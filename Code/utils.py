@@ -325,30 +325,6 @@ def TIMIT_P2G():
     return str_to_num_dataset(X,Y)
 
 
-    """
-    # 2. Define dictionaries 
-    # Dictionary assignining a unique integer to each phoneme
-    v_characters = set([phon for phon_seq in X for phon in phon_seq]) 
-    char2numX = dict(zip(v_characters, range(len(v_characters)))) 
-    # Dictionary assignining a unique integer to each input character
-    u_characters = set(' '.join(Y))
-    char2numY = dict(zip(u_characters, range(1,len(u_characters)+1)))
-
-    # 3. Padding
-    char2numX['<PAD>'] = len(char2numX)  # Define number denoting a padded output
-    mx_l_X = max([len(phon_seq) for phon_seq in X]) # longest input sequence
-    x = [[char2numX['<PAD>']]*(mx_l_X - len(ph_sq)) + [char2numX[phon] for phon in ph_sq] for ph_sq in X]
-    x = np.array(x)
-
-    char2numY['<GO>'] = len(char2numY) # Define number denoting the response onset
-    char2numY['<PAD>'] = len(char2numY) # Define number denoting a padded input
-    mx_l_Y = max([len(word) for word in Y]) # longest input sequence
-    y = [[char2numY['<GO>']] + [char2numY['<PAD>']]*(mx_l_Y - len(word)) +[char2numY[char] for char in word] for word in Y]
-    y = np.array(y) 
-
-    return ((x,y) , (char2numX,char2numY))
-    """
-
 def np_dict_to_dict(np_dict):
     """
     Converts a dictionary saved via np.save (as structured np array) into an object of type dict
@@ -879,8 +855,7 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out):
     """
 
     fullPred = logits.argmax(-1) # Prediction string with padding
-   
-    
+
     out_str = []
     inp_str = []
     label_str = []
@@ -918,6 +893,19 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out):
 
     return r
 
+
+def comp_reading(new_input,real_input,dict_word):
+
+    for k in range(len(new_input)):
+
+        if new_input[k] != real_input[k]:
+
+            real_word = ''.join([dict_word[l] if l!= 0 and dict_word[l] != '<PAD>' and  dict_word[l] != '<GO>' else '' for l in real_input[k]])
+            new_word = ''.join([dict_word[l] if l!= 0 and dict_word[l] != '<PAD>' and  dict_word[l] != '<GO>' else '' for l in new_input[k]])
+
+            print("Instead of the word ", real_word," the word ", new_word, " is read.")
+
+            
 
 
                
