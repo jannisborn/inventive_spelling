@@ -63,12 +63,7 @@ class bLSTM(object):
 		self.targets = tf.placeholder(tf.int32 , (None,None),'targets')
 		self.alternative_targets = tf.placeholder(tf.int32, (None,None,None),'alternative_targets') # Orthographically incorrect, but accepted spellings: bs x seq_len x max_alt_targs
 		self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')			# Dropout parameter. Determines what ratio of neurons is used (all per default)
-		#self.pred_seq_len = tf.placeholder(tf.int32, name='predicted_seq_len')
 
-		self.exe = False
-
-		#if self.learn_type == 'lds':
-		#	self.max_spellings = self.alternative_targets.get_shape()[2]
 
 
 	def convert_string_to_functions(self):
