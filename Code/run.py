@@ -769,9 +769,9 @@ if __name__ == '__main__':
                 if args.reading:
                     read_inp_batch = write_new_targs
 
-                    print(np.array_equal(write_new_targs,write_out_batch))
-                    if not np.array_equal(write_new_targs,write_out_batch):
-                        utils.comp_reading(write_new_targs,write_out_batch,dict_num2char_y)
+                    print(np.array_equal(write_new_targs,write_out_batch[:,1:]))
+                    if not np.array_equal(write_new_targs,write_out_batch[:,1:]):
+                        utils.comp_reading(write_new_targs,write_out_batch[:,1:],dict_num2char_y)
 
 
 
