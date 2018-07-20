@@ -86,13 +86,13 @@ if __name__ == '__main__':
     # Model hyperparameter
     parser.add_argument('--learning_rate', default=1e-03, type=float,
                         help='The learning rate of the optimizer')
-    parser.add_argument('--input_embed_size', default=64, type=int,
+    parser.add_argument('--input_embed_size', default=96, type=int,
                         help='The feature space dimensionality for the input characters')
-    parser.add_argument('--output_embed_size', default=64, type=int,
+    parser.add_argument('--output_embed_size', default=96, type=int,
                         help='The feature space dimensionality for the output characters')
     parser.add_argument('--num_nodes', default=128, type=int,
                         help='The number of LSTM nodes per layer in both encoder and decoder')
-    parser.add_argument('--num_layers', default=1, type=int,
+    parser.add_argument('--num_layers', default=2, type=int,
                         help='The number of layers in both encoder and decoder')
     parser.add_argument('--optimization',default='RMSProp', type=str, 
                         help="The optimizer used in the model. 'RMSProp' as default, give as string, alternatives: 'GD', "
