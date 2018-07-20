@@ -613,8 +613,8 @@ if __name__ == '__main__':
         #if args.reading:
         #    read_losses[epoch] = sum(read_loss)/len(read_loss)
 
-        print("Ratio correct  words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
-        print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
+        #print("Ratio correct  words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
+        #print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
 
 
         """
@@ -666,7 +666,7 @@ if __name__ == '__main__':
         if regime == 'normal':
 
             for k, (write_inp_batch, write_out_batch,write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
-                _, batch_loss, w_batch_logits, loss_lds, rat_lds, rat_corr = sess.run([model_write.optimizer, model_write.loss, model_write.logits, 
+                batch_loss, w_batch_logits, loss_lds, rat_lds, rat_corr = sess.run([model_write.loss, model_write.logits, 
                     model_write.loss_lds, model_write.rat_lds, model_write.rat_corr], feed_dict =
                                                          {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                          model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
@@ -700,7 +700,7 @@ if __name__ == '__main__':
                     read_out_batch = write_inp_batch
                     #read_out_batch = np.concatenate([np.ones([args.batch_size,1],dtype=np.int64) * dict_char2num_x['<GO>'], write_inp_batch],axis=1)
 
-                    _, batch_loss, r_batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict =
+                    batch_loss, r_batch_logits = sess.run([model_read.loss, model_read.logits], feed_dict =
                                                          {model_read.keep_prob:1.0, model_read.inputs: read_inp_batch[:,1:], 
                                                          model_read.outputs: read_out_batch[:, :-1], model_read.targets: read_out_batch[:, 1:]})   
 
@@ -723,7 +723,7 @@ if __name__ == '__main__':
             for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
 
-                _, batch_loss, write_new_targs, rat_lds, rat_corr, batch_loss_reg, w_batch_logits = sess.run([model_write.lds_optimizer, model_write.loss_lds, 
+                batch_loss, write_new_targs, rat_lds, rat_corr, batch_loss_reg, w_batch_logits = sess.run([model_write.loss_lds, 
                     model_write.read_inps, model_write.rat_lds, model_write.rat_corr, model_write.loss_reg, model_write.logits], 
                                                                     feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
@@ -760,7 +760,7 @@ if __name__ == '__main__':
                     read_out_batch = write_inp_batch
                     #read_out_batch = np.concatenate([np.ones([args.batch_size,1],dtype=np.int64) * dict_char2num_x['<GO>'], write_inp_batch],axis=1)
 
-                    _, batch_loss, r_batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict =
+                    batch_loss, r_batch_logits = sess.run([model_read.loss, model_read.logits], feed_dict =
                                                          {model_read.keep_prob:1.0, model_read.inputs: read_inp_batch, 
                                                          model_read.outputs: read_out_batch[:, :-1], model_read.targets: read_out_batch[:, 1:]})   
                     read_epoch_loss += batch_loss
