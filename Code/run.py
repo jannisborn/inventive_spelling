@@ -208,7 +208,7 @@ if __name__ == '__main__':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
 
     elif args.task == 'celex' :
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_retrieve(args.learn_type)
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_retrieve()
         mas = 500
 
     elif args.task == 'celex_all':
