@@ -714,7 +714,7 @@ def extract_celex(path):
 
 
  
-def celex_retrieve(learn_type):
+def celex_retrieve():
     """
     Retrives the previously saved data from the CELEX corpus
     """
@@ -724,6 +724,25 @@ def celex_retrieve(learn_type):
     word_dict = np_dict_to_dict(data['word_dict'])
 
     path = '../../Models/data/celex_alt_targets.npy'
+    print("Loading alternative targets ...")
+    alt_targs_raw = np.load(path)
+
+    alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
+    print("Alternative targets successfully loaded.")
+
+    return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
+
+
+def celex_all_retrieve():
+    """
+    Retrives the previously saved data from the CELEX corpus
+    """
+
+    data = np.load('data/celex_all.npz')
+    phon_dict = np_dict_to_dict(data['phon_dict'])
+    word_dict = np_dict_to_dict(data['word_dict'])
+
+    path = '../../Models/data/celex_all_alt_targets.npy'
     print("Loading alternative targets ...")
     alt_targs_raw = np.load(path)
 
@@ -759,7 +778,6 @@ def fibel_retrieve():
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-    #if learn_type == 'lds':
 
     path = 'data/fibel_alt_targets.npy'
     print("Loading alternative targets ...")
@@ -770,10 +788,7 @@ def fibel_retrieve():
     print("Alternative targets successfully loaded.")
 
     return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
-    #else:
-    #    return ( (data['phons'], data['words']) , (phon_dict, word_dict))
-
-
+ 
 
 def get_last_id(dataset):
 

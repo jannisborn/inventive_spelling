@@ -180,7 +180,7 @@ if __name__ == '__main__':
 
         # Retrieve date data from tutorial
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.date_dataset(args.seed) 
-                
+    """            
     elif args.task == 'timit_p2g':
 
         # Writing with TIMIT
@@ -206,23 +206,22 @@ if __name__ == '__main__':
 
     elif args.task == 'bas_p2g_r':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
+    """
     
     elif args.task == 'celex' :
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_retrieve(args.learn_type)
         mas = 500
 
+    elif args.task == 'celex_all'
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_all_retrieve()
+        mas = 100
+
     elif args.task == 'bas':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
-
-    #elif args.task == 'childlex' and args.learn_type == 'normal':
-    #    ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.childlex_retrieve(args.learn_type)
 
     elif args.task == 'childlex':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_retrieve()
         mas = 100
-
-    #elif args.task == 'fibel' and args.learn_type == 'normal':
-    #    ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.fibel_retrieve(args.learn_type)
 
     elif args.task == 'fibel':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.fibel_retrieve()
