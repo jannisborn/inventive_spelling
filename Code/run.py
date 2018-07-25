@@ -381,9 +381,9 @@ if __name__ == '__main__':
 
     # Set remaining parameter based on the processed data
     x_dict_size, num_classes, x_seq_length, y_seq_length, dict_num2char_x, dict_num2char_y = utils.set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y)
-    print(dict_num2char_x)
-    print()
-    print(dict_num2char_y)
+    #print(dict_num2char_x)
+    #print()
+    #print(dict_num2char_y)
 
     # Split data into training and testing
     indices = range(len(inputs))
