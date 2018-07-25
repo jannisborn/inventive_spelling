@@ -738,7 +738,7 @@ def celex_all_retrieve():
     Retrives the previously saved data from the CELEX corpus
     """
 
-    data = np.load('data/celex_all.npz')
+    data = np.load('../../Models/data/celex_all.npz')
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
