@@ -180,7 +180,7 @@ if __name__ == '__main__':
 
         # Retrieve date data from tutorial
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.date_dataset(args.seed) 
-    """
+    
     elif args.task == 'timit_p2g':
 
         # Writing with TIMIT
@@ -206,7 +206,6 @@ if __name__ == '__main__':
 
     elif args.task == 'bas_p2g_r':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
-    """
 
     elif args.task == 'celex' :
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_retrieve(args.learn_type)
