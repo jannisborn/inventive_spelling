@@ -17,7 +17,6 @@ import h5py as h5py
 import matplotlib.pyplot as plt
 
 # Import functions from some modules
-from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 from test_tube import Experiment
 from time import time
@@ -829,10 +828,19 @@ if __name__ == '__main__':
 
 
 
-        # --------------- SHOW TESTING PERFORMANCE -----------------------------------
+        # --------------- SHOW TESTING PERFORMANCE -----------------
 
 
         if regime == 'normal':
+
+
+            #for k, (write_inp_batch, write_out_batch) in enumerate(utils.batch_data(X_test, Y_test, args.batch_size)):
+
+
+
+
+
+
 
             write_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
             # Generate character by character (for the entire batch, weirdly)
