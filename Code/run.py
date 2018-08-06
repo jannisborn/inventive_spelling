@@ -1039,13 +1039,13 @@ with tf.Session() as sess:
     oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
 
     print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
-
+    """
     for k in range(dec_input[:,1:].shape[0]):
         output = [''.join([dict_num2char_y[l] if dict_num2char_y[l]!='<PAD>' and dict_num2char_y[l]!='<GO>' else '' for l in dec_input[k,:]])]
         word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in X_test[k,1:]])]
         targ = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in Y_test[k,1:]])]
-        print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ, ' num ', dec_input[0,1:])
-
+        print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ)
+    """
 
     print(" RESTORED READING TEST ")
     gerund = 'reading'
@@ -1055,7 +1055,7 @@ with tf.Session() as sess:
     outputs = graph.get_tensor_by_name(gerund+'/output:0')
     logits = graph.get_tensor_by_name(gerund+'/decoding_read/logits:0')
 
-
+    """
     read_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_x['<GO>']
     # Generate character by character (for the entire batch, weirdly)
     for i in range(X_test.shape[1]):
@@ -1070,9 +1070,25 @@ with tf.Session() as sess:
         output = [''.join([dict_num2char_x[l] if dict_num2char_x[l]!='<PAD>' and dict_num2char_x[l]!='<GO>' else '' for l in read_dec_input[k,:]])]
         targ = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in X_test[k,1:]])]
         word = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in Y_test[k,1:]])]
-        print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ, ' num ', dec_input[0,1:])
+        print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ)
+    """
 
 
+
+    read_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_x['<GO>']
+    # Generate character by character (for the entire batch, weirdly)
+    for i in range(x_seq_length):
+        read_test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:read_test_new_inp,outputs:read_dec_input})
+        read_prediction = read_test_logits[:,-1].argmax(axis=-1)
+        #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
+        read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
+  
+    fullPred, fullTarg = utils.accuracy_prepare(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
+    dists, read_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
+            feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
+    read_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
+    print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
+    
 
 
 
