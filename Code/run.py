@@ -1023,4 +1023,16 @@ with tf.Session() as sess:
 
     print("The sequence ", word, "  =>  ", output, ' num ', dec_input[0,1:])
 
+    print(" RESTORED MODEL TEST DATASET ")
+    # Set initial decoder input to be 0
+    dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
 
+    # Generate character by character (for the entire batch, weirdly)
+    for i in range(y_seq_length):
+        test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:X_test[:,1:], outputs:dec_input})
+        prediction = test_logits[:,-1].argmax(axis=-1)
+        dec_input = np.hstack([dec_input, prediction[:,None]])
+
+    oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
+
+    print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
