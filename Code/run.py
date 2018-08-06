@@ -1028,7 +1028,7 @@ with tf.Session() as sess:
     dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
 
     # Generate character by character (for the entire batch, weirdly)
-    for i in range(y_seq_length):
+    for i in range(X_test.shape[1]):
         test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:X_test[:,1:], outputs:dec_input})
         prediction = test_logits[:,-1].argmax(axis=-1)
         dec_input = np.hstack([dec_input, prediction[:,None]])
@@ -1036,3 +1036,24 @@ with tf.Session() as sess:
     oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
 
     print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
+
+    for k in range(dec_input[:,1:].shape[0]):
+        output = [''.join([dict_num2char_y[l] if dict_num2char_y[l]!='<PAD>' and dict_num2char_y[l]!='<GO>' else '' for l in dec_input[k,:]])]
+        word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in X_test[k,1:]])]
+        targ = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in Y_test[k,1:]])]
+        print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ, ' num ', dec_input[0,1:])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
