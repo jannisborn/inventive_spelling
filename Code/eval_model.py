@@ -181,6 +181,7 @@ class evaluation(object):
 		inp = 'phonetic' if args.task == 'write' else 'orthografic' # To read in a type of sequence
 		out = 'spoken' if args.task == 'write' else 'written'
 		gerund = 'reading' if args.task == 'read' else 'writing'
+		out_seq_len = self.model_args_write[1] if args.task == 'write' else self.model_args_read[1]
 
 
 		with tf.Session() as sess:
@@ -217,7 +218,7 @@ class evaluation(object):
 				print(word_num)
 				dec_input = np.zeros([1,1]) + self.output_dict['<GO>']
 
-				for k in range(word_num.shape[1]):
+				for k in range(out_seq_len):
 					pred = sess.run(logits, feed_dict={keep_prob:1.0, inputs:word_num, outputs:dec_input})
 					char = pred[:,-1].argmax(axis=-1)
 					dec_input = np.hstack([dec_input, char[:,None]]) # Identical to np.expand_dims(char,1)
