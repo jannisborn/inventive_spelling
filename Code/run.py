@@ -1015,12 +1015,14 @@ with tf.Session() as sess:
     print("The sequence ", word, "  =>  ", output, ' num ', dec_input[0,1:])
     """
     print(" RESTORED WRITING TEST ")
-    # Set initial decoder input to be 0
-    dec_input = np.zeros((len(Y_test), 1)) + dict_char2num_y['<GO>']
 
+
+
+    # Set initial decoder input to be 0
+    dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
     # Generate character by character (for the entire batch, weirdly)
     print(y_seq_length)
-    print(X_test.shape)
+    print(Y_test.shape)
     for i in range(Y_test.shape[1]):
         test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:X_test[:,1:], outputs:dec_input})
         prediction = test_logits[:,-1].argmax(axis=-1)
@@ -1037,6 +1039,15 @@ with tf.Session() as sess:
         word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in X_test[k,1:]])]
         targ = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in Y_test[k,1:]])]
         print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ)
+
+
+
+
+
+
+
+
+
 
     print(" RESTORED READING TEST ")
     gerund = 'reading'
