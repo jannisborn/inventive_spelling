@@ -1004,10 +1004,10 @@ with tf.Session() as sess:
     outputs = graph.get_tensor_by_name(gerund+'/output:0')
     logits = graph.get_tensor_by_name(gerund+'/decoding_write/logits:0')
 
-    word_num = X_test[2:6,1:]
+    word_num = np.expand_dims(X_test[2,1:],0)
     print(dict_char2num_x)
     print(word_num)
-    dec_input = np.zeros((len(word_num),1)) + dict_char2num_y['<GO>']
+    dec_input = np.zeros([1,1]) + dict_char2num_y['<GO>']
 
 
     for k in range(word_num.shape[1]):
