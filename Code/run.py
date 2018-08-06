@@ -1019,7 +1019,7 @@ with tf.Session() as sess:
 
     output_dict_rev = dict(zip(dict_char2num_y.values(), dict_char2num_y.keys()))
 
-    for k in range(dec_input[:,1:].shape[0])
+    for k in range(dec_input[:,1:].shape[0]):
         #inp = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
         output = ''.join([dict_num2char_y[l] if dict_num2char_y[l]!='<PAD>' and dict_num2char_y[l]!='<GO>' else '' for l in dec_input[k,:]])
         word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in np.squeeze(word_num[k,:])])]
@@ -1038,4 +1038,14 @@ with tf.Session() as sess:
         dec_input = np.hstack([dec_input, prediction[:,None]])
 
     oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
+    print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
+
+
+    for k in range(dec_input[:,1:].shape[0]):
+        #inp = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
+        output = ''.join([dict_num2char_y[l] if dict_num2char_y[l]!='<PAD>' and dict_num2char_y[l]!='<GO>' else '' for l in dec_input[k,:]])
+        word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in np.squeeze(word_num[k,:])])]
+        targ = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in lab[k,:]])]
+
+        print("The sequence ", word, "  =>  ", output, ' with target ', targ, ' num ', dec_input[k,:])
 
