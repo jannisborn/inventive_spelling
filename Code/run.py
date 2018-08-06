@@ -1011,11 +1011,10 @@ with tf.Session() as sess:
 
 
     for k in range(word_num.shape[1]):
-        pred = sess.run(logits, feed_dict={keep_prob:1.0, inputs:word_num[:,1], outputs:dec_input})
+        pred = sess.run(logits, feed_dict={keep_prob:1.0, inputs:word_num, outputs:dec_input})
         char = pred[:,-1].argmax(axis=-1)
         dec_input = np.hstack([dec_input, char[:,None]]) # Identical to np.expand_dims(char,1)
         print(dec_input)
-    oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
 
     output_dict_rev = dict(zip(dict_char2num_y.values(), dict_char2num_y.keys()))
     dec_input = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
@@ -1029,7 +1028,7 @@ with tf.Session() as sess:
     dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
 
     # Generate character by character (for the entire batch, weirdly)
-    for i in range(X_test.shape[1]):
+    for i in range(y_seq_length):
         test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:X_test[:,1:], outputs:dec_input})
         prediction = test_logits[:,-1].argmax(axis=-1)
         dec_input = np.hstack([dec_input, prediction[:,None]])
