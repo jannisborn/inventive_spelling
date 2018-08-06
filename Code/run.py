@@ -1023,7 +1023,7 @@ with tf.Session() as sess:
     # Generate character by character (for the entire batch, weirdly)
     print(y_seq_length)
     print(Y_test.shape)
-    for i in range(Y_test.shape[1]):
+    for i in range(Y_test.shape[1]-1):
         test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:X_test[:,1:], outputs:dec_input})
         prediction = test_logits[:,-1].argmax(axis=-1)
         dec_input = np.hstack([dec_input, prediction[:,None]])
