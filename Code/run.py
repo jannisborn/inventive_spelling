@@ -1002,7 +1002,7 @@ if __name__ == '__main__':
                     if args.reading:
                         written_word = Y_train[np.random.randint(len(Y_train))]
                         utils.read_word(written_word)'''
-#tf.reset_default_graph()
+tf.reset_default_graph()
 with tf.Session() as sess:
     print("NOW RESTORE THE MODEL")                       
     saver = tf.train.import_meta_graph(save_path + '/my_test_model-'+str(args.epochs-1)+'.meta')
@@ -1035,7 +1035,32 @@ with tf.Session() as sess:
     print("The sequence ", word, "  =>  ", output, ' num ', dec_input[0,1:])
 
 
+    print("MODEL WRITE")
+    dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
 
+    # Generate character by character (for the entire batch, weirdly)
+    for i in range(y_seq_length):
+        test_logits = sess.run(model_write.logits, feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:dec_input})
+        prediction = test_logits[:,-1].argmax(axis=-1)
+        dec_input = np.hstack([dec_input, prediction[:,None]])
+
+    oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
+
+    print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
+
+
+    print("RESTORED MODEL")
+    dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
+
+    # Generate character by character (for the entire batch, weirdly)
+    for i in range(y_seq_length):
+        test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:X_test[:,1:], outputs:dec_input})
+        prediction = test_logits[:,-1].argmax(axis=-1)
+        dec_input = np.hstack([dec_input, prediction[:,None]])
+
+    oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
+
+    print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
 
 
 """
