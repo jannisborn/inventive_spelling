@@ -381,9 +381,7 @@ if __name__ == '__main__':
 
     # Set remaining parameter based on the processed data
     x_dict_size, num_classes, x_seq_length, y_seq_length, dict_num2char_x, dict_num2char_y = utils.set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y)
-    #print(dict_num2char_x)
-    #print()
-    #print(dict_num2char_y)
+
 
     # Split data into training and testing
     indices = range(len(inputs))
@@ -1004,10 +1002,11 @@ with tf.Session() as sess:
     outputs = graph.get_tensor_by_name(gerund+'/output:0')
     logits = graph.get_tensor_by_name(gerund+'/decoding_write/logits:0')
 
-    word_num = np.expand_dims(X_test[2,1:],0)
+    word_num = X_test[2:6,1:]
+    lab = Y_test[2:6,1:]
     print(dict_char2num_x)
     print(word_num)
-    dec_input = np.zeros([1,1]) + dict_char2num_y['<GO>']
+    dec_input = np.zeros((len(word_num),1)) + dict_char2num_y['<GO>']
 
 
     for k in range(word_num.shape[1]):
@@ -1015,24 +1014,28 @@ with tf.Session() as sess:
         char = pred[:,-1].argmax(axis=-1)
         dec_input = np.hstack([dec_input, char[:,None]]) # Identical to np.expand_dims(char,1)
         print(dec_input)
+    tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], lab, dict_char2num_y, mode='test')
+    print('Accuracy for few samples: TOKEN{:>6.3f} and for WORDS {:>6.3f}'.format(tokenAcc, wordAcc))
 
     output_dict_rev = dict(zip(dict_char2num_y.values(), dict_char2num_y.keys()))
-    dec_input = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
-    output = ''.join([output_dict_rev[num] if output_dict_rev[num]!='<PAD>' else '' for ind,num in enumerate(dec_input[0,1:])])
-    word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in np.squeeze(word_num)])]
 
-    print("The sequence ", word, "  =>  ", output, ' num ', dec_input[0,1:])
+    for k in range(dec_input[:,1:].shape[0])
+        #inp = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
+        output = ''.join([dict_num2char_y[l] if dict_num2char_y[l]!='<PAD>' and dict_num2char_y[l]!='<GO>' else '' for l in dec_input[k,:]])
+        word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in np.squeeze(word_num[k,:])])]
+        targ = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in lab[k,:]])]
+
+        print("The sequence ", word, "  =>  ", output, ' with target ', targ, ' num ', dec_input[k,:])
 
     print(" RESTORED MODEL TEST DATASET ")
     # Set initial decoder input to be 0
     dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
 
     # Generate character by character (for the entire batch, weirdly)
-    for i in range(y_seq_length):
+    for i in range(X_test.shape[1]):
         test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:X_test[:,1:], outputs:dec_input})
         prediction = test_logits[:,-1].argmax(axis=-1)
         dec_input = np.hstack([dec_input, prediction[:,None]])
 
     oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
 
-    print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
