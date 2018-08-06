@@ -971,22 +971,6 @@ if __name__ == '__main__':
 print("DONE!")   
 
 
-    # TESTING
-print("MODEL WRITE ")
-# Set initial decoder input to be 0
-dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
-
-# Generate character by character (for the entire batch, weirdly)
-for i in range(y_seq_length):
-    test_logits = sess.run(model_write.logits, feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:dec_input})
-    prediction = test_logits[:,-1].argmax(axis=-1)
-    dec_input = np.hstack([dec_input, prediction[:,None]])
-
-oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
-
-print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
-
-
 
 
 
@@ -1078,7 +1062,7 @@ with tf.Session() as sess:
     read_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_x['<GO>']
     # Generate character by character (for the entire batch, weirdly)
     for i in range(x_seq_length):
-        read_test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:read_test_new_inp,outputs:read_dec_input})
+        read_test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:Y_test[:,1:],outputs:read_dec_input})
         read_prediction = read_test_logits[:,-1].argmax(axis=-1)
         #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
         read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
