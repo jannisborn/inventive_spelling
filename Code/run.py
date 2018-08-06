@@ -1002,7 +1002,7 @@ if __name__ == '__main__':
                     if args.reading:
                         written_word = Y_train[np.random.randint(len(Y_train))]
                         utils.read_word(written_word)'''
-tf.reset_default_graph()
+#tf.reset_default_graph()
 with tf.Session() as sess:
     print("NOW RESTORE THE MODEL")                       
     saver = tf.train.import_meta_graph(save_path + '/my_test_model-'+str(args.epochs-1)+'.meta')
