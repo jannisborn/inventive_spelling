@@ -1034,12 +1034,13 @@ with tf.Session() as sess:
     wordAcc  = np.count_nonzero(dists==0) / len(dists) 
     print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
     
+    """
     for k in range(dec_input[:,1:].shape[0]):
         output = [''.join([dict_num2char_y[l] if dict_num2char_y[l]!='<PAD>' and dict_num2char_y[l]!='<GO>' else '' for l in dec_input[k,:]])]
         word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in X_test[k,1:]])]
         targ = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in Y_test[k,1:]])]
         print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ)
-
+    """
 
 
 
@@ -1072,18 +1073,18 @@ with tf.Session() as sess:
     read_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
     print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
     
-
+    """
     for k in range(read_dec_input[:,1:].shape[0]):
         output = [''.join([dict_num2char_x[l] if dict_num2char_x[l]!='<PAD>' and dict_num2char_x[l]!='<GO>' else '' for l in read_dec_input[k,:]])]
         targ = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in X_test[k,1:]])]
         word = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in Y_test[k,1:]])]
         print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ)
+    """
 
 
 
 
-
-
+    print("DOUBLE CHECKING")
 
     tasks = ['write', 'read']
     gerunds = ['writing','reading']
