@@ -977,6 +977,12 @@ print("DONE!")
 
 tf.reset_default_graph()
 with tf.Session() as sess:
+
+    # Accuracy object
+    acc_object  = acc_new()
+    acc_object.accuracy()
+
+    
     print("NOW RESTORE THE MODEL")                       
     saver = tf.train.import_meta_graph(save_path + '/my_test_model-'+str(args.epochs-1)+'.meta')
     saver.restore(sess,tf.train.latest_checkpoint(save_path+'/./'))
@@ -1020,8 +1026,10 @@ with tf.Session() as sess:
         prediction = test_logits[:,-1].argmax(axis=-1)
         dec_input = np.hstack([dec_input, prediction[:,None]])
 
-    oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
-
+    #oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
+    fullPred, fullTarg = utils.accuracy_prepare(wdec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
+    dists, tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
+    wordAcc  = np.count_nonzero(dists==0) / len(dists) 
     print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
     """
     for k in range(dec_input[:,1:].shape[0]):
@@ -1033,7 +1041,6 @@ with tf.Session() as sess:
 
     print(" RESTORED READING TEST ")
     gerund = 'reading'
-    graph = tf.get_default_graph()
     keep_prob = graph.get_tensor_by_name(gerund+'/keep_prob:0')
     inputs = graph.get_tensor_by_name(gerund+'/input:0')
     outputs = graph.get_tensor_by_name(gerund+'/output:0')
@@ -1068,12 +1075,10 @@ with tf.Session() as sess:
         read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
   
     fullPred, fullTarg = utils.accuracy_prepare(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
-    dists, read_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
-            feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
+    dists, read_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
     read_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
     print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
     
-
 
 
 
