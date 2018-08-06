@@ -1014,7 +1014,7 @@ with tf.Session() as sess:
         char = pred[:,-1].argmax(axis=-1)
         dec_input = np.hstack([dec_input, char[:,None]]) # Identical to np.expand_dims(char,1)
         print(dec_input)
-    tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], lab, dict_char2num_y, mode='test')
+    oldacc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], lab, dict_char2num_y, mode='test')
     print('Accuracy for few samples: TOKEN{:>6.3f} and for WORDS {:>6.3f}'.format(tokenAcc, wordAcc))
 
     output_dict_rev = dict(zip(dict_char2num_y.values(), dict_char2num_y.keys()))
