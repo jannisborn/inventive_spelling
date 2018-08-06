@@ -68,8 +68,14 @@ def accuracy(logits, labels, char2numY, mode='train'):
     wordAcc = np.count_nonzero(dists==0) / len(dists)
     return oldAcc, tokenAcc, wordAcc
 
+    ################ DEPRECATED ####################
+
 
 def accuracy_prepare(logits, labels, char2numY, mode='train'):
+    """
+    Method to prepare logits and labels for accuracy evaluation by removing padding values
+
+    """
 
     # Error handling and mode setting
     if mode =='train':
@@ -78,9 +84,6 @@ def accuracy_prepare(logits, labels, char2numY, mode='train'):
         fullPred = np.copy(logits.astype(int))
     else:
         print("Please specify 'mode' as either 'train' or 'test'. ")
-
-    #print(logits.shape, labels.shape)
-    #print(logits.dtype, labels.dtype)
     
     #Padded target string
     fullTarg = np.copy(labels) 
@@ -88,11 +91,8 @@ def accuracy_prepare(logits, labels, char2numY, mode='train'):
     if '<PAD>' in char2numY:
         fullPred[fullPred==char2numY['<PAD>']] = 0
         fullTarg[fullTarg==char2numY['<PAD>']] = 0
-            
-    # Initial measure in file
-    oldAcc = np.mean(fullPred == fullTarg)  
 
-    return oldAcc, fullPred, fullTarg
+    return fullPred, fullTarg
 
 
 
@@ -136,79 +136,6 @@ def dense_to_sparse(denseTensor):
         sparse = sess.run(sparseTensor)
     return sparse'''
     return sparseTensor
-
-
-
-
-
-def date_dataset(seed):
-    """
-    This method retrieves and initializes a toy dataset used by Sachin Abeywardana (http://www.deepschool.io)
-    This dataset can be used to verify code functionality
-    """
-
-    from faker import Faker
-    import babel, random
-    from babel.dates import format_date
-
-    def create_date():
-        """
-            Creates some fake dates 
-            :returns: tuple containing 
-                      1. human formatted string
-                      2. machine formatted string
-                      3. date object.
-        """
-        dt = fake.date_object()
-        try:
-            human = format_date(dt, format=random.choice(FORMATS), locale=random.choice(LOCALES))
-            case_change = random.randint(0,3) # 1/2 chance of case change
-            if case_change == 1:
-                human = human.upper()
-            elif case_change == 2:
-                human = human.lower()
-            machine = dt.isoformat()
-        except AttributeError as e:
-            return None, None, None
-        return human, machine #, dt
-
-
-    fake = Faker()
-    fake.seed(seed)
-    random.seed(seed)
-
-    FORMATS = ['short', 'medium', 'long', 'full', 'd MMM YYY', 'd MMMM YYY', 'dd MMM YYY', 'd MMM, YYY', 'd MMMM, YYY', 
-                'dd, MMM YYY','d MM YY', 'd MMMM YYY', 'MMMM d YYY', 'MMMM d, YYY', 'dd.MM.YY']
-
-    LOCALES = babel.localedata.locale_identifiers()
-    LOCALES = [lang for lang in LOCALES if 'en' in str(lang)]
-
-    data = [create_date() for _ in range(50000)]
-
-    DX = [x for x, y in data] # A list of input strings
-    DY = [y for x, y in data] # A list of output strings
-
-    # Make dictionaries for character/numbers
-    u_characters = set(' '.join(DX)) # All character in inputs
-    Dchar2numX = dict(zip(u_characters, range(len(u_characters))))
-    v_characters = set(' '.join(DY)) # All character in labels
-    Dchar2numY = dict(zip(v_characters, range(len(v_characters))))
-
-    # Padd inputs
-    Dchar2numX['<PAD>'] = len(Dchar2numX)
-    max_len = max([len(date) for date in DX])
-    Dx = [[Dchar2numX['<PAD>']] * (max_len - len(date)) + [Dchar2numX[x_] for x_ in date] for date in DX]
-    Dx = np.array(Dx)
-
-    # Padd outputs
-    Dchar2numY['<GO>'] = len(Dchar2numY)
-    Dnum2charY = dict(zip(Dchar2numY.values(), Dchar2numY.keys()))
-    Dy = [[Dchar2numY['<GO>']] + [Dchar2numY[y_] for y_ in date] for date in DY]
-    Dy = np.array(Dy)
-
-    return ((Dx,Dy),(Dchar2numX,Dchar2numY))
-
-
 
 
 
@@ -738,11 +665,14 @@ def celex_all_retrieve():
     Retrives the previously saved data from the CELEX corpus
     """
 
-    data = np.load('../../Models/data/celex_all.npz')
+    #data = np.load('../../Models/data/celex_all.npz')
+    data = np.load('/Users/jannisborn/Desktop/LDS_Data/data/celex_all.npz')
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
     path = '../../Models/data/celex_all_alt_targets.npy'
+    path = '/Users/jannisborn/Desktop/LDS_Data/data/celex_all_alt_targets.npy'
+
     print("Loading alternative targets ...")
     alt_targs_raw = np.load(path)
 
@@ -874,17 +804,13 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out):
     out_str = []
     inp_str = []
     label_str = []
-    #print(inputs.shape,fullPred.shape,labels.shape,alt_targs.shape)
-    #print(dict_in)
-    #print(dict_out)
-    #print(inputs[0:5],fullPred[:5],labels[:5])
     r=0
     for k in range(len(inputs)):
         out_str.append(''.join([dict_out[l] if l!= 0 and dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in fullPred[k]]))
         inp_str.append(''.join([dict_in[l] if dict_in[l] != '<PAD>' and  dict_in[l] != '<GO>' else '' for l in inputs[k]]))
         label_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in labels[k]]))
 
-        if k%250 == 0:
+        if k==8:
             print("The input " + inp_str[-1].upper() + " was written " + out_str[-1].upper() + " with target " + label_str[-1].upper())
 
         
@@ -907,6 +833,34 @@ def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out):
             r = k
 
     return r
+
+
+
+def num_to_str_help(inputs,logits,labels,dict_in,dict_out):
+    """
+    Method receives the numerical arrays and prints the strings
+
+    If mode = normal, then alt_targs should be set to [], if it is 'lds' the alternative targets are also printed
+    """
+
+    fullPred = logits# Prediction string with padding
+
+    out_str = []
+    inp_str = []
+    label_str = []
+    r=0
+    for k in range(len(inputs)):
+        out_str.append(''.join([dict_out[l] if l!= 0 and dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in fullPred[k]]))
+        inp_str.append(''.join([dict_in[l] if dict_in[l] != '<PAD>' and  dict_in[l] != '<GO>' else '' for l in inputs[k]]))
+        label_str.append(''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in labels[k]]))
+
+        if k==2:
+            print("The input " + inp_str[-1].upper() + " was written " + out_str[-1].upper() + " with target " + label_str[-1].upper())
+
+        
+        #if mode == 'lds':
+        alt_targ_str = []
+    return 42
 
 
 def comp_reading(new_input,real_input,dict_word):

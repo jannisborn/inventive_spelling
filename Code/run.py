@@ -64,7 +64,7 @@ if __name__ == '__main__':
                         " and later on more...")
     parser.add_argument('--learn_type', default='normal', type=str,
                         help="Determines the training regime. Choose from set {'normal', 'lds'}.")
-    parser.add_argument('--reading', default=True, type=bool,
+    parser.add_argument('--reading', default=False, type=bool,
                         help="Specifies whether reading task is also accomplished. Default is False. ")
 
 
@@ -130,6 +130,7 @@ if __name__ == '__main__':
     # Parse input arguments
     args = parser.parse_args()
 
+    print("READING IS ", args.reading)
 
 ##########################    PROCESS ARGUMENTS     ####################################
 
@@ -405,7 +406,7 @@ if __name__ == '__main__':
         for write_ind in range(len(Y_alt_test_l[word_ind])):
             Y_alt_test[word_ind,:,write_ind] = np.array(Y_alt_test_l[word_ind][write_ind],dtype=np.int8)
 
-    print(X_train.shape, Y_train.shape, Y_alt_train.shape,'PRESHAPES')
+    #print(X_train.shape, Y_train.shape, Y_alt_train.shape,'PRESHAPES')
 
 
 
@@ -421,13 +422,6 @@ if __name__ == '__main__':
             momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
         model_write.forward()
         model_write.backward()
-        model_write.exe = True
-
-        #for k in tf.global_variables():
-        #    if k.name.startswith("writing"):
-        #        print("HEY",k.name)
-
-        #saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=10)
 
 
 
@@ -439,7 +433,6 @@ if __name__ == '__main__':
                 LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
             model_read.forward()
             model_read.backward()
-            #saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=10)
 
 
     exp = Experiment(name='', save_dir=test_tube)
@@ -451,35 +444,6 @@ if __name__ == '__main__':
                          'Write+Read = ': args.reading, 'epochs': args.epochs,  'seed':args.seed,'restored':args.restore, 'dropout':args.dropout, 'train_indices':
                          indices_train, 'test_indices':indices_test})
 
-    #saver = tf.train.Saver(tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=None)) # Add ops to save and restore all the variables.
-
-    """
-    # builds the histogram of the parameter values for viewing in tensorboard
-    for var in tf.trainable_variables():
-        tf.summary.histogram(var.name, var)
-
-
-    # builds the scalar summaries of loss and error rate metrics
-    #tf.summary.scalar('Seq2Seq Loss', model_write.loss)
-AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
-    # builds the histogram of GRU activations
-    tf.summary.histogram('GRU activations', model_write.all_logits)
-
-    # calculates the total number of parameters in the network
-    total_parameters = 0
-    for variable in tf.trainable_variables():
-        # shape is an array of tf.Dimension
-        shape = variable.get_shape()
-        variable_parameters = 1
-        for dim in shape:
-            variable_parameters *= dim.value
-        total_parameters += variable_parameters
-    print('{} trainable parameters in the network.'.format(total_parameters))
-
-    merged = tf.summary.merge_all()
-    train_writer = tf.summary.FileWriter(save_path + '/train', sess.graph)
-    test_writer = tf.summary.FileWriter(save_path + '/test')
-    """
 
 
 
@@ -672,7 +636,7 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
 
                 write_epoch_loss += batch_loss
         
-                write_old_accs[k], fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
+                fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
                 
                 dists, write_token_accs[k] = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
@@ -706,7 +670,7 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
                     read_epoch_loss += batch_loss
 
                     
-                    read_old_accs[k], fullPred, fullTarg = utils.accuracy_prepare(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
+                    fullPred, fullTarg = utils.accuracy_prepare(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
                 
                     dists, read_token_accs[k] = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
@@ -737,7 +701,7 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
 
                 write_epoch_loss += batch_loss
                 #write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
-                write_old_accs[k], fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
+                fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
                 
                 dists, write_token_accs[k] = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
@@ -767,7 +731,7 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
                     #print("Time it took compute analysis: ", time()-t+tt)
                     read_loss.append(batch_loss)
 
-                    read_old_accs[k], fullPred, fullTarg = utils.accuracy_prepare(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
+                    fullPred, fullTarg = utils.accuracy_prepare(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
                 
                     dists, read_token_accs[k] = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
@@ -834,14 +798,6 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
         if regime == 'normal':
 
 
-            #for k, (write_inp_batch, write_out_batch) in enumerate(utils.batch_data(X_test, Y_test, args.batch_size)):
-
-
-
-
-
-
-
             write_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
             # Generate character by character (for the entire batch, weirdly)
             for i in range(y_seq_length):
@@ -857,12 +813,10 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
                 write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                 #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
-            #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
-            #write_oldAcc_o, write_tokenAcc_o , write_wordAcc_o = utils.accuracy(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
            
 
 
-            write_oldAcc, fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
+            fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
             dists, write_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
                     feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
             write_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
@@ -873,6 +827,12 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
             testPerf[epoch//args.print_step, 0] = write_tokenAcc
             testPerf[epoch//args.print_step, 1] = write_wordAcc
 
+
+            if epoch > 20 and epoch < 100:
+                r = utils.num_to_str_help(X_test,write_dec_input,Y_test,dict_num2char_x,dict_num2char_y)
+
+
+
             # Test READING
             if args.reading:
                 read_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_x['<GO>']
@@ -882,13 +842,10 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
                     read_test_logits = sess.run(model_read.logits, 
                         feed_dict={model_read.keep_prob:1.0, model_read.inputs:Y_test[:,1:], model_read.outputs:read_dec_input})
                     read_prediction = read_test_logits[:,-1].argmax(axis=-1)
-                    #print("W")
-                    #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                     read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
-                #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
-                #read_oldAc_o, read_tokenAcc_o , read_wordAcc_o = utils.accuracy(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
 
-                read_oldAcc, fullPred, fullTarg = utils.accuracy_prepare(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
+
+                fullPred, fullTarg = utils.accuracy_prepare(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
                 dists, read_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
                 read_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
@@ -900,6 +857,9 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
                 testPerf[epoch//args.print_step, 3] = read_wordAcc
 
                 #read_losses[epoch//args.print_step] = read_test_loss
+
+
+           
 
         elif regime == 'lds':
 
@@ -926,10 +886,12 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
 
             #write_oldAcc_o, write_tokenAcc_o , write_wordAcc_o = utils.accuracy(write_dec_input, write_test_new_targs,dict_char2num_y, mode='test')
 
-            write_oldAcc, fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], write_test_new_targs,dict_char2num_y, mode='test')
+            fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], write_test_new_targs,dict_char2num_y, mode='test')
             dists, write_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
                     feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
+
             write_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
+
 
 
 
@@ -955,7 +917,7 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
                 #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
                 #read_oldAcc_o, read_tokenAcc_o , read_wordAcc_o = utils.accuracy(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
 
-                read_oldAcc, fullPred, fullTarg = utils.accuracy_prepare(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
+                fullPred, fullTarg = utils.accuracy_prepare(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
                 dists, read_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
                 read_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
@@ -1040,12 +1002,37 @@ AttributeError: 'Experiment' object has no attribute 'add_meta_tags'
                     if args.reading:
                         written_word = Y_train[np.random.randint(len(Y_train))]
                         utils.read_word(written_word)'''
+tf.reset_default_graph()
+with tf.Session() as sess:
+    print("NOW RESTORE THE MODEL")                       
+    saver = tf.train.import_meta_graph(save_path + '/my_test_model-'+str(args.epochs-1)+'.meta')
+    saver.restore(sess,tf.train.latest_checkpoint(save_path+'/./'))
+
+    gerund = 'writing'
+    graph = tf.get_default_graph()
+    keep_prob = graph.get_tensor_by_name(gerund+'/keep_prob:0')
+    inputs = graph.get_tensor_by_name(gerund+'/input:0')
+    outputs = graph.get_tensor_by_name(gerund+'/output:0')
+    logits = graph.get_tensor_by_name(gerund+'/decoding_write/logits:0')
+
+    word_num = np.expand_dims(X_test[2,1:],0)
+    print(dict_char2num_x)
+    print(word_num)
+    dec_input = np.zeros([1,1]) + dict_char2num_y['<GO>']
 
 
+    for k in range(word_num.shape[1]):
+        pred = sess.run(logits, feed_dict={keep_prob:1.0, inputs:word_num, outputs:dec_input})
+        char = pred[:,-1].argmax(axis=-1)
+        dec_input = np.hstack([dec_input, char[:,None]]) # Identical to np.expand_dims(char,1)
+        print(dec_input)
 
+    output_dict_rev = dict(zip(dict_char2num_y.values(), dict_char2num_y.keys()))
+    dec_input = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
+    output = ''.join([output_dict_rev[num] if output_dict_rev[num]!='<PAD>' else '' for ind,num in enumerate(dec_input[0,1:])])
+    word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in np.squeeze(word_num)])]
 
-
-
+    print("The sequence ", word, "  =>  ", output, ' num ', dec_input[0,1:])
 
 
 
