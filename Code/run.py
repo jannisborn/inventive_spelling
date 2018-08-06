@@ -982,7 +982,7 @@ with tf.Session() as sess:
     acc_object  = acc_new()
     acc_object.accuracy()
 
-    
+
     print("NOW RESTORE THE MODEL")                       
     saver = tf.train.import_meta_graph(save_path + '/my_test_model-'+str(args.epochs-1)+'.meta')
     saver.restore(sess,tf.train.latest_checkpoint(save_path+'/./'))
@@ -1027,7 +1027,7 @@ with tf.Session() as sess:
         dec_input = np.hstack([dec_input, prediction[:,None]])
 
     #oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
-    fullPred, fullTarg = utils.accuracy_prepare(wdec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
+    fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
     dists, tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
     wordAcc  = np.count_nonzero(dists==0) / len(dists) 
     print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
