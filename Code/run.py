@@ -828,7 +828,7 @@ if __name__ == '__main__':
             testPerf[epoch//args.print_step, 1] = write_wordAcc
 
 
-            if epoch > 20 and epoch < 100:
+            if epoch > -1 and epoch < 100:
                 r = utils.num_to_str_help(X_test,write_dec_input,Y_test,dict_num2char_x,dict_num2char_y)
 
 
