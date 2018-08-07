@@ -780,7 +780,7 @@ def lds_compare(prediction, targets, alt_targets, dict_out):
                     out_str = ''.join([dict_out[l] if l!= 0 and dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in prediction[wo_ind,:]])
                     label_str = ''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in targets[wo_ind,:]])
                     alt_label_str = ''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in alt_targets[wo_ind,:,tar_ind]])
-                    print("The output " + out_str.upper() + " was accepted for " + label_str.upper()+", alt. writing: "+alt_label_str.upper())
+                    print("UTILS - The output " + out_str.upper() + " was accepted for " + label_str.upper()+", alt. writing: "+alt_label_str.upper())
                     continue
 
         # In case the spelling was actuall bullshit
