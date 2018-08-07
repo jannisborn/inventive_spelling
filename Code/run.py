@@ -228,153 +228,6 @@ if __name__ == '__main__':
         mas = 810
 
 
-    """
-        # Very different training regime and thus done within this if/else case.
-
-        x_dict_size, num_classes, x_seq_length, y_seq_length, dict_num2char_x, dict_num2char_y = utils.set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y)
-
-        with tf.variable_scope('writing'):
-            model_write = bLSTM(x_seq_length, y_seq_length, x_dict_size, num_classes, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes, args.batch_size,
-                args.learn_type, 'write', print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, LSTM_initializer=args.LSTM_initializer, 
-                momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
-            model_write.forward()
-            model_write.backward()
-            model_write.exe = True
-            saver_write = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("writing")], max_to_keep=10)
-
-
-
-        # Should the reading module be enabled?
-        if args.reading:
-            with tf.variable_scope('reading'):
-                model_read = bLSTM(y_seq_length, x_seq_length, num_classes, x_dict_size, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes,
-                    args.batch_size, 'normal', 'read',print_ratio=args.print_ratio, optimization=args.optimization ,learning_rate=args.learning_rate, 
-                    LSTM_initializer=args.LSTM_initializer, momentum=args.momentum, activation_fn=args.activation_fn, bidirectional=args.bidirectional)
-                # Learn type is always normal, but if regime is lds, then corrupted input may be used.
-                model_read.forward()
-                model_read.backward()
-                saver_read = tf.train.Saver([k for k in tf.global_variables() if k.name.startswith("reading")], max_to_keep=10)
-        
-
-        exp = Experiment(name='', save_dir=test_tube)
-        # First K arguments are in the same order like the ones to initialize the bLSTM, this simplifies restoring
-        exp.add_meta_tags({'inp_len':x_seq_length, 'out_len':y_seq_length, 'x_dict_size':x_dict_size, 'num_classes':num_classes, 'input_embed':args.input_embed_size,
-                                'output_embed':args.output_embed_size, 'num_layers':args.num_layers, 'nodes/Layer':args.num_nodes, 'batch_size':args.batch_size, 'learn_type':
-                                args.learn_type, 'task': 'write', 'print_ratio':args.print_ratio, 'optimization':str(args.optimization), 'lr': args.learning_rate,
-                                'LSTM_initializer':str(args.LSTM_initializer), 'momentum':args.momentum,'ActFctn':str(args.activation_fn), 'bidirectional': args.bidirectional,  
-                                 'Write+Read = ': args.reading, 'epochs': args.epochs,  'seed':args.seed,'restored':args.restore, 'dropout':args.dropout, 'train_indices':
-                                 indices_train, 'test_indices':indices_test})
-
-        regime = args.learn_type
-
-        # For every Lektion, train k epochs, then test once.
-        for k in range(len(lektions_inds)):
-
-            print("Now training Lektion "+str(k+1))
-
-            for e in range(args.epochs):
-
-                print("Epoch nr "+str(e))
-                ind = 0 if k==0 else lektions_inds[k-1]
-                write_inp = inputs[ind:lektions_inds[k],1:]
-                write_out = targets[ind:lektions_inds[k],:-1]
-                write_targets = targets[ind:lektions_inds[k],1:]
-
-
-                if regime == 'normal':
-
-                    _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
-                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp,model_write.outputs: write_target,
-                                                             model_write.targets: write_targets})
-                # Needs some more work
-                elif regime == 'lds':
-                    # Inputs for readings are returned from writing process
-                    _, batch_loss, read_inp, batch_logits = sess.run([model_write.optimizer, model_write.loss_lds, model_write.read_inps, model_write.logits], 
-                                                            feed_dict = 
-                                                            {model_write.keep_prob: args.dropout, model_write.inputs: write_inp,model_write.outputs: write_out,
-                                                             model_write.targets: write_targets, model_write.alternative_targets: alternative_targets})
-
-                if args.reading and regime == 'normal':
-                    read_inp = write_targets
-                    read_out = inputs[ind:lektions_inds[k],:-1]
-                    read_targets = write_inp
-
-                    _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
-                                                        {model_read.keep_prob:args.dropout, model_read.inputs: read_inp, model_read.outputs:read_out,
-                                                         model_read.targets:read_targets})
-                
-                if args.reading and regime == 'lds':
-                    # Needs more work
-                    read_out = inputs[ind:lektions_inds[k],:-1]
-                    read_targets = write_inp
-
-                    _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
-                                                        {model_read.keep_prob:args.dropout, model_read.inputs: read_inp, model_read.outputs:read_out,
-                                                         model_read.targets:read_targets})
-                if regime=='lds' and args.epoch//2 == e:
-                    regime = 'normal' # change learning regime if half of the epochs are over
-                    model_write.learn_type = 'normal'
-                    print("Training regime changed to normal")
-
-            # reset regime.
-            regime = args.learn_type 
-            model_write.learn_type = args.learn_type
-
-        # ------------------------ TESTING -----------------------------
-        accs = np.zeros(4,len(lektions_inds))
-        for k in range(len(lektions_inds)):
-            ind = 0 if k==0 else lektions_inds[k-1]
-            write_inp = inputs[ind:lektions_inds[k],1:]
-            write_targets = targets[ind:lektions_inds[k],1:]
-
-            write_dec_input = np.zeros((len(write_targets), 1)) + dict_char2num_y['<GO>']
-            # Generate character by character (for the entire batch, weirdly)
-            for i in range(y_seq_length):
-                write_test_logits = sess.run(model_write.logits, feed_dict={model_write.keep_prob:1.0, model_write.inputs:write_inp, model_write.outputs:write_dec_input})
-                write_prediction = write_test_logits[:,-1].argmax(axis=-1)
-                #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
-                write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
-            #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
-            write_oldAcc, write_tokenAcc , write_wordAcc = utils.accuracy(write_dec_input[:,1:], write_targets,dict_char2num_y, mode='test')
-            print('WRITING - Accuracy for lektion{:>6.3f} is for tokens{:>6.3f} and for words {:>6.3f}'.format(k+1,write_tokenAcc, write_wordAcc))
-            accs[0,k] = write_tokenAcc
-            accs[1,k] = write_wordAcc
-
-            # Test READING
-            if args.reading:
-                read_inp = write_targets
-                read_targets = write_inp
-                read_dec_input = np.zeros((len(read_targets), 1)) + dict_char2num_x['<GO>']
-                # Generate character by character (for the entire batch, weirdly)
-                for i in range(x_seq_length):
-                    read_test_logits = sess.run(model_read.logits, feed_dict={model_read.keep_prob:1.0, model_read.inputs:read_inp, model_read.outputs:read_dec_input})
-                    read_prediction = read_test_logits[:,-1].argmax(axis=-1)
-                    #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
-                    read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
-                #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
-                read_oldAcc, read_tokenAcc , read_wordAcc = utils.accuracy(read_dec_input[:,1:], read_targets,dict_char2num_x, mode='test')
-                print('READING - Accuracy for lektion{:>6.3f} is for tokens{:>6.3f} and for words {:>6.3f}'.format(k+1,read_tokenAcc, read_wordAcc))
-                accs[2,k] = read_tokenAcc
-                accs[3,k] = read_wordAcc
-
-        saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=False)
-        if args.reading:
-            saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=False)           
-                    
-
-        print(" Training done, model_write saved in file: %s" % save_path + ' ' + os.path.abspath(save_path))
-
-        np.savetxt(save_path+'/performance.txt', accs, delimiter=',')   
-
-
-        print("DONE!")
-        sys.exit(0)
-
-    """
-
-
-
-
 
 
     # -------------------------------------------- REGULAR TRAINING SETUP --------------------------------------------------- #
@@ -388,9 +241,7 @@ if __name__ == '__main__':
     # Split data into training and testing
     indices = range(len(inputs))
     
-    #if args.learn_type == 'normal':
-    #X_train, X_test,Y_train, Y_test, indices_train, indices_test = train_test_split(inputs, targets, indices, test_size=args.test_size, random_state=args.seed)
-    #elif args.learn_type == 'lds':
+
     X_train, X_test,Y_train, Y_test, Y_alt_train_l, Y_alt_test_l, indices_train, indices_test = train_test_split(inputs, targets, alt_targets, indices, test_size=args.test_size, random_state=args.seed)
     max_len = max([len(l) for l in Y_alt_train_l])
     inp_seq_len = len(Y_alt_train_l[1][0])
@@ -466,17 +317,10 @@ if __name__ == '__main__':
 
         saver = tf.train.Saver()
 
-    #if args.restore:
-    #saver.restore(sess, _model_writePath) #Yes, no need to add ".index"
-
-    num_train_steps, num_val_steps = 0, 0
 
     if args.reading:
         trainPerf = np.zeros([args.epochs//args.print_step + 1, 6])
         testPerf = np.zeros([args.epochs//args.print_step + 1, 6])
-        read_losses = np.zeros((args.epochs,1))
-        read_losses_test = np.zeros((args.epochs//args.print_step + 1,1))
-
     else:
         trainPerf = np.zeros([args.epochs//args.print_step + 1, 3])
         testPerf = np.zeros([args.epochs//args.print_step + 1, 3])
@@ -485,12 +329,12 @@ if __name__ == '__main__':
     lds_ratios = np.zeros((args.epochs,1))
     corr_ratios = np.zeros((args.epochs,1))
     lds_losses = np.zeros((args.epochs,1))
-    reg_losses = np.zeros((args.epochs,1))
+    write_losses = np.zeros((args.epochs,1))
+    read_losses = np.zeros((args.epochs,1))
 
     lds_ratios_test = np.zeros((args.epochs//args.print_step + 1,1))
     corr_ratios_test = np.zeros((args.epochs//args.print_step + 1,1))
-    lds_losses_test = np.zeros((args.epochs//args.print_step + 1,1))
-    reg_losses_test = np.zeros((args.epochs//args.print_step + 1,1))
+
 
 
     # Accuracy object
@@ -518,28 +362,22 @@ if __name__ == '__main__':
                                                         {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:, 1:], 
                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                #rats_lds.append(rat_lds)
-                #rats_corr.append(rat_corr)
-                #lds_loss.append(loss_lds)
-                #reg_loss.append(batch_loss)
 
 
-                if epoch > theta_min and epoch < theta_max:
+                #if epoch > theta_min and epoch < theta_max:
 
-                    utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
+                #   utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
 
                 if args.reading:
 
                     read_inp_batch = write_out_batch
                     read_out_batch = write_inp_batch
-                    #read_out_batch = np.concatenate([np.ones([args.batch_size,1],dtype=np.int64) * dict_char2num_x['<GO>'], write_inp_batch],axis=1)
 
                     _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
                                                     {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch[:,1:], 
                                                     model_read.outputs:read_out_batch[:,:-1], model_read.targets:read_out_batch[:,1:]})
 
-                    #read_loss.append(batch_loss)
 
         elif regime == 'lds':
 
@@ -553,11 +391,6 @@ if __name__ == '__main__':
                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
 
-
-                #rats_lds.append(rat_lds)
-                #rats_corr.append(rat_corr)
-                #lds_loss.append(batch_loss)
-                #reg_loss.append(batch_loss_reg)
 
                 if epoch > theta_min and epoch < theta_max:
 
@@ -576,24 +409,21 @@ if __name__ == '__main__':
         # ---------------- SHOW TRAINING PERFORMANCE -------------------------
         
         rats_lds = []
+        rats_lds_test = []
         rats_corr = []
+        rats_corr_test 
         lds_loss = []
-        reg_loss = []
+        write_loss = []
         read_loss = []
 
         # Allocate variables
         write_word_accs = np.zeros(len(X_train)// args.batch_size)
         write_token_accs = np.zeros(len(X_train)// args.batch_size)
         write_old_accs = np.zeros(len(X_train)// args.batch_size)
-        #write_word_accs_2 = np.zeros(len(X_train)// args.batch_size)
-        #write_token_accs_2 = np.zeros(len(X_train)// args.batch_size)
-        #write_old_accs_2 = np.zeros(len(X_train)// args.batch_size)
-        write_epoch_loss = 0
 
         read_word_accs = np.zeros(len(X_train)// args.batch_size)
         read_token_accs = np.zeros(len(X_train)// args.batch_size)
         read_old_accs = np.zeros(len(X_train)// args.batch_size)
-        read_epoch_loss = 0
             
 
 
@@ -606,8 +436,6 @@ if __name__ == '__main__':
                                                          model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
 
-
-                write_epoch_loss += batch_loss
         
                 fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
                 
@@ -621,7 +449,7 @@ if __name__ == '__main__':
                 rats_lds.append(rat_lds)
                 rats_corr.append(rat_corr)
                 lds_loss.append(loss_lds)
-                reg_loss.append(batch_loss)
+                write_loss.append(batch_loss)
 
                 if epoch > theta_min and epoch < theta_max:
                     utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
@@ -639,9 +467,6 @@ if __name__ == '__main__':
                                                          model_read.outputs: read_out_batch[:, :-1], model_read.targets: read_out_batch[:, 1:]})   
 
                     read_loss.append(batch_loss)
-
-                    read_epoch_loss += batch_loss
-
                     
                     fullPred, fullTarg = utils.accuracy_prepare(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
                 
@@ -665,14 +490,13 @@ if __name__ == '__main__':
                 rats_lds.append(rat_lds)
                 rats_corr.append(rat_corr)
                 lds_loss.append(batch_loss)
-                reg_loss.append(batch_loss_reg)
+                write_loss.append(batch_loss_reg)
 
                 if epoch > theta_min and epoch < theta_max:
                     utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
                 _ = utils.lds_compare(w_batch_logits,write_out_batch[:, 1:], write_alt_targs[:,1:,:], dict_num2char_y, 'train')
 
-                write_epoch_loss += batch_loss
                 #write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
                 fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
                 
@@ -697,11 +521,6 @@ if __name__ == '__main__':
                     batch_loss, r_batch_logits = sess.run([model_read.loss, model_read.logits], feed_dict =
                                                          {model_read.keep_prob:1.0, model_read.inputs: read_inp_batch, 
                                                          model_read.outputs: read_out_batch[:, :-1], model_read.targets: read_out_batch[:, 1:]})   
-                    read_epoch_loss += batch_loss
-                    #print(read_inp_batch.dtype, batch_logits.dtype, read_out_batch[:,1:].dtype, len(dict_char2num_x))
-                    #t=time()
-                    #read_old_accs[k], read_token_accs[k] , read_word_accs[k] = utils.accuracy(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
-                    #print("Time it took compute analysis: ", time()-t+tt)
                     read_loss.append(batch_loss)
 
                     fullPred, fullTarg = utils.accuracy_prepare(r_batch_logits, read_out_batch[:,1:], dict_char2num_x)
@@ -711,16 +530,18 @@ if __name__ == '__main__':
 
                     read_word_accs[k] = np.count_nonzero(dists==0) / len(dists) 
 
-            
-        lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
-        reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
+        
+        print("Externally evaluated accuracy ", np.mean(write_word_accs[k]), ' vs internal: ' rat_corr)
+
+        lds_losses[epoch] = sum(lds_loss)
+        write_losses[epoch] = sum(write_loss)
         lds_ratios[epoch] = sum(rats_lds)/len(rats_lds)
         corr_ratios[epoch] = sum(rats_corr)/len(rats_corr)
         if args.reading:
-            read_losses[epoch] = sum(read_loss)/len(read_loss)
+            read_losses[epoch] = sum(read_loss)
 
         print("RUN - Ratio correct words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
-        print("Displayed run - LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
+        print("Displayed run - LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(write_losses[epoch]))
 
 
 
@@ -728,41 +549,18 @@ if __name__ == '__main__':
             np.savez(save_path + '/write_step' + str(epoch)+'.npz', logits=w_batch_logits, dict=dict_char2num_y, targets=write_out_batch[:,1:])
             np.savez(save_path + '/read_step' + str(epoch)+'.npz', logits=r_batch_logits, dict=dict_char2num_x, targets=read_out_batch[:,1:])
 
-        #print('Train',batch_logits.shape, write_out_batch[:,1:].shape)
         print('WRITING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
-              .format(write_epoch_loss, np.mean(write_token_accs), np.mean(write_word_accs), np.mean(write_old_accs)))
+              .format(write_losses[epoch], np.mean(write_token_accs), np.mean(write_word_accs), np.mean(write_old_accs)))
         trainPerf[epoch//args.print_step, 0] = np.mean(write_token_accs)
         trainPerf[epoch//args.print_step, 1] = np.mean(write_word_accs)
         trainPerf[epoch//args.print_step, 2] = np.mean(write_old_accs)
-        #print('NEW!!! WRITING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
-        #      .format(write_epoch_loss, np.mean(write_token_accs_2), np.mean(write_word_accs_2), np.mean(write_old_accs_2)))
+
         if args.reading:
             print('READING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
-                  .format(read_epoch_loss, np.mean(read_token_accs), np.mean(read_word_accs), np.mean(read_old_accs)))
+                  .format(read_losses[epoch], np.mean(read_token_accs), np.mean(read_word_accs), np.mean(read_old_accs)))
             trainPerf[epoch//args.print_step, 3] = np.mean(read_token_accs)
             trainPerf[epoch//args.print_step, 4] = np.mean(read_word_accs)
             trainPerf[epoch//args.print_step, 5] = np.mean(read_old_accs)
-
-
-        #print("Time that epoch took: ", time()-t)
-
-
-        """
-        # TESTING NOT PROPERLY (Feeding target as output)
-        wordAccs  = np.zeros(len(X_test) // args.batch_size)
-        tokenAccs = np.zeros(len(X_test) // args.batch_size)
-        oldAccs   = np.zeros(len(X_test) // args.batch_size)
-        
-        for batch_i, (write_inp_batch, write_out_batch) in enumerate(utils.batch_data(X_test, Y_test, args.batch_size)):
-                                                
-            batch_logits = sess.run(model_write.logits, feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch,
-                                                                        model_write.outputs: write_out_batch[:, :-1]})
-            predictions = batch_logits.argmax(-1)
-            #print('Test',batch_logits.shape,write_out_batch[:,1:].shape)
-            oldAccs[batch_i], tokenAccs[batch_i] , wordAccs[batch_i] = utils.accuracy(batch_logits,write_out_batch[:,1:],dict_char2num_y, mode='train')
-        print('- WRITING BAD - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(np.mean(tokenAccs), np.mean(wordAccs)))
-        """
-
 
 
         # --------------- SHOW TESTING PERFORMANCE -----------------
@@ -784,7 +582,6 @@ if __name__ == '__main__':
                     feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
                 #print("Y!")
                 write_prediction = write_test_logits[:,-1].argmax(axis=-1)
-                #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
            
 
@@ -829,8 +626,6 @@ if __name__ == '__main__':
                 testPerf[epoch//args.print_step, 2] = read_tokenAcc
                 testPerf[epoch//args.print_step, 3] = read_wordAcc
 
-                #read_losses[epoch//args.print_step] = read_test_loss
-
 
            
 
@@ -847,7 +642,8 @@ if __name__ == '__main__':
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
 
             # Now the generated sequence need to be compared with the alternative targets:
-            write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
+            write_test_new_targs, tmp = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
+            rats_lds_test.append(tmp)
 
 
             fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], write_test_new_targs,dict_char2num_y, mode='test')
@@ -898,7 +694,7 @@ if __name__ == '__main__':
             #if args.reading:
             #    saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=True)
             np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratio=lds_ratios,lds_loss=lds_losses, 
-                    reg_loss=reg_losses,corr_ratio=corr_ratios, read_losses=read_losses)
+                    write_loss=write_losses,corr_ratio=corr_ratios, read_losses=read_losses, rats_lds_test=rats_lds_test)
             saver.save(sess, save_path + '/my_test_model',global_step=epoch)
 
         # If lds learning is performed, training regime is changed to normal after half of the epochs 
@@ -912,15 +708,7 @@ if __name__ == '__main__':
 
         elif epoch > args.epochs // 2 and args.learn_type == 'interleaved' and regime == 'lds':
             regime = 'normal'
-            print("Training regime changed back to normal\n")
-
-
-
-
-                    
-    #saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=True)
-    #if args.reading:
-    #    saver_read.save(sess, save_path + '/Model_read', global_step=epoch, write_meta_graph=True)           
+            print("Training regime changed back to normal\n")      
     
     saver.save(sess, save_path + '/my_test_model',global_step=epoch)
   
@@ -930,7 +718,7 @@ if __name__ == '__main__':
     #np.savetxt(save_path+'/train.txt', trainPerf, delimiter=',')   
     #np.savetxt(save_path+'/test.txt', testPerf, delimiter=',')  
     np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratio=lds_ratios,lds_loss=lds_losses, 
-        reg_loss=reg_losses,corr_ratio=corr_ratios, read_losses=read_losses)
+        write_loss=write_losses,corr_ratio=corr_ratios, read_losses=read_losses)
 
     if args.show_plot:
         ax = plt.subplot(111) 

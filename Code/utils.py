@@ -801,13 +801,8 @@ def lds_compare(logits, targets, alt_targets, dict_out, mode):
     rat = sum(counter) / len(counter)
     if rat > 0:
           print("UTILS - Ratio of words that were 'correct' in LdS sense: ", str(rat))
-
-
-
-        
-
-
-    return new_targets
+          
+    return new_targets if mode == 'train' else new_targets, rat
 
 def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out):
     """
