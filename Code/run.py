@@ -552,7 +552,7 @@ if __name__ == '__main__':
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
            
             write_test_new_targs, tmp = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
-            lds_ratios_test.append(tmp)
+            lds_ratios_test[epoch] = tmp
 
             fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
             dists, write_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
@@ -607,7 +607,7 @@ if __name__ == '__main__':
 
             # Now the generated sequence need to be compared with the alternative targets:
             write_test_new_targs, tmp = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
-            lds_ratios_test.append(tmp)
+            lds_ratios_test[epoch] = tmp
 
             fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], write_test_new_targs,dict_char2num_y, mode='test')
             dists, write_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
