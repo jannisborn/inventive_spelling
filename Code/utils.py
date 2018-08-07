@@ -788,6 +788,7 @@ def lds_compare(prediction, targets, alt_targets, dict_out):
             # In case the spelling was actuall bullshit
             if not wrote_alternative:
                 new_targets[wo_ind,:] = targets[wo_ind,:]
+                counter.append(wrote_alternative)
     
     # How many words were written alternatively?
     rat = sum(counter) / len(counter)
