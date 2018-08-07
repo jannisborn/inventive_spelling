@@ -644,7 +644,7 @@ def celex_all_retrieve():
     word_dict = np_dict_to_dict(data['word_dict'])
 
     path = '../../Models/data/celex_all_alt_targets.npy'
-    path = '/Users/jannisborn/Desktop/LDS_Data/data/celex_all_alt_targets.npy'
+    #path = '/Users/jannisborn/Desktop/LDS_Data/data/celex_all_alt_targets.npy'
 
     print("Loading alternative targets ...")
     alt_targs_raw = np.load(path)
