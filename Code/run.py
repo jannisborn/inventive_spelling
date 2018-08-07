@@ -222,6 +222,10 @@ if __name__ == '__main__':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_retrieve()
         mas = 100
 
+    elif args.task == 'childlex_all':
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_all_retrieve()
+        mas = 43200
+
     elif args.task == 'fibel':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.fibel_retrieve()
         lektions_inds = [9,14,20,28,36,46,58,77,99,121,154,174]

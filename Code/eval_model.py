@@ -295,7 +295,7 @@ class evaluation(object):
 
 
 			print('\n',"Now printing the mistakes on the ", mode, " dataset")
-			file = open('mistakes_'+mode+'_data.txt','w')
+			file = open(self.path+'/mistakes_'+mode+'_data.txt','w')
 
 			for ind,pred in enumerate(dec_input[:,1:]):
 				if any(pred != tested_targets[ind,1:]):
@@ -446,9 +446,9 @@ class evaluation(object):
 					else:
 						ax.annotate(dic[k],(pcs[k,0], pcs[k,1]))
 
-				plt.savefig("PCA_"+ling+"_Results.pdf")
+				plt.savefig(self.path+"/PCA_"+ling+"_Results.pdf")
 
-				np.save("PCA_"+ling+"_Results", pcs)
+				np.save(self.path+"/PCA_"+ling+"_Results", pcs)
 
 			else:
 
@@ -533,7 +533,7 @@ class evaluation(object):
 				else:
 					ax.annotate(dic[k],(tsne_results[k,0], tsne_results[k,1]))  
 
-			filename = 'tSNE_'+ling+'_perp='+str(perplexity)+'step='+str(steps)+'lr='+str(lr)+'ang='+str(angle)+'init='+init+'pca='+str(pca)
+			filename = self.path+'/tSNE_'+ling+'_perp='+str(perplexity)+'step='+str(steps)+'lr='+str(lr)+'ang='+str(angle)+'init='+init+'pca='+str(pca)
 
 			plt.savefig(filename + '.pdf')
 			np.save(filename, tsne_results)

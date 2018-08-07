@@ -665,6 +665,7 @@ def childlex_retrieve():
     word_dict = np_dict_to_dict(data['word_dict'])
 
     path = 'data/childlex_alt_targets.npy'
+
     print("Loading alternative targets ...")
     alt_targs_raw = np.load(path)
 
@@ -674,6 +675,25 @@ def childlex_retrieve():
 
     return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
 
+def childlex_all_retrieve():
+    """
+    Retrives the previously saved data from the childlex database (subset of CELEX)
+    """
+
+    data = np.load('data/childlex_all.npz')
+    phon_dict = np_dict_to_dict(data['phon_dict'])
+    word_dict = np_dict_to_dict(data['word_dict'])
+
+    path = '../../Models/data/childlex_all_alt_targets.npy'
+
+    print("Loading alternative targets ...")
+    alt_targs_raw = np.load(path)
+
+
+    alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
+    print("Alternative targets successfully loaded.")
+
+    return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
 
 def fibel_retrieve():
 
