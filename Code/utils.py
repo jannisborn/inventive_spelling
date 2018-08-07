@@ -781,6 +781,8 @@ def lds_compare(prediction, targets, alt_targets, dict_out):
                     label_str = ''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in targets[wo_ind,:]])
                     alt_label_str = ''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in alt_targets[wo_ind,:,tar_ind]])
                     print("UTILS - The output " + out_str.upper() + " was accepted for " + label_str.upper()+", alt. writing: "+alt_label_str.upper())
+                    counter.append(wrote_alternative)
+
                     continue
 
         # In case the spelling was actuall bullshit
@@ -792,7 +794,7 @@ def lds_compare(prediction, targets, alt_targets, dict_out):
     # How many words were written alternatively?
     rat = sum(counter) / len(counter)
     if rat > 0:
-          print("Ratio of words that were 'correct' in LdS sense: ", str(rat))
+          print("UTILS - Ratio of words that were 'correct' in LdS sense: ", str(rat))
 
 
 

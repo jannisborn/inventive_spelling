@@ -662,7 +662,7 @@ if __name__ == '__main__':
                                                                     feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                print("Ratio of LdS correct words ", str(rat_lds))
+                #print("Ratio of LdS correct words ", str(rat_lds))
                 rats_lds.append(rat_lds)
                 rats_corr.append(rat_corr)
                 lds_loss.append(batch_loss)
@@ -721,7 +721,7 @@ if __name__ == '__main__':
         if args.reading:
             read_losses[epoch] = sum(read_loss)/len(read_loss)
 
-        print("Displayed run - Ratio correct words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
+        print("RUN - Ratio correct words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
         print("Displayed run - LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
 
 
