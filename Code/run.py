@@ -550,14 +550,14 @@ if __name__ == '__main__':
             np.savez(save_path + '/read_step' + str(epoch)+'.npz', logits=r_batch_logits, dict=dict_char2num_x, targets=read_out_batch[:,1:])
 
         print('WRITING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
-              .format(write_losses[epoch], np.mean(write_token_accs), np.mean(write_word_accs), np.mean(write_old_accs)))
+              .format(np.sum(write_loss), np.mean(write_token_accs), np.mean(write_word_accs), np.mean(write_old_accs)))
         trainPerf[epoch//args.print_step, 0] = np.mean(write_token_accs)
         trainPerf[epoch//args.print_step, 1] = np.mean(write_word_accs)
         trainPerf[epoch//args.print_step, 2] = np.mean(write_old_accs)
 
         if args.reading:
             print('READING - Loss:{:>6.3f}  token acc:{:>6.3f},  word acc:{:>6.3f} old acc:{:>6.4f}'
-                  .format(read_losses[epoch], np.mean(read_token_accs), np.mean(read_word_accs), np.mean(read_old_accs)))
+                  .format(np.sum(read_loss), np.mean(read_token_accs), np.mean(read_word_accs), np.mean(read_old_accs)))
             trainPerf[epoch//args.print_step, 3] = np.mean(read_token_accs)
             trainPerf[epoch//args.print_step, 4] = np.mean(read_word_accs)
             trainPerf[epoch//args.print_step, 5] = np.mean(read_old_accs)
@@ -644,7 +644,7 @@ if __name__ == '__main__':
             # Now the generated sequence need to be compared with the alternative targets:
             write_test_new_targs, tmp = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
             rats_lds_test.append(tmp)
-            
+
 
 
             fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], write_test_new_targs,dict_char2num_y, mode='test')
