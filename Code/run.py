@@ -411,7 +411,7 @@ if __name__ == '__main__':
         rats_lds = []
         rats_lds_test = []
         rats_corr = []
-        rats_corr_test 
+        rats_corr_test = []
         lds_loss = []
         write_loss = []
         read_loss = []
@@ -644,6 +644,7 @@ if __name__ == '__main__':
             # Now the generated sequence need to be compared with the alternative targets:
             write_test_new_targs, tmp = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
             rats_lds_test.append(tmp)
+            
 
 
             fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], write_test_new_targs,dict_char2num_y, mode='test')
