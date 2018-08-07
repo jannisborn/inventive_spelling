@@ -67,8 +67,8 @@ class evaluation(object):
 		self.acc_object.accuracy()
 
 		# Retrieve relevant data
-		self.retrieve_dicts()
 		self.retrieve_model_args()
+		self.set_hyperparams()
 
 		#self.show_mistakes('train')
 		#print("Training mistakes saved.")
@@ -125,13 +125,15 @@ class evaluation(object):
 
 			# In reading learn type is always normal, set reading property and set mas=500 (dummy)
 			self.model_args_read.extend(['normal','read',500])
+			self.model_args_read.append(self.model_args_write[-2])
+			self.model_args_read.append(self.model_args_write[-1])
 
 
 
 
 	def join_inds(self,str_inds):
 		""" 
-		Helper method
+		Helper method to handle str data from model hyperparameter csv file
 		"""
 
 		number_string = ''.join(str_inds)
@@ -140,35 +142,39 @@ class evaluation(object):
 		number_string_list[0] = number_string_list[0][1:] 
 		number_string_list[-1] = number_string_list[-1][:-1] 
 
-		# convert to in
 		return list(map(int,number_string_list))
 
 
 
 
-	def retrieve_dicts(self):
+	def set_hyperparams(self):
 		"""
-		Retrieves the dictionary to map characters -> digits for the used dataset (task)
+		Sets hyperparameter for the class, based on the user-defined specs (e.g. args.task)
+
+		E.g. it loads the data, retrieves the dictionary to map characters 
 		"""
 
 		path = self.root_local + 'data/'
 		data = np.load(path + self.dataset + '.npz')
 
-
-		self.phons = data['phons']
+		# Load data
+		self.inputs = data['phons'] if self.task == 'write' else data['words']
 		self.targets = data['words'] if self.task == 'write' else data['phons']
 
-		print(self.task)
-		# Depending on whether the task is to read or to write, dictionaries need to be flipped.
+		# Load dictionaries
 		self.input_dict = {key:data['phon_dict'].item().get(key) for key in data['phon_dict'].item()} if self.task == 'write' else {key:data['word_dict'].item().get(key) for key in data['word_dict'].item()}
 		self.output_dict = {key:data['word_dict'].item().get(key) for key in data['word_dict'].item()} if self.task == 'write' else  {key:data['phon_dict'].item().get(key) for key in data['phon_dict'].item()}
-
 		self.input_dict_rev = dict(zip(self.input_dict.values(), self.input_dict.keys()))
 		self.output_dict_rev = dict(zip(self.output_dict.values(), self.output_dict.keys()))
 
 		print("INPUT DICT", self.input_dict)
-		print()
 		print("OUTPUT DICT", self.output_dict)
+
+
+		self.inp_seq_nat = 'phonetic' if args.task == 'write' else 'orthografic' # To read in a type of sequence
+		self.inp_seq_human = 'spoken' if args.task == 'write' else 'written'
+		self.gerund = 'writing' if self.task == 'write' else 'reading'
+		self.out_seq_len = self.model_args_write[1] if args.task == 'write' else self.model_args_read[1]
 
 
 
@@ -177,12 +183,8 @@ class evaluation(object):
 		Use this method for command line interaction with the model (showing its predictions to user-specified input words/phonemes).
 		Leave method with pressing <SPACE>
 		"""
-		loop = True
-		inp = 'phonetic' if args.task == 'write' else 'orthografic' # To read in a type of sequence
-		out = 'spoken' if args.task == 'write' else 'written'
-		gerund = 'reading' if args.task == 'read' else 'writing'
-		out_seq_len = self.model_args_write[1] if args.task == 'write' else self.model_args_read[1]
 
+		loop = True
 
 		with tf.Session() as sess:
 
@@ -201,34 +203,31 @@ class evaluation(object):
 			#	print(v)
 
 			graph = tf.get_default_graph()
-			keep_prob = graph.get_tensor_by_name(gerund+'/keep_prob:0')
-			inputs = graph.get_tensor_by_name(gerund+'/input:0')
-			outputs = graph.get_tensor_by_name(gerund+'/output:0')
-			logits = graph.get_tensor_by_name(gerund+'/decoding_'+args.task+'/logits:0')
+			keep_prob = graph.get_tensor_by_name(self.gerund+'/keep_prob:0')
+			inputs = graph.get_tensor_by_name(self.gerund+'/input:0')
+			outputs = graph.get_tensor_by_name(self.gerund+'/output:0')
+			logits = graph.get_tensor_by_name(self.gerund+'/decoding_'+args.task+'/logits:0')
 
 			while loop:
 
-				word = input("Please insert a " + inp + " sequence: ")
+				word = input("Please insert a " + self.inp_seq_nat + " sequence: ")
 
 				if word == ' ':
 					loop = False
 					break
 
 				word_num = self.prepare_sequence(word)
-				print(word_num)
+				print(word_num.shape[1],word_num)
 				dec_input = np.zeros([1,1]) + self.output_dict['<GO>']
 
-				for k in range(out_seq_len):
+				for k in range(self.out_seq_len):
 					pred = sess.run(logits, feed_dict={keep_prob:1.0, inputs:word_num, outputs:dec_input})
 					char = pred[:,-1].argmax(axis=-1)
 					dec_input = np.hstack([dec_input, char[:,None]]) # Identical to np.expand_dims(char,1)
-					print(dec_input)
+				print(dec_input.shape[1],dec_input)
 
-
-
-				dec_input = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
 				output = ''.join([self.output_dict_rev[num] if self.output_dict_rev[num]!='<PAD>' else '' for ind,num in enumerate(dec_input[0,1:])])
-				print("The ", out, " sequence ", word, "  =>  ", output, ' num ', dec_input[0,1:])
+				print("The ", self.inp_seq_nat, " sequence ", word, "  =>  ", output, ' num ', dec_input[0,1:])
 
 
 
@@ -261,22 +260,60 @@ class evaluation(object):
 		MODE 	{str} either train or test
 		"""
 
-		self.indices = self.model_args_write[23] if mode=='train' else self.model_args_write[24] # Indices are either train or test indices
-		out = 'spoken' if self.task == 'write' else 'written'
+		# Retrieve indices of samples the model is tested on
+		indices = self.model_args_write[23] if mode=='train' else self.model_args_write[24] # Indices are either train or test indices
+		tested_inputs = self.inputs[indices]
+		tested_targets = self.targets[indices]
 
-		with tf.Session() as sess:
-			"""
-			# Restore model
-			#saver = tf.train.Saver(tf.trainable_variables())
-			#saver.restore(sess,tf.train.latest_checkpoint(self.path))
-			saver = tf.train.import_meta_graph(self.path+'/my_test_model-'+str(self.epochs)+'.meta')
+		with tf.Session() as sess: 
+
+			# Restore the model
+			saver = tf.train.import_meta_graph(self.path + '/my_test_model-'+str(args.epochs-1)+'.meta')
 			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
 
-			sess.run(tf.global_variables_initializer())
-			variables_names = [v.name for v in tf.trainable_variables()]
-			values = sess.run(variables_names)
-			"""
 
+			# Retrieve model variables
+			keep_prob = graph.get_tensor_by_name(self.gerund+'/keep_prob:0')
+			inputs = graph.get_tensor_by_name(self.gerund+'/input:0')
+			outputs = graph.get_tensor_by_name(self.gerund+'/output:0')
+			logits = graph.get_tensor_by_name(self.gerund+'/decoding_'+self.task+'/logits:0')
+
+			# Prepare model evaluation
+			dec_input = np.zeros((len(tested_inputs), 1)) + self.out_dict['<GO>']   # len(tested_inputs) = #tested samples
+			for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
+
+			    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tested_inputs[:,1:],outputs:dec_input})
+			    prediction = test_logits[:,-1].argmax(axis=-1)
+			    dec_input = np.hstack([dec_input, prediction[:,None]])
+
+			# Evaluate performance
+			fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], tested_targets[:,1:],self.out_dict, mode='test')
+			dists, tokenAcc = sess.run([self.acc_object.dists, self.acc_object.token_acc], feed_dict={self.acc_object.fullPred:fullPred, self.acc_object.fullTarg: fullTarg})
+			wordAcc  = np.count_nonzero(dists==0) / len(dists) 
+			print(self.gerund.upper()+ ' - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
+
+
+
+			print('\n',"Now printing the mistakes on the ", mode, " dataset")
+			file = open('mistakes_'+mode+'_data.txt','w')
+
+			for ind,pred in enumerate(dec_input[:,1:]):
+				if any(pred != tested_targets[ind,1:]):
+
+					inp_str = ''.join([self.input_dict_rev[k] if self.input_dict_rev[k] != '<PAD>' and self.input_dict_rev[k] != '<GO>'  else '' for k in tested_inputs[ind,:]])
+					out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
+					tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tested_targets[ind,1:]])
+
+					print("The ", inp_seq, " sequence ", inp_str , "  =>  ", out_str, ' instead of ', tar_str, file=file)
+			print("Amount of samples in dataset is ", str(ind))
+			file.close()
+
+
+
+
+
+
+			"""
 			saver = tf.train.import_meta_graph(self.path+'/my_test_model-'+str(self.epochs)+'.meta')
 			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
 
@@ -312,19 +349,7 @@ class evaluation(object):
 			word_acc  = np.count_nonzero(dists==0) / len(dists) 
 
 			print('Accuracy on {:5s} set is for tokens{:>6.3f} and for words {:>6.3f}'.format(mode,token_acc, word_acc))
-			print('\n',"Now printing the mistakes on the ", mode, " dataset")
-			file = open('mistakes_'+mode+'_data.txt','w')
-
-			for ind,pred in enumerate(dec_input[:,1:]):
-				if any(pred != tested_labels[ind,1:]):
-
-					inp_str = ''.join([self.input_dict_rev[k] if self.input_dict_rev[k] != '<PAD>' and self.input_dict_rev[k] != '<GO>'  else '' for k in tested_inputs[ind,:]])
-					out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
-					tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tested_labels[ind,1:]])
-
-					print("The ", out, " sequence ", inp_str , "  =>  ", out_str, ' instead of ', tar_str, file=file)
-			print("Amount of samples in dataset is ", str(ind))
-			file.close()
+			"""
 
 
 

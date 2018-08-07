@@ -63,7 +63,7 @@ if __name__ == '__main__':
                         help="Sets the task to solve, default is 'TIMIT_P2G', alternatives are 'Dates', 'TIMIT_G2P' "
                         " and later on more...")
     parser.add_argument('--learn_type', default='normal', type=str,
-                        help="Determines the training regime. Choose from set {'normal', 'lds'}.")
+                        help="Determines the training regime. Choose from set {'normal', 'lds', 'interleaved'}.")
     parser.add_argument('--reading', default=False, type=bool,
                         help="Specifies whether reading task is also accomplished. Default is False. ")
 
@@ -415,6 +415,15 @@ if __name__ == '__main__':
     ############## PREPARATION FOR TRAINING ##############
 
     regime = args.learn_type
+
+    if args.learn_type == 'interleaved':
+        regime = 'lds'
+    else:
+        regime = args.learn_type
+
+
+
+
     #tf.reset_default_graph()
     with tf.variable_scope('writing'):
         model_write = bLSTM(x_seq_length, y_seq_length, x_dict_size, num_classes, args.input_embed_size, args.output_embed_size, args.num_layers, args.num_nodes, args.batch_size,
@@ -497,8 +506,6 @@ if __name__ == '__main__':
 
         print('Epoch ', epoch + 1)
         t = time()    
-        # Regular training (do not show performance)
-        #if epoch % args.print_step != 0 :
 
 
         if regime == 'normal':
@@ -564,41 +571,7 @@ if __name__ == '__main__':
                     _, batch_loss, batch_logits = sess.run([model_read.optimizer, model_read.loss, model_read.logits], feed_dict = 
                                                     {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch, 
                                                     model_read.outputs:read_out_batch[:,:-1], model_read.targets:read_out_batch[:,1:]})
-                    #read_loss.append(batch_loss)
-
-                  
-        #lds_losses[epoch] = sum(lds_loss)/len(lds_loss)
-        #reg_losses[epoch] = sum(reg_loss)/len(reg_loss)
-        #lds_ratios[epoch] = sum(rats_lds)/len(rats_lds)
-        #corr_ratios[epoch] = sum(rats_corr)/len(rats_corr)
-        #if args.reading:
-        #    read_losses[epoch] = sum(read_loss)/len(read_loss)
-
-        #print("Ratio correct  words: " + str(corr_ratios[epoch])+" and in LdS sense: " + str(lds_ratios[epoch]))
-        #print("LdS loss is " + str(lds_losses[epoch]) + " while regular loss is" + str(reg_losses[epoch]))
-
-
-        """
-        # Alternative
-        dec_input = np.zeros((len(write_inp_batch), 1)) + dict_char2num_y['<GO>']
-        # Generate character by character (for the entire batch, weirdly)
-        for i in range(y_seq_length):
-            targs = write_out_batch[:,1:2+i]
-            #print("Does not work", dec_input.shape, targs.shape)
-            _, batch_loss, batch_logits = sess.run([model_write.optimizer, model_write.loss, model_write.logits], feed_dict = 
-                                                    {model_write.keep_prob:args.dropout, model_write.inputs:write_inp_batch, 
-                                                    model_write.outputs:dec_input, model_write.targets:targs, model_write.pred_seq_len:i+1})
-            prediction = batch_logits[:,-1].argmax(axis=-1)
-            #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
-            dec_input = np.hstack([dec_input, prediction[:,None]])
-        """
-               
-                
-
-
-            
-        #else: # Display performance
-        #if epoch % args.print_step == 0: 
+      
 
         # ---------------- SHOW TRAINING PERFORMANCE -------------------------
         
@@ -937,10 +910,20 @@ if __name__ == '__main__':
                     reg_loss=reg_losses,corr_ratio=corr_ratios, read_losses=read_losses)
             saver.save(sess, save_path + '/my_test_model',global_step=epoch)
 
+        # If lds learning is performed, training regime is changed to normal after half of the epochs 
         if args.epochs // 2 == epoch and regime == 'lds':
             regime = 'normal'
-            model_write.learn_type = 'normal'
-            print("Training regime changed to normal")
+            print("Training regime changed to normal\n")
+
+        elif epoch > args.epochs // 2 and args.learn_type == 'interleaved' and epoch % 5 == 0:
+            regime = 'lds'
+            print("Training regime changed to lds\n")
+
+        elif epoch > args.epochs // 2 and args.learn_type == 'interleaved' and regime == 'lds':
+            regime = 'normal'
+            print("Training regime changed back to normal \n")
+
+
 
 
                     
@@ -973,7 +956,7 @@ print("DONE!")
 
 
 
-
+"""
 
 tf.reset_default_graph()
 with tf.Session() as sess:
@@ -994,26 +977,6 @@ with tf.Session() as sess:
     outputs = graph.get_tensor_by_name(gerund+'/output:0')
     logits = graph.get_tensor_by_name(gerund+'/decoding_write/logits:0')
 
-    """
-    word_num = np.expand_dims(X_test[2,1:],0)
-    print(dict_char2num_x)
-    print(word_num)
-    dec_input = np.zeros([1,1]) + dict_char2num_y['<GO>']
-
-
-    for k in range(word_num.shape[1]):
-        pred = sess.run(logits, feed_dict={keep_prob:1.0, inputs:word_num, outputs:dec_input})
-        char = pred[:,-1].argmax(axis=-1)
-        dec_input = np.hstack([dec_input, char[:,None]]) # Identical to np.expand_dims(char,1)
-        print(dec_input)
-
-    output_dict_rev = dict(zip(dict_char2num_y.values(), dict_char2num_y.keys()))
-    dec_input = np.expand_dims(np.squeeze(dec_input)[np.squeeze(dec_input)!=0],axis=0)
-    output = ''.join([output_dict_rev[num] if output_dict_rev[num]!='<PAD>' else '' for ind,num in enumerate(dec_input[0,1:])])
-    word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in np.squeeze(word_num)])]
-
-    print("The sequence ", word, "  =>  ", output, ' num ', dec_input[0,1:])
-    """
     print(" RESTORED WRITING TEST ")
 
 
@@ -1034,13 +997,13 @@ with tf.Session() as sess:
     wordAcc  = np.count_nonzero(dists==0) / len(dists) 
     print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
     
-    """
+    
     for k in range(dec_input[:,1:].shape[0]):
         output = [''.join([dict_num2char_y[l] if dict_num2char_y[l]!='<PAD>' and dict_num2char_y[l]!='<GO>' else '' for l in dec_input[k,:]])]
         word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in X_test[k,1:]])]
         targ = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in Y_test[k,1:]])]
         print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ)
-    """
+    
 
 
 
@@ -1073,14 +1036,13 @@ with tf.Session() as sess:
     read_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
     print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
     
-    """
+    
     for k in range(read_dec_input[:,1:].shape[0]):
         output = [''.join([dict_num2char_x[l] if dict_num2char_x[l]!='<PAD>' and dict_num2char_x[l]!='<GO>' else '' for l in read_dec_input[k,:]])]
         targ = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in X_test[k,1:]])]
         word = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in Y_test[k,1:]])]
         print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ)
-    """
-
+    
 
 
 
@@ -1120,7 +1082,7 @@ with tf.Session() as sess:
 
 
 
-
+        """
 
 
 
