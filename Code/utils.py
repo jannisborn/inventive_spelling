@@ -293,33 +293,6 @@ def set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y):
 
 
 
-def BAS_json(path):
-    """
-    This method receives a path for the BAS-SprecherInnen corpus and iterates through all JSON files in all subfolders.
-    It creates and returns a list of words and a list of pronounciations
-    """
-    
-    import json, os
-
-    words = []
-    prons = []
-    ind = 0
-    # Read in filenames
-    for dirpath, dirnames, filenames in os.walk(path):
-        for filename in [f for f in filenames if f.endswith(".json")]:
-
-            if filename == 'SprecherInnen_DBconfig.json':
-                continue
-
-            # Open the json
-            with open(os.path.join(dirpath,filename)) as json_file:
-                data = json.load(json_file)
-
-                for item in data['levels'][1]['items']:
-                    words.append(item['labels'][0]['value'])
-                    prons.append(item['labels'][1]['value'])
-
-    return words,prons
 
 
 def clean_corpus_BAS_Sprecherinnen(words,prons):
@@ -799,9 +772,9 @@ def lds_compare(logits, targets, alt_targets, dict_out, mode):
     
     # How many words were written alternatively?
     rat = sum(counter) / len(counter)
-    if rat > 0:
-          print("UTILS - Ratio of words that were 'correct' in LdS sense: ", str(rat))
-          
+    #if rat > 0:
+    #      print("UTILS - Ratio of words that were 'correct' in LdS sense: ", str(rat))
+
     return new_targets if mode == 'train' else new_targets, rat
 
 def num_to_str(inputs,logits,labels,alt_targs,dict_in,dict_out):
