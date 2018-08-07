@@ -767,7 +767,7 @@ def lds_compare(prediction, targets, alt_targets, dict_out):
         # Check whether the word was actually correctly spelled.
         if np.array_equal(prediction[wo_ind,:],targets[wo_ind,:]):
             new_targets[wo_ind,:] = targets[wo_ind,:]
-
+            counter.append(wrote_alternative)
 
         else:
             # If not, check all the alternative writings
@@ -785,11 +785,9 @@ def lds_compare(prediction, targets, alt_targets, dict_out):
 
                     continue
 
-        # In case the spelling was actuall bullshit
-        if not wrote_alternative:
-            new_targets[wo_ind,:] = targets[wo_ind,:]
-
-        counter.append(wrote_alternative)
+            # In case the spelling was actuall bullshit
+            if not wrote_alternative:
+                new_targets[wo_ind,:] = targets[wo_ind,:]
     
     # How many words were written alternatively?
     rat = sum(counter) / len(counter)
