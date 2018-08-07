@@ -381,9 +381,9 @@ if __name__ == '__main__':
 
     # Set remaining parameter based on the processed data
     x_dict_size, num_classes, x_seq_length, y_seq_length, dict_num2char_x, dict_num2char_y = utils.set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y)
-    #print(dict_num2char_x)
-    #print()
-    #print(dict_num2char_y)
+    print(dict_num2char_x)
+    print()
+    print(dict_num2char_y)
 
     # Split data into training and testing
     indices = range(len(inputs))
@@ -671,6 +671,8 @@ if __name__ == '__main__':
                 if epoch > theta_min and epoch < theta_max:
                     utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
+                pred = w_batch_logits.argmax(axis=-1)
+                write_test_new_targs = utils.lds_compare(pred,write_out_batch[:, 1:], write_alt_targs[:,1:,:], dict_num2char_y)
 
                 write_epoch_loss += batch_loss
                 #write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
@@ -847,14 +849,9 @@ if __name__ == '__main__':
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
 
             # Now the generated sequence need to be compared with the alternative targets:
-            write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y)
-
-
-            #lds_ratios_test[epoch//args.print_step] = rat_lds
-            #corr_ratios_test[epoch//args.print_step] = rat_corr
-            #lds_losses_test[epoch//args.print_step] = write_loss_lds
-            #reg_losses_test[epoch//args.print_step] = write_loss
-
+            #write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y)
+            write_test_new_targs = Y_test[:,1:]
+            #€€€€€€€€€€ WRONG -----------------------------------------------
 
 
             #write_oldAcc_o, write_tokenAcc_o , write_wordAcc_o = utils.accuracy(write_dec_input, write_test_new_targs,dict_char2num_y, mode='test')
