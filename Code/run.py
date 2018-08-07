@@ -531,7 +531,7 @@ if __name__ == '__main__':
                     read_word_accs[k] = np.count_nonzero(dists==0) / len(dists) 
 
         
-        print("Externally evaluated accuracy ", np.mean(write_word_accs[k]), ' vs internal: ' rat_corr)
+        print("Externally evaluated accuracy ", np.mean(write_word_accs[k]), ' vs internal: ', rat_corr)
 
         lds_losses[epoch] = sum(lds_loss)
         write_losses[epoch] = sum(write_loss)
