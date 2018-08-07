@@ -758,9 +758,9 @@ def lds_compare(logits, targets, alt_targets, dict_out, mode):
     """
 
     if mode == 'train':
-        predictions = logits.argmax(axis=-1)
+        prediction = logits.argmax(axis=-1)
     elif mode == 'test':
-        predictions = logits
+        prediction = logits
 
     batch_size = targets.shape[0]
     max_alt_spellings = alt_targets.shape[2]
