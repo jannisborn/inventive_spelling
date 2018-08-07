@@ -740,7 +740,7 @@ def get_last_id(dataset):
     return max(IDs)
 
 
-def lds_compare(prediction, targets, alt_targets):
+def lds_compare(prediction, targets, alt_targets, dict_out):
     """
     Like in sequence_loss_lds this method checks whether the generated predictions match any of the alternative targets
 
@@ -758,7 +758,6 @@ def lds_compare(prediction, targets, alt_targets):
     batch_size = targets.shape[0]
     max_alt_spellings = alt_targets.shape[2]
 
-    print(prediction.shape,targets.shape,alt_targets.shape)
     new_targets = np.zeros(targets.shape, np.int64)
     counter = []
 
@@ -776,6 +775,12 @@ def lds_compare(prediction, targets, alt_targets):
                 if np.array_equal(prediction[wo_ind,:], alt_targets[wo_ind,:,tar_ind]):
                     wrote_alternative = True 
                     new_targets[wo_ind,:] = alt_targets[wo_ind,:,tar_ind]
+
+                    # Print alternative writings
+                    out_str = ''.join([dict_out[l] if l!= 0 and dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in prediction[wo_ind,:]])
+                    label_str = ''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in targets[wo_ind,:]])
+                    alt_label_str = ''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in alt_targets[wo_ind,:,tar_ind]])
+                    print("The output " + out_str.upper() + " was accepted for " + label_str.upper()+", alt. writing: "+alt_label_str.upper())
                     continue
 
         # In case the spelling was actuall bullshit
@@ -788,6 +793,10 @@ def lds_compare(prediction, targets, alt_targets):
     rat = sum(counter) / len(counter)
     if rat > 0:
           print("Ratio of words that were 'correct' in LdS sense: ", str(rat))
+
+
+
+        
 
 
     return new_targets

@@ -662,7 +662,7 @@ if __name__ == '__main__':
                                                                     feed_dict = {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
-
+                print("Ratio of LdS correct words ", str(rat_lds))
                 rats_lds.append(rat_lds)
                 rats_corr.append(rat_corr)
                 lds_loss.append(batch_loss)
@@ -847,7 +847,7 @@ if __name__ == '__main__':
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
 
             # Now the generated sequence need to be compared with the alternative targets:
-            write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:])
+            write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y)
 
 
             #lds_ratios_test[epoch//args.print_step] = rat_lds
@@ -921,7 +921,7 @@ if __name__ == '__main__':
 
         elif epoch > args.epochs // 2 and args.learn_type == 'interleaved' and regime == 'lds':
             regime = 'normal'
-            print("Training regime changed back to normal \n")
+            print("Training regime changed back to normal\n")
 
 
 
