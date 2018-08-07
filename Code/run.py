@@ -653,7 +653,6 @@ if __name__ == '__main__':
 
         elif regime == 'lds':
             
-            print(" NOW SHOW MODEL PERFORMANCE")
             for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
 
@@ -671,8 +670,7 @@ if __name__ == '__main__':
                 if epoch > theta_min and epoch < theta_max:
                     utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
 
-                pred = w_batch_logits.argmax(axis=-1)
-                write_test_new_targs = utils.lds_compare(pred,write_out_batch[:, 1:], write_alt_targs[:,1:,:], dict_num2char_y)
+                _ = utils.lds_compare(w_batch_logits,write_out_batch[:, 1:], write_alt_targs[:,1:,:], dict_num2char_y, 'train')
 
                 write_epoch_loss += batch_loss
                 #write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
@@ -849,12 +847,8 @@ if __name__ == '__main__':
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
 
             # Now the generated sequence need to be compared with the alternative targets:
-            #write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y)
-            write_test_new_targs = Y_test[:,1:]
-            #€€€€€€€€€€ WRONG -----------------------------------------------
+            write_test_new_targs = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
 
-
-            #write_oldAcc_o, write_tokenAcc_o , write_wordAcc_o = utils.accuracy(write_dec_input, write_test_new_targs,dict_char2num_y, mode='test')
 
             fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], write_test_new_targs,dict_char2num_y, mode='test')
             dists, write_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 

@@ -740,21 +740,28 @@ def get_last_id(dataset):
     return max(IDs)
 
 
-def lds_compare(prediction, targets, alt_targets, dict_out):
+def lds_compare(logits, targets, alt_targets, dict_out, mode):
     """
     Like in sequence_loss_lds this method checks whether the generated predictions match any of the alternative targets
 
     Parameters:
     --------------
-    PREDICTION      {np.array}  2D  of shape batch_size x seq_len
+    LOGITS          {np.array}  {2D,3D}  of shape {batch_size x seq_len, bs x sl x num_classes} depending on whether mode is train or test 
     TARGETS         {np.array}  2D  of shape batch_size x seq_len
     ALT_TARGETS     {np.array}  3D  of shape batch_size x seq_len x max_alt_writings
+    MODE            {string} from {'train','test'}
 
     Returns:
     --------------
     NEW_TARGETS     {np.array}  2D  of shape batch_size x seq_len
 
     """
+
+    if mode == 'train':
+        predictions = logits.argmax(axis=-1)
+    elif mode == 'test':
+        predictions = logits
+
     batch_size = targets.shape[0]
     max_alt_spellings = alt_targets.shape[2]
 
@@ -777,10 +784,10 @@ def lds_compare(prediction, targets, alt_targets, dict_out):
                     new_targets[wo_ind,:] = alt_targets[wo_ind,:,tar_ind]
 
                     # Print alternative writings
-                    out_str = ''.join([dict_out[l] if l!= 0 and dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in prediction[wo_ind,:]])
-                    label_str = ''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in targets[wo_ind,:]])
-                    alt_label_str = ''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in alt_targets[wo_ind,:,tar_ind]])
-                    print("UTILS - The output " + out_str.upper() + " was accepted for " + label_str.upper()+", alt. writing: "+alt_label_str.upper())
+                    #out_str = ''.join([dict_out[l] if l!= 0 and dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in prediction[wo_ind,:]])
+                    #label_str = ''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in targets[wo_ind,:]])
+                    #alt_label_str = ''.join([dict_out[l] if dict_out[l] != '<PAD>' and  dict_out[l] != '<GO>' else '' for l in alt_targets[wo_ind,:,tar_ind]])
+                    #print("UTILS - The output " + out_str.upper() + " was accepted for " + label_str.upper()+", alt. writing: "+alt_label_str.upper())
                     counter.append(wrote_alternative)
 
                     continue
