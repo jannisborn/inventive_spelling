@@ -165,8 +165,11 @@ if __name__ == '__main__':
     elif args.gpu_options == 1:
         sess = get_limited_gpu_session(gpu_fraction=args.gpu_fraction)
     else:
-        gpu_options = tf.GPUOptions(allow_growth=True)
-        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        #gpu_options = tf.GPUOptions(allow_growth=True)
+        #sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        sess = tf.Session(config = config)
 
 
     # setting a random seed for reproducibility
@@ -313,12 +316,13 @@ if __name__ == '__main__':
     # Accuracy object
     acc_object  = acc_new()
     acc_object.accuracy()
-    
+
 
     if args.restore:
         utils.retrieve_model()
     else:
-        tf.Graph.finalize()
+        g = tf.get_default_graph()
+        g.finalize()
         # tensor to initialize the variables
         init_tensor = tf.global_variables_initializer()
         # initializing the variables
