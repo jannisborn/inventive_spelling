@@ -372,7 +372,7 @@ if __name__ == '__main__':
                                                         {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:, 1:], 
                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                print("Time on batch of training took ", time()-tt)
+                #print("Time on batch of training took ", time()-tt)
 
                 if args.reading:
 
@@ -396,7 +396,7 @@ if __name__ == '__main__':
                                                         {model_write.keep_prob:args.dropout, model_write.inputs: write_inp_batch[:,1:], 
                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                print("Time on batch of training took ", time()-tt)
+                #print("Time on batch of training took ", time()-tt)
 
 
                 if epoch > theta_min and epoch < theta_max:
