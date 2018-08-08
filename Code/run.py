@@ -310,11 +310,15 @@ if __name__ == '__main__':
                          indices_train, 'test_indices':indices_test})
 
 
-
+    # Accuracy object
+    acc_object  = acc_new()
+    acc_object.accuracy()
+    
 
     if args.restore:
         utils.retrieve_model()
     else:
+        tf.Graph.finalize()
         # tensor to initialize the variables
         init_tensor = tf.global_variables_initializer()
         # initializing the variables
@@ -339,9 +343,7 @@ if __name__ == '__main__':
     lds_ratios = np.zeros((args.epochs,1))
     lds_ratios_test = np.zeros((args.epochs//args.print_step + 1,1))
 
-    # Accuracy object
-    acc_object  = acc_new()
-    acc_object.accuracy()
+
 
 
 
