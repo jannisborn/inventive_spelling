@@ -85,11 +85,11 @@ if __name__ == '__main__':
     # Model hyperparameter
     parser.add_argument('--learning_rate', default=1e-03, type=float,
                         help='The learning rate of the optimizer')
-    parser.add_argument('--input_embed_size', default=96, type=int,
+    parser.add_argument('--input_embed_size', default=64, type=int,
                         help='The feature space dimensionality for the input characters')
-    parser.add_argument('--output_embed_size', default=96, type=int,
+    parser.add_argument('--output_embed_size', default=64, type=int,
                         help='The feature space dimensionality for the output characters')
-    parser.add_argument('--num_nodes', default=64, type=int,
+    parser.add_argument('--num_nodes', default=48, type=int,
                         help='The number of LSTM nodes per layer in both encoder and decoder')
     parser.add_argument('--num_layers', default=2, type=int,
                         help='The number of layers in both encoder and decoder')
@@ -389,12 +389,14 @@ if __name__ == '__main__':
 
             for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
 
+                tt=time()
                 _, batch_loss, write_new_targs, rat_lds, rat_corr, batch_loss_reg, w_batch_logits= sess.run([model_write.lds_optimizer, model_write.loss_lds, model_write.read_inps, 
                     model_write.rat_lds, model_write.rat_corr, model_write.loss_reg, model_write.logits], 
                                 feed_dict = 
                                                         {model_write.keep_prob:args.dropout, model_write.inputs: write_inp_batch[:,1:], 
                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
+                print("Time on batch of training took ", time()-tt)
 
 
                 if epoch > theta_min and epoch < theta_max:
