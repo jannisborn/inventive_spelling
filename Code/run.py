@@ -324,12 +324,14 @@ if __name__ == '__main__':
 
         # tensor to initialize the variables
         init_tensor = tf.global_variables_initializer()
+        saver = tf.train.Saver()
+
+        # Finalize graph
         g = tf.get_default_graph()
         g.finalize()
         # initializing the variables
         sess.run(init_tensor)
 
-        saver = tf.train.Saver()
 
 
     if args.reading:
