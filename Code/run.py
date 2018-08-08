@@ -165,7 +165,8 @@ if __name__ == '__main__':
     elif args.gpu_options == 1:
         sess = get_limited_gpu_session(gpu_fraction=args.gpu_fraction)
     else:
-        sess = tf.Session()
+        gpu_options = tf.GPUOptions(allow_growth=True)
+        sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
 
 
     # setting a random seed for reproducibility
