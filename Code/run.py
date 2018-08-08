@@ -367,12 +367,12 @@ if __name__ == '__main__':
             
             # Train Writing
                 tt=time()
-                _, batch_loss, w_batch_logits, loss_lds, rat_lds, rat_corr = sess.run([model_write.optimizer, model_write.loss, model_write.logits, 
-                    model_write.loss_lds, model_write.rat_lds, model_write.rat_corr], feed_dict = 
+                _, batch_loss, w_batch_logits, loss_lds, rat_lds = sess.run([model_write.optimizer, model_write.loss, model_write.logits, 
+                    model_write.loss_lds, model_write.rat_lds], feed_dict = 
                                                         {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:, 1:], 
                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                print("Time on batch of training took ", time()-tt)
+                #print("Time on batch of training took ", time()-tt)
 
                 if args.reading:
 
