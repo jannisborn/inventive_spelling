@@ -70,16 +70,16 @@ class evaluation(object):
 		self.retrieve_model_args()
 		self.set_hyperparams()
 
-		#self.show_mistakes('train')
-		#print("Training mistakes saved.")
-		#self.show_mistakes('test')
-		self.predict_input()
+		self.show_mistakes('train')
+		print("Training mistakes saved.")
+		self.show_mistakes('test')
+		#self.predict_input()
 
 		self.plot_pca(mode='input')
-		#self.plot_pca(mode='output')
+		self.plot_pca(mode='output')
 
-		#self.plot_tsne(mode='input')
-		#self.plot_tsne(mode='output')
+		self.plot_tsne(mode='input')
+		self.plot_tsne(mode='output')
 
 
 
@@ -369,28 +369,7 @@ class evaluation(object):
 
 		"""
 		from sklearn.decomposition import PCA
-		from sklearn.preprocessing import StandardScaler
 
-
-		"""
-		with tf.Session() as sess:
-
-			#saver = tf.train.Saver(tf.global_variables())
-			#saver.restore(sess,tf.train.latest_checkpoint(self.path))
-			saver = tf.train.import_meta_graph(self.path+'/my_test_model-'+str(self.epochs)+'.meta')
-			saver.restore(sess,tf.train.latest_checkpoint('./'))
-			sess.run(tf.global_variables_initializer())
-
-			variables_names = [v.name for v in tf.trainable_variables()]
-			values = sess.run(variables_names)
-
-			for k, v in zip(variables_names, values):
-				if 'writing/encoding_write/enc_embedding' in k:
-				    print("Variable: ", k)
-				    print("Shape: ", v.shape)
-				    print(v)
-				    print()
-		"""
 		with tf.Session() as sess:
 
 			# Restore model

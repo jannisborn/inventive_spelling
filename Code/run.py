@@ -356,11 +356,13 @@ if __name__ == '__main__':
             for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size,Y_alt_train)):
             
             # Train Writing
+                tt=time()
                 _, batch_loss, w_batch_logits, loss_lds, rat_lds, rat_corr = sess.run([model_write.optimizer, model_write.loss, model_write.logits, 
                     model_write.loss_lds, model_write.rat_lds, model_write.rat_corr], feed_dict = 
                                                         {model_write.keep_prob: args.dropout, model_write.inputs: write_inp_batch[:, 1:], 
                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
+                print("Time on batch of training took ", time()-tt)
 
                 if args.reading:
 
@@ -398,7 +400,8 @@ if __name__ == '__main__':
                                                     {model_read.keep_prob:args.dropout, model_read.inputs: read_inp_batch, 
                                                     model_read.outputs:read_out_batch[:,:-1], model_read.targets:read_out_batch[:,1:]})
       
-
+        print("The regular training took: ", time()-t)
+        tt=time()
         # ---------------- SHOW TRAINING PERFORMANCE -------------------------
         
         rats_lds = []
@@ -420,18 +423,21 @@ if __name__ == '__main__':
         if regime == 'normal':
 
             for k, (write_inp_batch, write_out_batch,write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
+                t = time()
                 batch_loss, w_batch_logits, loss_lds, rat_lds, rat_corr = sess.run([model_write.loss, model_write.logits, 
                     model_write.loss_lds, model_write.rat_lds, model_write.rat_corr], feed_dict =
                                                          {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                          model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
+                print("Training one batch without dropout took", time()-t)
 
-        
+                t=time()
                 fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
-                
+                print("Prepare accuracy took ", time()-t)
+                t=time()
                 dists, write_token_accs[k] = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
-
+                print("Compute accuracy took", time()-t)
                 write_word_accs[k] = np.count_nonzero(dists==0) / len(dists) 
                 #print("Time for new accuracy ", time()-t)
 
@@ -482,8 +488,9 @@ if __name__ == '__main__':
 
                 if epoch > theta_min and epoch < theta_max:
                     utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
-
+                t=time()
                 _ = utils.lds_compare(w_batch_logits,write_out_batch[:, 1:], write_alt_targs[:,1:,:], dict_num2char_y, 'train')
+                print("Time it took lds_compare", time()-t)
 
                 #write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
                 fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
@@ -538,7 +545,8 @@ if __name__ == '__main__':
             trainPerf[epoch//args.print_step, 4] = np.mean(read_word_accs)
             trainPerf[epoch//args.print_step, 5] = np.mean(read_old_accs)
 
-
+        print("TIME all the recording of training toook ", time()-tt)
+        tt=time()
         # --------------- SHOW TESTING PERFORMANCE -----------------
 
 
@@ -554,9 +562,10 @@ if __name__ == '__main__':
                 #print("Y!")
                 write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
-           
+            t=time()
             write_test_new_targs, tmp = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
             lds_ratios_test[epoch] = tmp
+            print("Time lds compare in testing: ", time()-t)
 
             fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
             dists, write_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
@@ -652,7 +661,7 @@ if __name__ == '__main__':
 
 
 
-        
+        print("Time the testing took", time()-tt)
 
         if epoch % args.save_model == 0 and epoch > 0:
             #saver_write.save(sess, save_path + '/Model_write', global_step=epoch, write_meta_graph=True)
