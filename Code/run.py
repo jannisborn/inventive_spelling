@@ -321,10 +321,11 @@ if __name__ == '__main__':
     if args.restore:
         utils.retrieve_model()
     else:
-        g = tf.get_default_graph()
-        g.finalize()
+
         # tensor to initialize the variables
         init_tensor = tf.global_variables_initializer()
+        g = tf.get_default_graph()
+        g.finalize()
         # initializing the variables
         sess.run(init_tensor)
 
