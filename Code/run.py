@@ -434,11 +434,11 @@ if __name__ == '__main__':
 
                 t=time()
                 fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
-                print("Prepare accuracy took ", time()-t)
+                #print("Prepare accuracy took ", time()-t)
                 t=time()
                 dists, write_token_accs[k] = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
-                print("Compute accuracy took", time()-t)
+                #print("Compute accuracy took", time()-t)
                 write_word_accs[k] = np.count_nonzero(dists==0) / len(dists) 
                 #print("Time for new accuracy ", time()-t)
 
@@ -489,9 +489,7 @@ if __name__ == '__main__':
 
                 if epoch > theta_min and epoch < theta_max:
                     utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
-                t=time()
                 _ = utils.lds_compare(w_batch_logits,write_out_batch[:, 1:], write_alt_targs[:,1:,:], dict_num2char_y, 'train')
-                print("Time it took lds_compare", time()-t)
 
                 #write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
                 fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
@@ -563,10 +561,8 @@ if __name__ == '__main__':
                 #print("Y!")
                 write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
-            t=time()
             write_test_new_targs, tmp = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
             lds_ratios_test[epoch] = tmp
-            print("Time lds compare in testing: ", time()-t)
 
             fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
             dists, write_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
@@ -619,7 +615,7 @@ if __name__ == '__main__':
                 #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
 
-            # Now the generated sequence need to be compared with the alternative targets:
+            # Now the generated sequence need to be lds_compareed with the alternative targets:
             write_test_new_targs, tmp = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
             lds_ratios_test[epoch] = tmp
 
