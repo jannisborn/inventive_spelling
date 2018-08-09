@@ -145,8 +145,6 @@ class evaluation(object):
 		return list(map(int,number_string_list))
 
 
-
-
 	def set_hyperparams(self):
 		"""
 		Sets hyperparameter for the class, based on the user-defined specs (e.g. args.task)
@@ -173,7 +171,7 @@ class evaluation(object):
 
 		self.inp_seq_nat = 'phonetic' if args.task == 'write' else 'orthografic' # To read in a type of sequence
 		self.inp_seq_human = 'spoken' if args.task == 'write' else 'written'
-		self.gerund = 'writing' if self.task == 'write' else 'reading'
+		self.model_name = 'writing' if self.task == 'write' else 'reading'
 		self.out_seq_len = self.model_args_write[1] if args.task == 'write' else self.model_args_read[1]
 
 
@@ -203,10 +201,10 @@ class evaluation(object):
 			#	print(v)
 
 			graph = tf.get_default_graph()
-			keep_prob = graph.get_tensor_by_name(self.gerund+'/keep_prob:0')
-			inputs = graph.get_tensor_by_name(self.gerund+'/input:0')
-			outputs = graph.get_tensor_by_name(self.gerund+'/output:0')
-			logits = graph.get_tensor_by_name(self.gerund+'/decoding_'+args.task+'/logits:0')
+			keep_prob = graph.get_tensor_by_name(self.model_name+'/keep_prob:0')
+			inputs = graph.get_tensor_by_name(self.model_name+'/input:0')
+			outputs = graph.get_tensor_by_name(self.model_name+'/output:0')
+			logits = graph.get_tensor_by_name(self.model_name+'/decoding_'+args.task+'/logits:0')
 
 			while loop:
 
@@ -273,10 +271,10 @@ class evaluation(object):
 
 
 			# Retrieve model variables
-			keep_prob = graph.get_tensor_by_name(self.gerund+'/keep_prob:0')
-			inputs = graph.get_tensor_by_name(self.gerund+'/input:0')
-			outputs = graph.get_tensor_by_name(self.gerund+'/output:0')
-			logits = graph.get_tensor_by_name(self.gerund+'/decoding_'+self.task+'/logits:0')
+			keep_prob = graph.get_tensor_by_name(self.model_name+'/keep_prob:0')
+			inputs = graph.get_tensor_by_name(self.model_name+'/input:0')
+			outputs = graph.get_tensor_by_name(self.model_name+'/output:0')
+			logits = graph.get_tensor_by_name(self.model_name+'/decoding_'+self.task+'/logits:0')
 
 			# Prepare model evaluation
 			dec_input = np.zeros((len(tested_inputs), 1)) + self.out_dict['<GO>']   # len(tested_inputs) = #tested samples
@@ -290,7 +288,7 @@ class evaluation(object):
 			fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], tested_targets[:,1:],self.out_dict, mode='test')
 			dists, tokenAcc = sess.run([self.acc_object.dists, self.acc_object.token_acc], feed_dict={self.acc_object.fullPred:fullPred, self.acc_object.fullTarg: fullTarg})
 			wordAcc  = np.count_nonzero(dists==0) / len(dists) 
-			print(self.gerund.upper()+ ' - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
+			print(self.model_name.upper()+ ' - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
 
 
 
@@ -370,68 +368,37 @@ class evaluation(object):
 		"""
 		from sklearn.decomposition import PCA
 
-		with tf.Session() as sess:
+		# Load embedding vectors and perform PCA
+		weight_vectors = self.retrieve_feature_vector(mode)
+		pca = PCA(n_components=n_comp)
+		pcs = pca.fit_transform(weight_vectors)
 
-			# Restore model
-			saver = tf.train.import_meta_graph(self.path+'/my_test_model-'+str(self.epochs)+'.meta')
-			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
-			graph = tf.get_default_graph()
+		print("The explained variance of the first", n_comp, 'PCs is (in %):', np.round(100*np.sum(pca.explained_variance_ratio_),3))    
 
+		# Either plot and save the results
+		if plot:
+			fig = plt.figure(figsize = (8,8))
+			ax = fig.add_subplot(1,1,1) 
+			ax.set_xlabel('Principal Component 1', fontsize = 15)
+			ax.set_ylabel('Principal Component 2', fontsize = 15)
+			ax.set_title([self.model_name.title()+' module - PCA of the '+plotted+' embedding vectors '], fontsize = 20)
+			ax.scatter(pcs[:,0], pcs[:,1],s=2)
+			ax.spines['right'].set_visible(False)
+			ax.spines['top'].set_visible(False)
 
-			keep_prob = graph.get_tensor_by_name('reading/keep_prob:0')
-			inputs = graph.get_tensor_by_name('reading/input:0')
-			outputs = graph.get_tensor_by_name('reading/output:0')
-			logits = graph.get_tensor_by_name('reading/decoding_read/logits:0')
+			for k in range(len(pcs)):
+				ax.annotate(dic[k+1],(pcs[k,0], pcs[k,1]))  
 
+			plt.savefig(self.path+"/PCA "+self.model_name+" module " + plotted + "embedding vectors.pdf")
+			np.savez(self.path+"/PCA_"+ling+"_Results", pcs=pcs, pca=pca)
 
+		# or return pcs if method was used as preprocessing in t-SNE
+		else:
 
-			if mode=='input':
-				#weight_vectors = self.net.input_embedding.eval()
-				weight_vectors = sess.run(graph.get_tensor_by_name('reading/encoding_read/enc_embedding:0'))
-				print(weight_vectors)
-				dic = dict(zip(self.input_dict.values(), self.input_dict.keys()))
-				ling = 'phonetic' if args.task == 'write' else 'orthografic'
-			elif mode == 'output':
-				weight_vectors = self.net.output_embedding.eval()
-				dic = dict(zip(self.output_dict.values(), self.output_dict.keys()))
-				ling = 'orthografic' if args.task == 'write' else 'phonetic'
-			else:
-				raise ValueError("Specify mode as either 'input' or 'output'." )
-
-			pca = PCA(n_components=n_comp)
-			pcs = pca.fit_transform(weight_vectors)
-
-			print("The explained variance of the first", n_comp, 'PCs is (in %):', np.round(100*np.sum(pca.explained_variance_ratio_),3))    
-    
-
-			if plot:
+			return pcs
 
 
-				fig = plt.figure(figsize = (8,8))
-				ax = fig.add_subplot(1,1,1) 
-				ax.set_xlabel('Principal Component 1', fontsize = 15)
-				ax.set_ylabel('Principal Component 2', fontsize = 15)
-				ax.set_title(['Projection of the '+ling+' vectors on the first 2 PCs.'], fontsize = 20)
-				ax.scatter(pcs[:,0], pcs[:,1],s=2)
-				ax.spines['right'].set_visible(False)
-				ax.spines['top'].set_visible(False)
-				print(len(pcs))
-				for k in range(len(pcs)):
-					# in output dict 0 is not used as key
-					# will be obsolete after proper retraining
-					if mode=='output' and k<28:
-						
-						ax.annotate(dic[k+1],(pcs[k,0], pcs[k,1]))  
-					else:
-						ax.annotate(dic[k],(pcs[k,0], pcs[k,1]))
 
-				plt.savefig(self.path+"/PCA_"+ling+"_Results.pdf")
-
-				np.save(self.path+"/PCA_"+ling+"_Results", pcs)
-
-			else:
-
-				return pcs
 
 
 
@@ -461,61 +428,80 @@ class evaluation(object):
 
 		from sklearn.manifold import TSNE 
 
+		# Optional PCA preprocessing
+		if pca is not None: 
+			weight_vectors = self.plot_pca(n_comp=pca, mode=mode, plot=False)
+		else:
+			weight_vectors = self.retrieve_feature_vector(mode)
 
+		t = time.time()
+		tsne = TSNE(n_components=2, verbose=1, perplexity=perplexity, n_iter=steps, learning_rate=lr, init=init, angle=angle)
+		tsne_results = tsne.fit_transform(weight_vectors)
+		print('t-SNE done! Time elapsed: {} seconds'.format(time.time()-t))
+
+		fig = plt.figure(figsize = (8,8))
+		ax = fig.add_subplot(1,1,1) 
+		ax.set_xlabel('x-tsne', fontsize = 15)
+		ax.set_ylabel('y-tsne', fontsize = 15)
+		ax.set_title([self.model_name.title()+' module - tSNE of the '+plotted+' embedding vectors'] , fontsize = 20)
+		ax.spines['right'].set_visible(False)
+		ax.spines['top'].set_visible(False)
+		ax.scatter(tsne_results[:,0], tsne_results[:,1],s=2)
+
+		for k in range(len(tsne_results)):
+			ax.annotate(dic[k+1],(tsne_results[k,0], tsne_results[k,1]))  
+
+		filename = self.path+'/tSNE_'+self.model_name+'_module_'+ plotted + '_embedding-vectors_perp='+str(perplexity)+'_step='+str(steps)+'_lr='+str(lr)+'_ang='+str(angle)+'_init='+init+'_pca='+str(pca)
+		plt.savefig(filename + '.pdf')
+		np.save(filename, tsne_results)
+
+
+
+
+		def retrieve_feature_vector(self, mode):
+		"""
+		Helper method that retrieves the input/output embedding vectors of the reading or writing model. Returns to plot_pca or plot_tsne method.
+
+		Parameters:
+		-------------
+		MODE 			{string} either 'input' or 'output' describing which embedding vector should be retrieved
+
+		ReturnsL
+		-------------
+		WEIGHT_VECTOR 	{np.array} of shape dict_size x embedding_dimension
+		"""
+
+		
 		with tf.Session() as sess:
 
-			saver = tf.train.Saver(tf.global_variables())
-			saver.restore(sess,tf.train.latest_checkpoint(self.path))
-
-			if mode=='input':
-				weight_vectors = self.net.input_embedding.eval()
-				dic = dict(zip(self.input_dict.values(), self.input_dict.keys()))
-				ling = 'phonetic' if args.task == 'write' else 'orthografic'
-			elif mode == 'output':
-				weight_vectors = self.net.output_embedding.eval()
-				dic = dict(zip(self.output_dict.values(), self.output_dict.keys()))
-				ling = 'orthografic' if args.task == 'write' else 'phonetic'
-			else:
-				raise ValueError("Specify mode as either 'input' or 'output'." )
+			# Restore model
+			saver = tf.train.import_meta_graph(self.path+'/my_test_model-'+str(self.epochs)+'.meta')
+			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
+			graph = tf.get_default_graph()
 
 
-			if perplexity >= weight_vectors.shape[0]:
-				raise ValueError("Please make sure the perplexity argument is smaller than the number of data points.")
+			# Define variable to restore
+			if self.task == 'write' and mode == 'input':
+				embed_vec_name = 'read'
+				plotted = 'phonetic'
+			elif self.task == 'write' and mode == 'output':
+				embed_vec_name = 'write'
+				plotted = 'orthographic'
+			elif self.task == 'read' and mode == 'input':
+				embed_vec_name = 'write'
+				plotted = 'orthographic'
+			elif self.task == 'read' and mode == 'input':
+				embed_vec_name = 'read'
+				plotted = 'phonetic'
+
+			dic = self.input_dict_rev if mode == 'input' else self.output_dict_rev
+			variable_path = self.model_name + '/encoding_' + embed_vec_name + '/enc_embedding:0'
 
 
-			if pca is not None:
-				# Preprocess via PCA
-				weight_vectors = self.plot_pca(n_comp=pca, mode=mode, plot=False)
+			# Load data and perform PCA
+			weight_vectors = sess.run(graph.get_tensor_by_name(variable_path))
 
-			t = time.time()
-			tsne = TSNE(n_components=2, verbose=1, perplexity=perplexity, n_iter=steps, learning_rate=lr, init=init, angle=angle)
-			tsne_results = tsne.fit_transform(weight_vectors)
-			print('t-SNE done! Time elapsed: {} seconds'.format(time.time()-t))
-
-
-			fig = plt.figure(figsize = (8,8))
-			ax = fig.add_subplot(1,1,1) 
-			ax.set_xlabel('x-tsne', fontsize = 15)
-			ax.set_ylabel('y-tsne', fontsize = 15)
-			ax.set_title('tSNE '+ling+' vectors', fontsize = 20)
-
-			ax.spines['right'].set_visible(False)
-			ax.spines['top'].set_visible(False)
-
-			ax.scatter(tsne_results[:,0], tsne_results[:,1],s=2)
-			for k in range(len(tsne_results)):
-			    # in output dict 0 is not used as key
-				# will be obsolete after proper retraining
-				if mode=='output' and k<28:
-					
-					ax.annotate(dic[k+1],(tsne_results[k,0], tsne_results[k,1]))  
-				else:
-					ax.annotate(dic[k],(tsne_results[k,0], tsne_results[k,1]))  
-
-			filename = self.path+'/tSNE_'+ling+'_perp='+str(perplexity)+'step='+str(steps)+'lr='+str(lr)+'ang='+str(angle)+'init='+init+'pca='+str(pca)
-
-			plt.savefig(filename + '.pdf')
-			np.save(filename, tsne_results)
+		return weight_vectors
 
 
 
