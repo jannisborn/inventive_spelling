@@ -275,9 +275,9 @@ if __name__ == '__main__':
 
     regime = args.learn_type
 
-    if args.learn_type == 'interleaved':
+    if args.learn_type == 'interleaved' or args.learn_type == 'intervened' or args.learn_type == 'intervened + interleaved' :
         regime = 'lds'
-    else:
+    elif args.learn_type == 'normal':
         regime = args.learn_type
 
 
@@ -680,17 +680,53 @@ if __name__ == '__main__':
             saver.save(sess, save_path + '/my_test_model',global_step=epoch)
 
         # If lds learning is performed, training regime is changed to normal after half of the epochs 
-        if args.epochs // 2 == epoch and regime == 'lds':
-            regime = 'normal'
-            print("Training regime changed to normal\n")
+        if args.learn_type == 'lds':
 
-        elif epoch > args.epochs // 2 and args.learn_type == 'interleaved' and epoch % 5 == 0:
-            regime = 'lds'
-            print("Training regime changed to lds\n")
+            if args.epochs // 2 == epoch and regime == 'lds':
+                regime = 'normal'
+                print("Training regime changed to normal\n")
 
-        elif epoch > args.epochs // 2 and args.learn_type == 'interleaved' and regime == 'lds':
-            regime = 'normal'
-            print("Training regime changed back to normal\n")      
+        # In interleaved regime, in regular training (2nd half), every 5th epoch is again LdS epoch
+        elif args.learn_type == 'interleaved':
+
+            if epoch > args.epochs // 2 and epoch % 5 == 0:
+                regime = 'lds'
+                print("Training regime changed to lds\n")
+
+            elif epoch > args.epochs // 2 and regime == 'lds':
+                regime = 'normal'
+                print("Training regime changed back to normal\n") 
+
+        # In intervened regime, within LdS training (1st half), every 10th epoch is a regular epoch
+        elif args.learn_type == 'intervened':
+
+            if epoch < args.epochs // 2 and epoch % 10 == 0 and epoch > 0:
+                regime = 'normal'
+                print("Training regime changed to normal\n")
+
+            elif epoch < args.epochs // 2 and regime == 'normal':
+                regime = 'lds'
+                print("Training regime changed back to lds\n") 
+
+        # In intervened+interleaved regime, both other regimes are combined
+        elif args.learn_type == 'intervened + interleaved':
+
+            if epoch < args.epochs // 2 and epoch % 10 == 0 and epoch > 0:
+                regime = 'normal'
+                print("Training regime changed to normal\n")
+
+            elif epoch < args.epochs // 2 and regime == 'normal':
+                regime = 'lds'
+                print("Training regime changed back to lds\n") 
+
+            elif epoch > args.epochs // 2 and epoch % 5 == 0:
+                regime = 'lds'
+                print("Training regime changed to lds\n")
+
+            elif epoch > args.epochs // 2 and regime == 'lds':
+                regime = 'normal'
+                print("Training regime changed back to normal\n") 
+
     
     saver.save(sess, save_path + '/my_test_model',global_step=epoch)
   
