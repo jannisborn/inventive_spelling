@@ -280,6 +280,8 @@ if __name__ == '__main__':
     elif args.learn_type == 'normal':
         regime = args.learn_type
 
+    print("REGIME IS ", regime)
+
 
 
 
