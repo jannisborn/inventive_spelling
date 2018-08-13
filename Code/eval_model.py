@@ -56,7 +56,7 @@ class evaluation(object):
 		self.learn_type = args.learn_type
 		self.task = args.task
 		self.id = args.id 
-		self.epochs = args.epochs - 1
+		self.epochs = args.epochs - 1 if args.epochs == 250 else args.epochs
 
 		# Receives the path to the folder of a stored model
 		self.root_local = os.path.expanduser("~")+'/Desktop/LDS_Data/'
@@ -75,11 +75,11 @@ class evaluation(object):
 		self.show_mistakes('test')
 		#self.predict_input()
 
-		self.plot_pca(mode='input')
-		self.plot_pca(mode='output')
+		self.plot_pca(2,'input')
+		self.plot_pca(2,'output')
 
-		self.plot_tsne(mode='input')
-		self.plot_tsne(mode='output')
+		self.plot_tsne('input')
+		self.plot_tsne('output')
 
 
 
@@ -249,7 +249,7 @@ class evaluation(object):
 
 
 
-	def show_mistakes(self,mode='test'):
+	def show_mistakes(self,mode):
 		"""
 		Show the mistakes of the model on training or testing data and saves the mistakes to a .txt file
 
@@ -268,6 +268,7 @@ class evaluation(object):
 			# Restore the model
 			saver = tf.train.import_meta_graph(self.path + '/my_test_model-'+str(args.epochs-1)+'.meta')
 			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
+			graph = tf.get_default_graph()
 
 
 			# Retrieve model variables
@@ -277,7 +278,7 @@ class evaluation(object):
 			logits = graph.get_tensor_by_name(self.model_name+'/decoding_'+self.task+'/logits:0')
 
 			# Prepare model evaluation
-			dec_input = np.zeros((len(tested_inputs), 1)) + self.out_dict['<GO>']   # len(tested_inputs) = #tested samples
+			dec_input = np.zeros((len(tested_inputs), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
 			for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
 
 			    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tested_inputs[:,1:],outputs:dec_input})
@@ -285,7 +286,7 @@ class evaluation(object):
 			    dec_input = np.hstack([dec_input, prediction[:,None]])
 
 			# Evaluate performance
-			fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], tested_targets[:,1:],self.out_dict, mode='test')
+			fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], tested_targets[:,1:],self.output_dict, mode='test')
 			dists, tokenAcc = sess.run([self.acc_object.dists, self.acc_object.token_acc], feed_dict={self.acc_object.fullPred:fullPred, self.acc_object.fullTarg: fullTarg})
 			wordAcc  = np.count_nonzero(dists==0) / len(dists) 
 			print(self.model_name.upper()+ ' - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
@@ -293,7 +294,7 @@ class evaluation(object):
 
 
 			print('\n',"Now printing the mistakes on the ", mode, " dataset")
-			file = open(self.path+'/mistakes_'+mode+'_data.txt','w')
+			file = open(self.path+'/'+self.model_name.upper()+'mistakes_'+mode+'_data_epoch'+str(self.epochs)+'.txt','w')
 
 			for ind,pred in enumerate(dec_input[:,1:]):
 				if any(pred != tested_targets[ind,1:]):
@@ -302,7 +303,7 @@ class evaluation(object):
 					out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
 					tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tested_targets[ind,1:]])
 
-					print("The ", inp_seq, " sequence ", inp_str , "  =>  ", out_str, ' instead of ', tar_str, file=file)
+					print("The ", self.inp_seq_nat, " sequence ", inp_str , "  =>  ", out_str, ' instead of ', tar_str, file=file)
 			print("Amount of samples in dataset is ", str(ind))
 			file.close()
 
@@ -368,8 +369,10 @@ class evaluation(object):
 		"""
 		from sklearn.decomposition import PCA
 
+		dic = self.input_dict_rev if mode == 'input' else self.output_dict_rev
+
 		# Load embedding vectors and perform PCA
-		weight_vectors = self.retrieve_feature_vector(mode)
+		weight_vectors, plotted = self.retrieve_feature_vector(mode)
 		pca = PCA(n_components=n_comp)
 		pcs = pca.fit_transform(weight_vectors)
 
@@ -386,23 +389,24 @@ class evaluation(object):
 			ax.spines['right'].set_visible(False)
 			ax.spines['top'].set_visible(False)
 
-			for k in range(len(pcs)):
-				ax.annotate(dic[k+1],(pcs[k,0], pcs[k,1]))  
+			print(weight_vectors.shape,pcs.shape)
+			for k in range(1,len(pcs)):
+				ax.annotate(dic[k],(pcs[k,0], pcs[k,1]))  
 
-			plt.savefig(self.path+"/PCA "+self.model_name+" module " + plotted + "embedding vectors.pdf")
-			np.savez(self.path+"/PCA_"+ling+"_Results", pcs=pcs, pca=pca)
+			plt.savefig(self.path+"/PCA "+self.model_name+" module " + plotted +"_"+str(self.epochs)+"embedding vectors.pdf")
+			np.savez(self.path+"/PCA "+self.model_name+" module " + plotted +"_"+str(self.epochs)+"embedding vectors", pcs=pcs, pca=pca)
 
 		# or return pcs if method was used as preprocessing in t-SNE
 		else:
 
-			return pcs
+			return pcs, plotted
 
 
 
 
 
 
-	def plot_tsne(self, perplexity=10, steps=5000, lr=10, init='random', angle=0.5, mode='input', pca=None):
+	def plot_tsne(self, mode, perplexity=10, steps=5000, lr=10, init='random', angle=0.5, pca=None):
 		"""
 		t-SNE dimensionality reduction of the bLSTM's weight vectors.
 
@@ -430,9 +434,11 @@ class evaluation(object):
 
 		# Optional PCA preprocessing
 		if pca is not None: 
-			weight_vectors = self.plot_pca(n_comp=pca, mode=mode, plot=False)
+			weight_vectors, plotted = self.plot_pca(n_comp=pca, mode=mode, plot=False)
 		else:
-			weight_vectors = self.retrieve_feature_vector(mode)
+			weight_vectors, plotted = self.retrieve_feature_vector(mode)
+	
+		dic = self.input_dict_rev if mode == 'input' else self.output_dict_rev
 
 		t = time.time()
 		tsne = TSNE(n_components=2, verbose=1, perplexity=perplexity, n_iter=steps, learning_rate=lr, init=init, angle=angle)
@@ -448,17 +454,17 @@ class evaluation(object):
 		ax.spines['top'].set_visible(False)
 		ax.scatter(tsne_results[:,0], tsne_results[:,1],s=2)
 
-		for k in range(len(tsne_results)):
-			ax.annotate(dic[k+1],(tsne_results[k,0], tsne_results[k,1]))  
+		for k in range(1,len(tsne_results)):
+			ax.annotate(dic[k],(tsne_results[k,0], tsne_results[k,1]))  
 
-		filename = self.path+'/tSNE_'+self.model_name+'_module_'+ plotted + '_embedding-vectors_perp='+str(perplexity)+'_step='+str(steps)+'_lr='+str(lr)+'_ang='+str(angle)+'_init='+init+'_pca='+str(pca)
+		filename = self.path+'/tSNE_'+self.model_name+'_module_'+ plotted + '_embedding-vec_epoch'+str(self.epochs)+'_perp='+str(perplexity)+'_step='+str(steps)+'_lr='+str(lr)+'_ang='+str(angle)+'_init='+init+'_pca='+str(pca)
 		plt.savefig(filename + '.pdf')
 		np.save(filename, tsne_results)
 
 
 
 
-		def retrieve_feature_vector(self, mode):
+	def retrieve_feature_vector(self, mode):
 		"""
 		Helper method that retrieves the input/output embedding vectors of the reading or writing model. Returns to plot_pca or plot_tsne method.
 
@@ -482,26 +488,21 @@ class evaluation(object):
 
 			# Define variable to restore
 			if self.task == 'write' and mode == 'input':
-				embed_vec_name = 'read'
 				plotted = 'phonetic'
 			elif self.task == 'write' and mode == 'output':
-				embed_vec_name = 'write'
 				plotted = 'orthographic'
 			elif self.task == 'read' and mode == 'input':
-				embed_vec_name = 'write'
 				plotted = 'orthographic'
-			elif self.task == 'read' and mode == 'input':
-				embed_vec_name = 'read'
+			elif self.task == 'read' and mode == 'output':
 				plotted = 'phonetic'
 
-			dic = self.input_dict_rev if mode == 'input' else self.output_dict_rev
-			variable_path = self.model_name + '/encoding_' + embed_vec_name + '/enc_embedding:0'
+			variable_path = self.model_name + '/encoding_' + self.task + '/enc_embedding:0'
 
 
 			# Load data and perform PCA
 			weight_vectors = sess.run(graph.get_tensor_by_name(variable_path))
 
-		return weight_vectors
+		return weight_vectors, plotted
 
 
 
