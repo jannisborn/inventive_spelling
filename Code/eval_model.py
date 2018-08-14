@@ -279,13 +279,28 @@ class evaluation(object):
 			outputs = graph.get_tensor_by_name(self.model_name+'/output:0')
 			logits = graph.get_tensor_by_name(self.model_name+'/decoding_'+self.task+'/logits:0')
 
-			# Prepare model evaluation
-			dec_input = np.zeros((len(tested_inputs), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
-			for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
 
-			    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tested_inputs[:,1:],outputs:dec_input})
-			    prediction = test_logits[:,-1].argmax(axis=-1)
-			    dec_input = np.hstack([dec_input, prediction[:,None]])
+			# Prepare model evaluation
+
+			# Do in batches of size 5000
+			if len(tested_inputs) < 5000:
+				dec_input = np.zeros((len(tested_inputs), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
+				for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
+				    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tested_inputs[:,1:],outputs:dec_input})
+				    prediction = test_logits[:,-1].argmax(axis=-1)
+				    dec_input = np.hstack([dec_input, prediction[:,None]])
+			else:
+				dec_input = np.zeros((len(tested_inputs), tested_targets.shape[1]-1))   # len(tested_inputs) = #tested samples
+				for k in range(int(tested_inputs/5000)):
+					inps = tested_inputs[k*5000:(k+1)*5000]
+					dec_inps = np.zeros((len(inps), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
+					for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
+					    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:inps[:,1:],outputs:dec_inps})
+					    prediction = test_logits[:,-1].argmax(axis=-1)
+					    dec_inps = np.hstack([dec_inps, prediction[:,None]])
+				dec_input[k*5000:(k+1)*5000,:] = dec_inps
+
+
 
 			# Evaluate performance
 			fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], tested_targets[:,1:],self.output_dict, mode='test')
