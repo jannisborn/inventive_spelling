@@ -167,8 +167,8 @@ class evaluation(object):
 		self.input_dict_rev = dict(zip(self.input_dict.values(), self.input_dict.keys()))
 		self.output_dict_rev = dict(zip(self.output_dict.values(), self.output_dict.keys()))
 
-		print("INPUT DICT", self.input_dict)
-		print("OUTPUT DICT", self.output_dict)
+		#print("INPUT DICT", self.input_dict)
+		#print("OUTPUT DICT", self.output_dict)
 
 
 		self.inp_seq_nat = 'phonetic' if args.task == 'write' else 'orthografic' # To read in a type of sequence
