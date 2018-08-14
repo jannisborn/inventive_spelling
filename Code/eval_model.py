@@ -291,7 +291,7 @@ class evaluation(object):
 				    dec_input = np.hstack([dec_input, prediction[:,None]])
 			else:
 				dec_input = np.zeros((len(tested_inputs), tested_targets.shape[1]-1))   # len(tested_inputs) = #tested samples
-				for k in range(int(tested_inputs/5000)):
+				for k in range(int(len(tested_inputs)/5000)):
 					inps = tested_inputs[k*5000:(k+1)*5000]
 					dec_inps = np.zeros((len(inps), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
 					for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
