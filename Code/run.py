@@ -1,10 +1,3 @@
-    
-# Write a .txt file that reads in all the input arguments.
-# tqdm?
-
-
-
-
 ###################     IMPORTING      ######################
 import warnings
 warnings.filterwarnings("ignore",category=FutureWarning)

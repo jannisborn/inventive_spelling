@@ -59,8 +59,10 @@ class evaluation(object):
 		self.epochs = args.epochs - 1 if args.epochs == 250 else args.epochs
 
 		# Receives the path to the folder of a stored model
-		self.root_local = os.path.expanduser("~")+'/Desktop/LDS_Data/'
-		self.path = self.root_local + 'TrainedModels/' + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
+		#self.root_local = os.path.expanduser("~")+'/Desktop/LDS_Data/'
+		self.root_local = os.path.expanduser("~")+'/workspace/Models/'
+		#self.path = self.root_local + 'TrainedModels/' + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
+		self.path = self.root_local + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
 
 		# Set Accuracy object
 		self.acc_object = acc_new()
@@ -266,7 +268,7 @@ class evaluation(object):
 		with tf.Session() as sess: 
 
 			# Restore the model
-			saver = tf.train.import_meta_graph(self.path + '/my_test_model-'+str(args.epochs-1)+'.meta')
+			saver = tf.train.import_meta_graph(self.path + '/my_test_model-'+str(self.epochs)+'.meta')
 			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
 			graph = tf.get_default_graph()
 
@@ -489,14 +491,18 @@ class evaluation(object):
 			# Define variable to restore
 			if self.task == 'write' and mode == 'input':
 				plotted = 'phonetic'
+				enc = 'enc'
 			elif self.task == 'write' and mode == 'output':
 				plotted = 'orthographic'
+				enc = 'dec'
 			elif self.task == 'read' and mode == 'input':
 				plotted = 'orthographic'
+				enc = 'enc'
 			elif self.task == 'read' and mode == 'output':
 				plotted = 'phonetic'
+				enc = 'dec'
 
-			variable_path = self.model_name + '/encoding_' + self.task + '/enc_embedding:0'
+			variable_path = self.model_name + '/' + enc + 'oding_' + self.task + '/'+enc+'_embedding:0'
 
 
 			# Load data and perform PCA
