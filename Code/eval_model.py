@@ -7,6 +7,7 @@ import os, sys, time, argparse
 import utils
 from utils import acc_new 
 from bLSTM import bLSTM
+import io
 
 
 """
@@ -311,7 +312,7 @@ class evaluation(object):
 
 
 			print('\n',"Now printing the mistakes on the ", mode, " dataset")
-			file = open(self.path+'/'+self.model_name.upper()+'mistakes_'+mode+'_data_epoch'+str(self.epochs)+'.txt','w')
+			file = io.open(self.path+'/'+self.model_name.upper()+'mistakes_'+mode+'_data_epoch'+str(self.epochs)+'.txt','w',encoding='utf8')
 
 			for ind,pred in enumerate(dec_input[:,1:]):
 				if any(pred != tested_targets[ind,1:]):
@@ -320,7 +321,7 @@ class evaluation(object):
 					out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
 					tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tested_targets[ind,1:]])
 
-					print("The ", self.inp_seq_nat, " sequence ", inp_str , "  =>  ", out_str, ' instead of ', tar_str, file=file)
+					print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
 			print("Amount of samples in dataset is ", str(ind))
 			file.close()
 
