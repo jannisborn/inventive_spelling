@@ -327,9 +327,10 @@ class evaluation(object):
 					inp_str = ''.join([self.input_dict_rev[k] if self.input_dict_rev[k] != '<PAD>' and self.input_dict_rev[k] != '<GO>'  else '' for k in tested_inputs[ind,:]])
 					out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
 					tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tested_targets[ind,1:]])
-
-					#print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
-					print("The ", self.inp_seq_nat, " sequence ", tested_inputs[ind,:] , "  =>  ",pred, ' instead of ', tested_targets[ind,1:], file=file)
+					
+					print("The ", self.inp_seq_nat, " sequence ", inp_str, "  =>  ", out_str, ' instead of ', tar_str, file=file)
+					##print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
+					#print("The ", self.inp_seq_nat, " sequence ", tested_inputs[ind,:] , "  =>  ",pred, ' instead of ', tested_targets[ind,1:], file=file)
 			print("Amount of samples in dataset is ", str(ind))
 			file.close()
 			print("That took ", time()-t)
