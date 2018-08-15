@@ -290,54 +290,81 @@ class evaluation(object):
 
 			# Prepare model evaluation
 			print("Model restored")
-			# Do in batches of size 5000
-			if len(tested_inputs) > 10000:
-				tested_inputs = tested_inputs[:10000,:]
-				tested_targets = tested_targets[:10000,:]
-
-			dec_input = np.zeros((len(tested_inputs), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
-			for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
-			    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tested_inputs[:,1:],outputs:dec_input})
-			    prediction = test_logits[:,-1].argmax(axis=-1)
-			    dec_input = np.hstack([dec_input, prediction[:,None]])
-			"""
-			else:
-				dec_input = np.zeros((len(tested_inputs), tested_targets.shape[1]))   # len(tested_inputs) = #tested samples
-				for k in range(int(len(tested_inputs)/5000)):
-					inps = tested_inputs[k*5000:(k+1)*5000]
-					dec_inps = np.zeros((len(inps), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
-					for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
-					    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:inps[:,1:],outputs:dec_inps})
-					    prediction = test_logits[:,-1].argmax(axis=-1)
-					    dec_inps = np.hstack([dec_inps, prediction[:,None]])
-				print("Next batch done")
-				dec_input[k*5000:(k+1)*5000,:] = dec_inps
-			"""
-
-			# Evaluate performance
-			fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], tested_targets[:,1:],self.output_dict, mode='test')
-			dists, tokenAcc = sess.run([self.acc_object.dists, self.acc_object.token_acc], feed_dict={self.acc_object.fullPred:fullPred, self.acc_object.fullTarg: fullTarg})
-			wordAcc  = np.count_nonzero(dists==0) / len(dists) 
-			print(self.model_name.upper()+ ' - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
-
-
-
-			print('\n',"Now printing the mistakes on the ", mode, " dataset")
-			file = io.open(self.eval_path+'/'+self.model_name.upper()+'mistakes_'+mode+'_data_epoch'+str(self.epochs)+'.txt','w',encoding='utf8')
-
-			for ind,pred in enumerate(dec_input[:,1:]):
-				if any(pred != tested_targets[ind,1:]):
-
-					inp_str = ''.join([self.input_dict_rev[k] if self.input_dict_rev[k] != '<PAD>' and self.input_dict_rev[k] != '<GO>'  else '' for k in tested_inputs[ind,:]])
-					out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
-					tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tested_targets[ind,1:]])
+			if len(tested_inputs) < 10000:
 					
-					print("The ", self.inp_seq_nat, " sequence ", inp_str, "  =>  ", out_str, ' instead of ', tar_str, file=file)
-					##print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
-					#print("The ", self.inp_seq_nat, " sequence ", tested_inputs[ind,:] , "  =>  ",pred, ' instead of ', tested_targets[ind,1:], file=file)
-			print("Amount of samples in dataset is ", str(ind))
-			file.close()
-			print("That took ", time()-t)
+				dec_input = np.zeros((len(tested_inputs), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
+				for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
+				    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tested_inputs[:,1:],outputs:dec_input})
+				    prediction = test_logits[:,-1].argmax(axis=-1)
+				    dec_input = np.hstack([dec_input, prediction[:,None]])
+
+				# Evaluate performance
+				fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], tested_targets[:,1:],self.output_dict, mode='test')
+				dists, tokenAcc = sess.run([self.acc_object.dists, self.acc_object.token_acc], feed_dict={self.acc_object.fullPred:fullPred, self.acc_object.fullTarg: fullTarg})
+				wordAcc  = np.count_nonzero(dists==0) / len(dists) 
+				print(self.model_name.upper()+ ' - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
+
+
+
+				print('\n',"Now printing the mistakes on the ", mode, " dataset")
+				file = io.open(self.eval_path+'/'+self.model_name.upper()+'mistakes_'+mode+'_data_epoch'+str(self.epochs)+'.txt','a',encoding='utf8')
+
+				for ind,pred in enumerate(dec_input[:,1:]):
+					if any(pred != tested_targets[ind,1:]):
+
+						inp_str = ''.join([self.input_dict_rev[k] if self.input_dict_rev[k] != '<PAD>' and self.input_dict_rev[k] != '<GO>'  else '' for k in tested_inputs[ind,:]])
+						out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
+						tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tested_targets[ind,1:]])
+						
+						print("The ", self.inp_seq_nat, " sequence ", inp_str, "  =>  ", out_str, ' instead of ', tar_str, file=file)
+						##print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
+						#print("The ", self.inp_seq_nat, " sequence ", tested_inputs[ind,:] , "  =>  ",pred, ' instead of ', tested_targets[ind,1:], file=file)
+				print("Amount of samples in dataset is ", str(ind))
+				file.close()
+				print("That took ", time()-t)
+
+
+			else:
+				# Do in batches of size 10000
+				for k in range(len(tested_inputs)//10000):
+
+					tip = tested_inputs[k*10000:(k+1)*10000,:]
+					tar = tar[k*10000:(k+1)*10000,:]
+
+					dec_input = np.zeros((len(tip), 1)) + self.output_dict['<GO>']   # len(tip) = #tested samples
+					for i in range(tar.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
+					    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tip[:,1:],outputs:dec_input})
+					    prediction = test_logits[:,-1].argmax(axis=-1)
+					    dec_input = np.hstack([dec_input, prediction[:,None]])
+
+					# Evaluate performance
+					fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], tar[:,1:],self.output_dict, mode='test')
+					dists, tokenAcc = sess.run([self.acc_object.dists, self.acc_object.token_acc], feed_dict={self.acc_object.fullPred:fullPred, self.acc_object.fullTarg: fullTarg})
+					wordAcc  = np.count_nonzero(dists==0) / len(dists) 
+					print(self.model_name.upper()+ ' - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
+
+
+
+					print('\n',"Now printing the mistakes on the ", mode, " dataset")
+					file = io.open(self.eval_path+'/'+self.model_name.upper()+'mistakes_'+mode+'_data_epoch'+str(self.epochs)+'.txt','a',encoding='utf8')
+
+					for ind,pred in enumerate(dec_input[:,1:]):
+						if any(pred != tar[ind,1:]):
+
+							inp_str = ''.join([self.input_dict_rev[k] if self.input_dict_rev[k] != '<PAD>' and self.input_dict_rev[k] != '<GO>'  else '' for k in tip[ind,:]])
+							out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
+							tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tar[ind,1:]])
+							
+							print("The ", self.inp_seq_nat, " sequence ", inp_str, "  =>  ", out_str, ' instead of ', tar_str, file=file)
+							##print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
+							#print("The ", self.inp_seq_nat, " sequence ", tip[ind,:] , "  =>  ",pred, ' instead of ', tested_targets[ind,1:], file=file)
+					print("Amount of samples in dataset is ", str(ind))
+					file.close()
+					print("That took ", time()-t)
+
+
+
+
 
 
 
