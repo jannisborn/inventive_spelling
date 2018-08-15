@@ -286,8 +286,9 @@ class evaluation(object):
 			# Prepare model evaluation
 			print("Model restored")
 			# Do in batches of size 5000
-			if len(tested_inputs) > 5000:
-				tested_inputs = tested_inputs[:5000,:]
+			if len(tested_inputs) > 50000:
+				tested_inputs = tested_inputs[:50000,:]
+				tested_targets = tested_targets[:50000,:]
 
 			dec_input = np.zeros((len(tested_inputs), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
 			for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
