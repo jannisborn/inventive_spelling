@@ -61,10 +61,10 @@ class evaluation(object):
 		self.epochs = args.epochs - 1 if args.epochs == 250 else args.epochs
 
 		# Receives the path to the folder of a stored model
-		#self.root_local = os.path.expanduser("~")+'/Desktop/LDS_Data/'
-		self.root_local = os.path.expanduser("~")+'/workspace/Models/'
-		#self.path = self.root_local + 'TrainedModels/' + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
-		self.path = self.root_local + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
+		self.root_local = os.path.expanduser("~")+'/Desktop/LDS_Data/'
+		#self.root_local = os.path.expanduser("~")+'/workspace/Models/'
+		self.path = self.root_local + 'TrainedModels/' + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
+		#self.path = self.root_local + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
 
 		# Set Accuracy object
 		self.acc_object = acc_new()
@@ -328,8 +328,8 @@ class evaluation(object):
 					out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
 					tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tested_targets[ind,1:]])
 
-					#print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
-					print("The ", self.inp_seq_nat, " sequence ", tested_inputs[ind,:] , "  =>  ",pred, ' instead of ', tested_targets[ind,1:], file=file)
+					print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
+					#print("The ", self.inp_seq_nat, " sequence ", tested_inputs[ind,:] , "  =>  ",pred, ' instead of ', tested_targets[ind,1:], file=file)
 			print("Amount of samples in dataset is ", str(ind))
 			file.close()
 			print("That took ", time()-t)
