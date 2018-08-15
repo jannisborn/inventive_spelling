@@ -284,14 +284,17 @@ class evaluation(object):
 
 
 			# Prepare model evaluation
-
+			print("Model restored")
 			# Do in batches of size 5000
-			if len(tested_inputs) < 5000:
-				dec_input = np.zeros((len(tested_inputs), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
-				for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
-				    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tested_inputs[:,1:],outputs:dec_input})
-				    prediction = test_logits[:,-1].argmax(axis=-1)
-				    dec_input = np.hstack([dec_input, prediction[:,None]])
+			if len(tested_inputs) > 5000:
+				tested_inputs = tested_inputs[:5000,:]
+
+			dec_input = np.zeros((len(tested_inputs), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
+			for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
+			    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tested_inputs[:,1:],outputs:dec_input})
+			    prediction = test_logits[:,-1].argmax(axis=-1)
+			    dec_input = np.hstack([dec_input, prediction[:,None]])
+			"""
 			else:
 				dec_input = np.zeros((len(tested_inputs), tested_targets.shape[1]))   # len(tested_inputs) = #tested samples
 				for k in range(int(len(tested_inputs)/5000)):
@@ -301,7 +304,9 @@ class evaluation(object):
 					    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:inps[:,1:],outputs:dec_inps})
 					    prediction = test_logits[:,-1].argmax(axis=-1)
 					    dec_inps = np.hstack([dec_inps, prediction[:,None]])
+				print("Next batch done")
 				dec_input[k*5000:(k+1)*5000,:] = dec_inps
+			"""
 
 
 
