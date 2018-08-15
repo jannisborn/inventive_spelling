@@ -61,10 +61,12 @@ class evaluation(object):
 		self.epochs = args.epochs - 1 if args.epochs == 250 else args.epochs
 
 		# Receives the path to the folder of a stored model
-		self.root_local = os.path.expanduser("~")+'/Desktop/LDS_Data/'
-		#self.root_local = os.path.expanduser("~")+'/workspace/Models/'
-		self.path = self.root_local + 'TrainedModels/' + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
-		#self.path = self.root_local + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
+		#self.root_local = os.path.expanduser("~")+'/Desktop/LDS_Data/'
+		self.root_local = os.path.expanduser("~")+'/workspace/Models/'
+		#self.path = self.root_local + 'TrainedModels/' + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
+		self.path = self.root_local + self.dataset + '/' + self.learn_type + '_run_' + str(self.id)
+		self.eval_path = self.path+'/'+'evaluation'
+
 
 		# Set Accuracy object
 		self.acc_object = acc_new()
@@ -74,16 +76,16 @@ class evaluation(object):
 		self.retrieve_model_args()
 		self.set_hyperparams()
 
-		self.show_mistakes('train')
-		print("Training mistakes saved.")
-		self.show_mistakes('test')
+		#self.show_mistakes('train')
+		#print("Training mistakes saved.")
+		#self.show_mistakes('test')
 		#self.predict_input()
 
-		#self.plot_pca(2,'input')
-		#self.plot_pca(2,'output')
+		self.plot_pca(2,'input')
+		self.plot_pca(2,'output')
 
-		#self.plot_tsne('input')
-		#self.plot_tsne('output')
+		self.plot_tsne('input')
+		self.plot_tsne('output')
 
 
 
@@ -268,6 +270,9 @@ class evaluation(object):
 		tested_targets = self.targets[indices]
 		t=time()
 
+		if not os.path.exists(self.eval_path):
+			os.makedirs(self.eval_path)
+
 		with tf.Session() as sess: 
 
 			# Restore the model
@@ -286,8 +291,9 @@ class evaluation(object):
 			# Prepare model evaluation
 			print("Model restored")
 			# Do in batches of size 5000
-			if len(tested_inputs) > 5000:
-				tested_inputs = tested_inputs[:5000,:]
+			if len(tested_inputs) > 50000:
+				tested_inputs = tested_inputs[:50000,:]
+				tested_targets = tested_targets[:50000,:]
 
 			dec_input = np.zeros((len(tested_inputs), 1)) + self.output_dict['<GO>']   # len(tested_inputs) = #tested samples
 			for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
@@ -308,8 +314,6 @@ class evaluation(object):
 				dec_input[k*5000:(k+1)*5000,:] = dec_inps
 			"""
 
-
-
 			# Evaluate performance
 			fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], tested_targets[:,1:],self.output_dict, mode='test')
 			dists, tokenAcc = sess.run([self.acc_object.dists, self.acc_object.token_acc], feed_dict={self.acc_object.fullPred:fullPred, self.acc_object.fullTarg: fullTarg})
@@ -319,7 +323,7 @@ class evaluation(object):
 
 
 			print('\n',"Now printing the mistakes on the ", mode, " dataset")
-			file = io.open(self.path+'/'+self.model_name.upper()+'mistakes_'+mode+'_data_epoch'+str(self.epochs)+'.txt','w',encoding='utf8')
+			file = io.open(self.eval_path+'/'+self.model_name.upper()+'mistakes_'+mode+'_data_epoch'+str(self.epochs)+'.txt','w',encoding='utf8')
 
 			for ind,pred in enumerate(dec_input[:,1:]):
 				if any(pred != tested_targets[ind,1:]):
@@ -327,8 +331,9 @@ class evaluation(object):
 					inp_str = ''.join([self.input_dict_rev[k] if self.input_dict_rev[k] != '<PAD>' and self.input_dict_rev[k] != '<GO>'  else '' for k in tested_inputs[ind,:]])
 					out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
 					tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tested_targets[ind,1:]])
-
-					print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
+					
+					print("The ", self.inp_seq_nat, " sequence ", inp_str, "  =>  ", out_str, ' instead of ', tar_str, file=file)
+					##print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
 					#print("The ", self.inp_seq_nat, " sequence ", tested_inputs[ind,:] , "  =>  ",pred, ' instead of ', tested_targets[ind,1:], file=file)
 			print("Amount of samples in dataset is ", str(ind))
 			file.close()
@@ -396,6 +401,9 @@ class evaluation(object):
 		"""
 		from sklearn.decomposition import PCA
 
+		if not os.path.exists(self.eval_path):
+			os.makedirs(self.eval_path)
+
 		dic = self.input_dict_rev if mode == 'input' else self.output_dict_rev
 
 		# Load embedding vectors and perform PCA
@@ -420,8 +428,8 @@ class evaluation(object):
 			for k in range(1,len(pcs)):
 				ax.annotate(dic[k],(pcs[k,0], pcs[k,1]))  
 
-			plt.savefig(self.path+"/PCA "+self.model_name+" module " + plotted +"_"+str(self.epochs)+"embedding vectors.pdf")
-			np.savez(self.path+"/PCA "+self.model_name+" module " + plotted +"_"+str(self.epochs)+"embedding vectors", pcs=pcs, pca=pca)
+			plt.savefig(self.eval_path+"/PCA "+self.model_name+" module " + plotted +"_"+str(self.epochs)+"embedding vectors.pdf")
+			np.savez(self.eval_path+"/PCA "+self.model_name+" module " + plotted +"_"+str(self.epochs)+"embedding vectors", pcs=pcs, pca=pca)
 
 		# or return pcs if method was used as preprocessing in t-SNE
 		else:
@@ -459,6 +467,9 @@ class evaluation(object):
 
 		from sklearn.manifold import TSNE 
 
+		if not os.path.exists(self.eval_path):
+			os.makedirs(self.eval_path)
+
 		# Optional PCA preprocessing
 		if pca is not None: 
 			weight_vectors, plotted = self.plot_pca(n_comp=pca, mode=mode, plot=False)
@@ -484,7 +495,7 @@ class evaluation(object):
 		for k in range(1,len(tsne_results)):
 			ax.annotate(dic[k],(tsne_results[k,0], tsne_results[k,1]))  
 
-		filename = self.path+'/tSNE_'+self.model_name+'_module_'+ plotted + '_embedding-vec_epoch'+str(self.epochs)+'_perp='+str(perplexity)+'_step='+str(steps)+'_lr='+str(lr)+'_ang='+str(angle)+'_init='+init+'_pca='+str(pca)
+		filename = self.eval_path+'/tSNE_'+self.model_name+'_module_'+ plotted + '_embedding-vec_epoch'+str(self.epochs)+'_perp='+str(perplexity)+'_step='+str(steps)+'_lr='+str(lr)+'_ang='+str(angle)+'_init='+init+'_pca='+str(pca)
 		plt.savefig(filename + '.pdf')
 		np.save(filename, tsne_results)
 
