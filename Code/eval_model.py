@@ -8,6 +8,7 @@ import utils
 from utils import acc_new 
 from bLSTM import bLSTM
 import io
+from time import time
 
 
 """
@@ -78,11 +79,11 @@ class evaluation(object):
 		self.show_mistakes('test')
 		#self.predict_input()
 
-		self.plot_pca(2,'input')
-		self.plot_pca(2,'output')
+		#self.plot_pca(2,'input')
+		#self.plot_pca(2,'output')
 
-		self.plot_tsne('input')
-		self.plot_tsne('output')
+		#self.plot_tsne('input')
+		#self.plot_tsne('output')
 
 
 
@@ -265,6 +266,7 @@ class evaluation(object):
 		indices = self.model_args_write[23] if mode=='train' else self.model_args_write[24] # Indices are either train or test indices
 		tested_inputs = self.inputs[indices]
 		tested_targets = self.targets[indices]
+		t=time()
 
 		with tf.Session() as sess: 
 
@@ -321,9 +323,11 @@ class evaluation(object):
 					out_str = ''.join([self.output_dict_rev[k] if k!=0 and self.output_dict_rev[k] != '<PAD>' else '' for k in pred])
 					tar_str = ''.join([self.output_dict_rev[k] if self.output_dict_rev[k] != '<PAD>' else '' for k in tested_targets[ind,1:]])
 
-					print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
+					#print("The ", self.inp_seq_nat, " sequence ", inp_str.encode('utf8') , "  =>  ", out_str.encode('utf8'), ' instead of ', tar_str.encode('utf8'), file=file)
+					print("The ", self.inp_seq_nat, " sequence ", tested_inputs[ind,:] , "  =>  ",pred, ' instead of ', tested_targets[ind,1], file=file)
 			print("Amount of samples in dataset is ", str(ind))
 			file.close()
+			print("That took ", time()-t)
 
 
 
