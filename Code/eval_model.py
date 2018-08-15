@@ -329,7 +329,7 @@ class evaluation(object):
 				for k in range(len(tested_inputs)//10000):
 
 					tip = tested_inputs[k*10000:(k+1)*10000,:]
-					tar = tar[k*10000:(k+1)*10000,:]
+					tar = tested_targets[k*10000:(k+1)*10000,:]
 
 					dec_input = np.zeros((len(tip), 1)) + self.output_dict['<GO>']   # len(tip) = #tested samples
 					for i in range(tar.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
