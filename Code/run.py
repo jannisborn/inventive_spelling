@@ -674,6 +674,11 @@ if __name__ == '__main__':
                     write_loss=write_losses, read_losses=read_losses, lds_ratios_test=lds_ratios_test)
             saver.save(sess, save_path + '/my_test_model',global_step=epoch)
 
+        elif epoch == 120:
+            np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratios=lds_ratios,lds_loss=lds_losses, 
+                    write_loss=write_losses, read_losses=read_losses, lds_ratios_test=lds_ratios_test)
+            saver.save(sess, save_path + '/my_test_model',global_step=epoch)        
+
         # If lds learning is performed, training regime is changed to normal after half of the epochs 
         if args.learn_type == 'lds' or args.learn_type=='intervened':
 
