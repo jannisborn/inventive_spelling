@@ -101,11 +101,13 @@ class bLSTM(object):
 				# Use the LSTM cells bidirectionally (look forward and backward at input sequence)
 				( self.enc_output , enc_fw_final, enc_bw_final) = tf.contrib.rnn.stack_bidirectional_dynamic_rnn(cells_fw=enc_fw_cells, cells_bw=enc_bw_cells, 
 				                                                   inputs=input_embed, dtype=tf.float32)
-
+				print("out shaoe", self.enc_output.shape)
 				# Concatenate results
 				for k in range(self.num_layers):
 					if isinstance(enc_fw_final[k],LSTMStateTuple):
 						if k == 0:
+							print("HERE FW ", enc_fw_final[k].c.shape, enc_fw_final[k].h.shape)
+
 							enc_fin_c = tf.concat((enc_fw_final[k].c, enc_bw_final[k].c), 1)
 							enc_fin_h = tf.concat((enc_fw_final[k].h, enc_bw_final[k].h), 1)
 						else:
@@ -117,6 +119,7 @@ class bLSTM(object):
 					else:
 						enc_state = tf.concat((enc_state, enc_fw_final[k], enc_bw_final[k]), 1)
 				self.enc_last_state = tf.contrib.rnn.LSTMStateTuple(c=enc_fin_c, h=enc_fin_h)
+				print("ENC LAST ", enc_fin_c.shape)
 
 
 			else:
@@ -144,10 +147,12 @@ class bLSTM(object):
 			self.dec_outputs, _ = tf.nn.dynamic_rnn(dec_cells, inputs=output_embed, initial_state=self.enc_last_state)
 
 
+
+
 			# Fully connected layer of the decoder outputs to the predictions
 			self.fc1 = tf.contrib.layers.fully_connected(self.dec_outputs, num_outputs=128, activation_fn=self.activation_fn) 
 			self.drop = tf.contrib.layers.dropout(self.fc1, self.keep_prob) 
-
+			print("DEC OUT SHAPE", self.dec_outputs.shape)
 			self.logits = tf.contrib.layers.fully_connected(self.drop,num_outputs=self.num_classes, activation_fn=self.activation_fn)
 			self.logits = tf.identity(self.logits, name='logits')
 
@@ -178,18 +183,11 @@ class bLSTM(object):
 				self.optimizer = tf.train.AdadeltaOptimizer().minimize(self.loss)
 			elif self.optimization == 'Adagrad':
 				self.optimizer = tf.train.AdagradOptimizer(self.learning_rate).minimize(self.loss)
-			#elif self.optimization == 'RMSProp' and self.learn_type == 'normal':
-			#	self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss)
-			#elif self.optimization == 'RMSProp' and self.learn_type == 'lds':
-			#	self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss_lds)
 
 			elif self.optimization == 'RMSProp':
 				self.optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss)
 				self.lds_optimizer = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.loss_lds)
 
-
-
-				# Clip gradients?
 
 
 

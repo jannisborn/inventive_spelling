@@ -83,7 +83,7 @@ if __name__ == '__main__':
     parser.add_argument('--output_embed_size', default=96, type=int,
                         help='The feature space dimensionality for the output characters')
     parser.add_argument('--num_nodes', default=128, type=int,
-                        help='The number of LSTM nodes per layer in both encoder and decoder')
+                        help='The dimensionality of the LSTM cell')
     parser.add_argument('--num_layers', default=2, type=int,
                         help='The number of layers in both encoder and decoder')
     parser.add_argument('--optimization',default='RMSProp', type=str, 
@@ -430,15 +430,13 @@ if __name__ == '__main__':
         if regime == 'normal':
 
             for k, (write_inp_batch, write_out_batch,write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size, Y_alt_train)):
-                t = time()
-                batch_loss, w_batch_logits, loss_lds, rat_lds, rat_corr = sess.run([model_write.loss, model_write.logits, 
-                    model_write.loss_lds, model_write.rat_lds, model_write.rat_corr], feed_dict =
+                batch_loss, w_batch_logits, loss_lds, rat_lds, rat_corr, x = sess.run([model_write.loss, model_write.logits, 
+                    model_write.loss_lds, model_write.rat_lds, model_write.rat_corr, model_write.fc1], feed_dict =
                                                          {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                          model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                #  print("Training one batch without dropout took", time()-t)
+                print("FC1 SHAPE", x.shape)
 
-                t=time()
                 fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
                 #print("Prepare accuracy took ", time()-t)
                 t=time()
@@ -562,21 +560,21 @@ if __name__ == '__main__':
             # Generate character by character (for the entire batch, weirdly)
             for i in range(y_seq_length):
 
-                write_test_logits = sess.run(model_write.logits, 
+                write_test_logits, x, d= sess.run([model_write.logits, model_write.fc1, model_write.dec_outputs],
                     feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
-                #print("Y!")
+                print("DEC_OUT",d.shape, "HIDDEN 1", x.shape, "LOGITS", write_test_logits.shape)
                 write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
             write_test_new_targs, tmp = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
             lds_ratios_test[epoch] = tmp
 
             fullPred, fullTarg = utils.accuracy_prepare(write_dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
+            print(fullTarg.shape)
             dists, write_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
                     feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
             write_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
 
             print('WRITING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(write_tokenAcc, write_wordAcc))
-            #print('WRITING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(write_tokenAcc_o, write_wordAcc_o))
 
             testPerf[epoch//args.print_step, 0] = write_tokenAcc
             testPerf[epoch//args.print_step, 1] = write_wordAcc
@@ -603,7 +601,6 @@ if __name__ == '__main__':
                 read_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
 
                 print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
-                #print('OLD - READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc_o, read_wordAcc_o))
 
                 testPerf[epoch//args.print_step, 2] = read_tokenAcc
                 testPerf[epoch//args.print_step, 3] = read_wordAcc
@@ -612,13 +609,11 @@ if __name__ == '__main__':
         elif regime == 'lds':
 
             write_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
-            # Generate character by character (for the entire batch, weirdly)
             for i in range(y_seq_length):
 
                 write_test_logits = sess.run(model_write.logits, 
                     feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
                 write_prediction = write_test_logits[:,-1].argmax(axis=-1)
-                #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
 
             # Now the generated sequence need to be lds_compareed with the alternative targets:
@@ -641,15 +636,11 @@ if __name__ == '__main__':
             if args.reading:
                 read_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_x['<GO>']
                 read_test_new_inp = write_test_new_targs
-                # Generate character by character (for the entire batch, weirdly)
                 for i in range(x_seq_length):
                     read_test_logits = sess.run(model_read.logits, feed_dict={model_read.keep_prob:1.0, 
                             model_read.inputs:read_test_new_inp, model_read.outputs:read_dec_input})
                     read_prediction = read_test_logits[:,-1].argmax(axis=-1)
-                    #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
                     read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
-                #print(dec_input[:,1:].shape, Y_test[:,1:].shape)
-                #read_oldAcc_o, read_tokenAcc_o , read_wordAcc_o = utils.accuracy(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
 
                 fullPred, fullTarg = utils.accuracy_prepare(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
                 dists, read_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], 
@@ -658,7 +649,6 @@ if __name__ == '__main__':
                 #read_losses[epoch//args.print_step] = read_test_loss
 
                 print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
-                #print('OLD READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc_o, read_wordAcc_o))
                 testPerf[epoch//args.print_step, 2] = read_tokenAcc
                 testPerf[epoch//args.print_step, 3] = read_wordAcc
 
@@ -749,146 +739,5 @@ if __name__ == '__main__':
 
 
 print("DONE!")   
-
-
-
-
-"""
-
-tf.reset_default_graph()
-with tf.Session() as sess:
-
-    # Accuracy object
-    acc_object  = acc_new()
-    acc_object.accuracy()
-
-
-    print("NOW RESTORE THE MODEL")                       
-    saver = tf.train.import_meta_graph(save_path + '/my_test_model-'+str(args.epochs-1)+'.meta')
-    saver.restore(sess,tf.train.latest_checkpoint(save_path+'/./'))
-
-    gerund = 'writing'
-    graph = tf.get_default_graph()
-    keep_prob = graph.get_tensor_by_name(gerund+'/keep_prob:0')
-    inputs = graph.get_tensor_by_name(gerund+'/input:0')
-    outputs = graph.get_tensor_by_name(gerund+'/output:0')
-    logits = graph.get_tensor_by_name(gerund+'/decoding_write/logits:0')
-
-    print(" RESTORED WRITING TEST ")
-
-
-
-    # Set initial decoder input to be 0
-    dec_input = np.zeros((len(X_test), 1)) + dict_char2num_y['<GO>']
-    # Generate character by character (for the entire batch, weirdly)
-    print(y_seq_length)
-    print(Y_test.shape)
-    for i in range(Y_test.shape[1]-1):
-        test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:X_test[:,1:], outputs:dec_input})
-        prediction = test_logits[:,-1].argmax(axis=-1)
-        dec_input = np.hstack([dec_input, prediction[:,None]])
-
-    #oldAcc, tokenAcc , wordAcc = utils.accuracy(dec_input[:,1:], Y_test[:,1:], dict_char2num_y, mode='test')
-    fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], Y_test[:,1:],dict_char2num_y, mode='test')
-    dists, tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
-    wordAcc  = np.count_nonzero(dists==0) / len(dists) 
-    print('Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
-    
-    
-    for k in range(dec_input[:,1:].shape[0]):
-        output = [''.join([dict_num2char_y[l] if dict_num2char_y[l]!='<PAD>' and dict_num2char_y[l]!='<GO>' else '' for l in dec_input[k,:]])]
-        word = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in X_test[k,1:]])]
-        targ = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in Y_test[k,1:]])]
-        print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ)
-    
-
-
-
-
-
-
-
-
-
-    print(" RESTORED READING TEST ")
-    gerund = 'reading'
-    keep_prob = graph.get_tensor_by_name(gerund+'/keep_prob:0')
-    inputs = graph.get_tensor_by_name(gerund+'/input:0')
-    outputs = graph.get_tensor_by_name(gerund+'/output:0')
-    logits = graph.get_tensor_by_name(gerund+'/decoding_read/logits:0')
-
-
-
-
-    read_dec_input = np.zeros((len(X_test), 1)) + dict_char2num_x['<GO>']
-    # Generate character by character (for the entire batch, weirdly)
-    for i in range(x_seq_length):
-        read_test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:Y_test[:,1:],outputs:read_dec_input})
-        read_prediction = read_test_logits[:,-1].argmax(axis=-1)
-        #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
-        read_dec_input = np.hstack([read_dec_input, read_prediction[:,None]])
-  
-    fullPred, fullTarg = utils.accuracy_prepare(read_dec_input[:,1:], X_test[:,1:],dict_char2num_x, mode='test')
-    dists, read_tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
-    read_wordAcc  = np.count_nonzero(dists==0) / len(dists) 
-    print('READING - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(read_tokenAcc, read_wordAcc))
-    
-    
-    for k in range(read_dec_input[:,1:].shape[0]):
-        output = [''.join([dict_num2char_x[l] if dict_num2char_x[l]!='<PAD>' and dict_num2char_x[l]!='<GO>' else '' for l in read_dec_input[k,:]])]
-        targ = [''.join([dict_num2char_x[l] if dict_num2char_x[l] != '<PAD>' and  dict_num2char_x[l] != '<GO>' else '' for l in X_test[k,1:]])]
-        word = [''.join([dict_num2char_y[l] if dict_num2char_y[l] != '<PAD>' and  dict_num2char_y[l] != '<GO>' else '' for l in Y_test[k,1:]])]
-        print("The sequence ", word, "  =>  ", output, ' instead of ' ,targ)
-    
-
-
-
-    print("DOUBLE CHECKING")
-
-    tasks = ['write', 'read']
-    gerunds = ['writing','reading']
-    for ind,gerund in enumerate(gerunds):
-
-        inp_dict = dict_char2num_x if tasks[ind] == 'write' else dict_char2num_y
-        out_dict = dict_char2num_y if tasks[ind] == 'write' else dict_char2num_x
-        out_seq_len = y_seq_length if tasks[ind] == 'write' else x_seq_length
-        inp = X_test if tasks[ind] == 'write' else Y_test
-        targ = Y_test if tasks[ind] == 'write' else X_test
-
-
-
-        keep_prob = graph.get_tensor_by_name(gerund+'/keep_prob:0')
-        inputs = graph.get_tensor_by_name(gerund+'/input:0')
-        outputs = graph.get_tensor_by_name(gerund+'/output:0')
-        logits = graph.get_tensor_by_name(gerund+'/decoding_'+tasks[ind]+'/logits:0')
-
-
-        dec_input = np.zeros((len(X_test), 1)) + out_dict['<GO>'] 
-        # Generate character by character (for the entire batch, weirdly)
-        for i in range(out_seq_len):
-            test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:inp[:,1:],outputs:dec_input})
-            prediction = test_logits[:,-1].argmax(axis=-1)
-            #print('Loop',test_logits.shape, test_logits[:,-1].shape, prediction.shape)
-            dec_input = np.hstack([dec_input, prediction[:,None]])
-      
-        fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], targ[:,1:],out_dict, mode='test')
-        dists, tokenAcc = sess.run([acc_object.dists, acc_object.token_acc], feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
-        wordAcc  = np.count_nonzero(dists==0) / len(dists) 
-        print(gerund.upper()+ ' - Accuracy on test set is for tokens{:>6.3f} and for words {:>6.3f}'.format(tokenAcc, wordAcc))
-
-
-
-
-        """
-
-
-
-
-
-
-
-
-
-
 
 

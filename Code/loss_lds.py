@@ -81,7 +81,6 @@ def sequence_loss_lds(logits,
                   max_alt_spellings the rest of the 3. dim. should be filled with float('NaN')
   PRINT_RATIO {bool}, Whether the ratio of words that were orthographically incorrect, but accepted 
                   from LdS teacher should be printed.
-  EXE         {bool}, whether the method is only initialized (False) or act. executed (True)
   NAME        {str}, optional. Name for this operation, defaults to "sequence_loss_lds"
 
 
@@ -112,7 +111,6 @@ def sequence_loss_lds(logits,
       batch_size = targets.get_shape()[0]
       seq_len = targets.get_shape()[1]
       num_classes = logits.get_shape()[2]
-      #max_alt_spellings = alt_targets.get_shape()[2] if isinstance(alt_targets.get_shape()[2], int) else 1
       logits_flat = array_ops.reshape(logits, [-1, num_classes]) # Pseudoflat logits of shape [batch_size*seq_len x num_classes]
       
       
@@ -121,8 +119,6 @@ def sequence_loss_lds(logits,
       # If so, replace the target by the alternative writing, else take original target.
 
       # For loops are a hustle in TF, thus we make an elementwise compparison
-
-      print("LDS LOSS started!")
       writings = math_ops.cast(math_ops.argmax(logits,axis=-1),dtypes.int32)
 
 
@@ -142,13 +138,11 @@ def sequence_loss_lds(logits,
       equal_ind = array_ops.where(equal)
 
 
-      # Compute ratio of correctly spelled words:
-      # concatenate true and lds-true spellings
+      # Compute ratio of correctly spelled words, concatenate true and lds-true spellings
       both_targs = array_ops.concat([alt_targets,array_ops.expand_dims(targets,2)],2)
       equal_both_ind = array_ops.where(math_ops.reduce_all(gen_math_ops.equal(writings_all,both_targs),1))
 
-
-      # This works but is a hack (needs code refinement elsewhere) 
+      # Outsource the target tensor update operation from TF to python/numpy (excluded from tensor graph)
       new_targets, ratio_lds, ratio_corr  = script_ops.py_func(lds_utils.update_tensor,[targets, alt_targets, equal_ind, equal_both_ind], 
         [dtypes.int64, dtypes.float64, dtypes.float64])
 
