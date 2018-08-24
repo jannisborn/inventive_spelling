@@ -232,10 +232,10 @@ if __name__ == '__main__':
 
     regime = args.learn_type
 
-    if  or args.learn_type == 'intervened' or args.learn_type == 'intervened + interleaved' :
+    if args.learn_type == 'lds' or args.learn_type == 'intervened' or args.learn_type == 'intervened + interleaved' :
         regime = 'lds'
     elif args.learn_type == 'normal' or args.learn_type == 'interleaved':
-        regime = args.learn_type
+        regime = 'normal'
 
     print("REGIME IS ", regime)
 
