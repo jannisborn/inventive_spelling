@@ -170,50 +170,16 @@ if __name__ == '__main__':
 
 
 
-
     # LOAD DATA
 
-    if args.task == 'Date':
 
-        # Retrieve date data from tutorial
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.date_dataset(args.seed) 
-    
-    elif args.task == 'timit_p2g':
-
-        # Writing with TIMIT
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.TIMIT_P2G() 
-
-    elif args.task == 'timit_g2p':
-
-        # Reading with TIMIT
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.TIMIT_G2P() 
-
-    elif args.task == 'bas_g2p_c':
-        path = '/Users/jannisborn/Desktop/LDS_Data/BAS_SprecherInnen'
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_G2P_create(path)
-
-
-    elif args.task == 'bas_p2g_c':
-        # Follows
-        path = '/Users/jannisborn/Desktop/LDS_Data/BAS_SprecherInnen'
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_create(path)
-
-    elif args.task == 'bas_g2p_r':
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_G2P_retrieve()
-
-    elif args.task == 'bas_p2g_r':
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
-
-    elif args.task == 'celex' :
+    if args.task == 'celex' :
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_retrieve()
         mas = 500
 
     elif args.task == 'celex_all':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_all_retrieve()
         mas = 100
-
-    elif args.task == 'bas':
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y)) = utils.BAS_P2G_retrieve()
 
     elif args.task == 'childlex':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_retrieve()
@@ -235,9 +201,7 @@ if __name__ == '__main__':
 
     # Set remaining parameter based on the processed data
     x_dict_size, num_classes, x_seq_length, y_seq_length, dict_num2char_x, dict_num2char_y = utils.set_model_params(inputs, targets, dict_char2num_x, dict_char2num_y)
-    #print(dict_num2char_x)
-    #print()
-    #print(dict_num2char_y)
+
 
     # Split data into training and testing
     indices = range(len(inputs))
@@ -268,9 +232,9 @@ if __name__ == '__main__':
 
     regime = args.learn_type
 
-    if args.learn_type == 'interleaved' or args.learn_type == 'intervened' or args.learn_type == 'intervened + interleaved' :
+    if  or args.learn_type == 'intervened' or args.learn_type == 'intervened + interleaved' :
         regime = 'lds'
-    elif args.learn_type == 'normal':
+    elif args.learn_type == 'normal' or args.learn_type == 'interleaved':
         regime = args.learn_type
 
     print("REGIME IS ", regime)
@@ -391,14 +355,6 @@ if __name__ == '__main__':
                                                         {model_write.keep_prob:args.dropout, model_write.inputs: write_inp_batch[:,1:], 
                                                         model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:], 
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                #print("Time on batch of training took ", time()-tt)
-
-
-                if epoch > theta_min and epoch < theta_max:
-
-                    r = utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
-                    print("Original target was ", write_out_batch[r,:], "New target is ", write_new_targs[r,:])
-                    print("Another word: ", write_out_batch[r-1,:], "New target is ", write_new_targs[r-1,:])
 
                 if args.reading:
                     read_inp_batch = write_new_targs
@@ -435,16 +391,11 @@ if __name__ == '__main__':
                                                          {model_write.keep_prob:1.0, model_write.inputs: write_inp_batch[:,1:], 
                                                          model_write.outputs: write_out_batch[:, :-1], model_write.targets: write_out_batch[:, 1:],
                                                         model_write.alternative_targets: write_alt_targs[:,1:,:]})
-                print("FC1 SHAPE", x.shape)
 
                 fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
-                #print("Prepare accuracy took ", time()-t)
-                t=time()
                 dists, write_token_accs[k] = sess.run([acc_object.dists, acc_object.token_acc], 
                         feed_dict={acc_object.fullPred:fullPred, acc_object.fullTarg: fullTarg})
-                #print("Compute accuracy took", time()-t)
                 write_word_accs[k] = np.count_nonzero(dists==0) / len(dists) 
-                #print("Time for new accuracy ", time()-t)
 
 
                 rats_lds.append(rat_lds)
@@ -495,7 +446,6 @@ if __name__ == '__main__':
                     utils.num_to_str(write_inp_batch,w_batch_logits,write_out_batch,write_alt_targs,dict_num2char_x,dict_num2char_y)
                 _ = utils.lds_compare(w_batch_logits,write_out_batch[:, 1:], write_alt_targs[:,1:,:], dict_num2char_y, 'train')
 
-                #write_old_accs[k], write_token_accs[k] , write_word_accs[k] = utils.accuracy(w_batch_logits, write_new_targs, dict_char2num_y)
                 fullPred, fullTarg = utils.accuracy_prepare(w_batch_logits, write_out_batch[:,1:], dict_char2num_y)
                 
                 dists, write_token_accs[k] = sess.run([acc_object.dists, acc_object.token_acc], 

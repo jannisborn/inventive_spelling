@@ -29,53 +29,11 @@ def batch_data(x, y, BATCH_SIZE, alt_targs=None):
             yield x[start:start+BATCH_SIZE], y[start:start+BATCH_SIZE], alt_targs[start:start+BATCH_SIZE]
             start += BATCH_SIZE
 
-        
-        
-def accuracy(logits, labels, char2numY, mode='train'):
-    """ 
-    Receives the LOGITS and the LABELS (np.array of identical dimensions) 
-    Return token accuracy (Levensthein distance), word accuracy and the initial measure of Sachin
-
-    MODE can be either train or test. When train the actual logits are received, when test then "logit" holds already the prediction
-    """
-
-    # numpy: "a.argmax(-1)" reduces last dimension - identical to tensorflowL tf.argmax(a,axis=-1)
-
-    # Error handling and mode setting
-    if mode =='train':
-        fullPred = logits.argmax(-1) # Prediction string with padding
-    elif mode == 'test':
-        fullPred = np.copy(logits.astype(int))
-    else:
-        print("Please specify 'mode' as either 'train' or 'test'. ")
-
-    
-    #Padded target string
-    fullTarg = np.copy(labels) 
-    # Set pads to 0 - as preparation for edit_distance
-    if '<PAD>' in char2numY:
-        fullPred[fullPred==char2numY['<PAD>']] = 0
-        fullTarg[fullTarg==char2numY['<PAD>']] = 0
-            
-    # Initial measure in file
-    oldAcc = np.mean(fullPred == fullTarg)     
-    with tf.Session() as sess2:
-    
-        # Compute accuracy based on Levensthein Distance (without Padding) 
-        dists = tf.edit_distance(dense_to_sparse(fullPred), dense_to_sparse(fullTarg)).eval(session=sess2)
-
-        tokenAcc = 1 - tf.reduce_mean(dists).eval(session=sess2)
-    wordAcc = np.count_nonzero(dists==0) / len(dists)
-    return oldAcc, tokenAcc, wordAcc
-
-    ################ DEPRECATED ####################
+   
 
 
 def accuracy_prepare(logits, labels, char2numY, mode='train'):
-    """
-    Method to prepare logits and labels for accuracy evaluation by removing padding values
-
-    """
+    """ Method to prepare logits and labels for accuracy evaluation by removing padding values """
 
     # Error handling and mode setting
     if mode =='train':
@@ -115,27 +73,6 @@ class acc_new(object):
         # Create sparse tensor
         sparseTensor = tf.SparseTensor(idx, tf.gather_nd(denseTensor,idx), tf.cast(tf.shape(denseTensor),tf.int64))
         return sparseTensor
-
-
-            
-
-def dense_to_sparse(denseTensor):
-    ''' 
-    Converts a dense tensor into a sparse one. Opposite to built-in tf.dense_tensor_to_sparse()
-    '''
-
-    # Create constant tensor 
-    denseConst = tf.constant(denseTensor)
-
-    # Non-Zero indices of dense tensor
-    idx = tf.where(tf.not_equal(denseConst,0))
-
-    # Create sparse tensor
-    sparseTensor = tf.SparseTensor(idx, tf.gather_nd(denseConst,idx), denseConst.get_shape())
-    '''with tf.Session() as sess:
-        sparse = sess.run(sparseTensor)
-    return sparse'''
-    return sparseTensor
 
 
 
@@ -187,85 +124,12 @@ def str_to_num_dataset(X,Y,pads=5):
 
 
 
-def TIMIT_G2P():
-    """
-    This method uses NLTK to prepare a sample from the TIMIT corpus (https://catalog.ldc.upenn.edu/ldc93s1) for a Grapheme-To-Phoneme conversion.
-    The sample contains 660 words and their corresponding phoneme sequences (in their special phono-code) 
-
-    """
-
-    import nltk
-    timitdict = nltk.corpus.timit.transcription_dict()
-
-    # 1. Split data into inputs and targets
-    X = [word for word in timitdict] # X is a list with 660 strings
-    Y = [timitdict[word] for word in timitdict] # Y is a list with 660 lists, each containing of a few strings (one per phoneme)
-
-    return str_to_num_dataset(X,Y)
-    # All characters in inputs (28, i.e. alphabet + space and ' ) -> Final sequence length = 29 (due to padding)
-    # All target phonemes (74 different) -> 76 (Pad, Go)
-    
-
-    """
-    # 2. Define dictionaries 
-    # Dictionary assignining a unique integer to each input character
-    u_characters = set(' '.join(X)) # All characters in inputs (28, i.e. alphabet + space and ' ) -> Final sequence length = 29 (due to padding)
-    char2numX = dict(zip(u_characters, range(len(u_characters))))
-    # Dictionary assignining a unique integer to each phoneme
-    v_characters = set([phon for phon_seq in Y for phon in phon_seq]) # All target phonemes (74 different) -> 76 (Pad, Go)
-    char2numY = dict(zip(v_characters, range(1,len(v_characters)+1))) # Using 0 causes trouble for tf.edit_distance
-
-    # 3. Padding
-    # Pad inputs
-    char2numX['<PAD>'] = len(char2numX) 
-    mx_l_X = max([len(word) for word in X]) # longest input sequence
-    # Padd all X for the final form for the LSTM
-    x = [[char2numX['<PAD>']]*(mx_l_X - len(word)) +[char2numX[char] for char in word] for word in X]
-    x = np.array(x) 
-
-    # Pad targets
-    char2numY['<GO>'] = len(char2numY) # Define number denoting the response onset
-    char2numY['<PAD>'] = len(char2numY)  
-    mx_l_Y = max([len(phon_seq) for phon_seq in Y]) # longest output sequence
-
-    y = [[char2numY['<GO>']] + [char2numY['<PAD>']]*(mx_l_Y - len(ph_sq)) + [char2numY[phon] for phon in ph_sq] for ph_sq in Y]
-    y = np.array(y)
-
-    return ((x,y) , (char2numX,char2numY))
-    """
-
-
-
-def TIMIT_P2G():
-    """ 
-    This method uses NLTK to prepare a sample from the TIMIT corpus (https://catalog.ldc.upenn.edu/ldc93s1) for a Phoneme-To-Grapheme conversion.
-    The sample contains 660 words and their corresponding phoneme sequences (in their special phono-code)  
-    """
-
-    import nltk
-    timitdict = nltk.corpus.timit.transcription_dict()
-
-    # 1. Split data into inputs and targets
-    X = [timitdict[word] for word in timitdict] # inputs are phonemes
-    Y = [word for word in timitdict] # outputs are words
-
-    return str_to_num_dataset(X,Y)
-
-
 def np_dict_to_dict(np_dict):
-    """
+    """ 
     Converts a dictionary saved via np.save (as structured np array) into an object of type dict
-
-    Parameters:
-    --------------
-    NP_DICT        : {np.array} structured np.array with dict keys and items
-
-    Returns:
-    --------------
-    DICT            : {dict} converted NP_DICT
-
+    Parameters:         NP_DICT        : {np.array} structured np.array with dict keys and items
+    Returns:            DICT           : {dict} converted NP_DICT
     """
-
     return {key:np_dict.item().get(key) for key in np_dict.item()}
 
 
