@@ -512,7 +512,7 @@ if __name__ == '__main__':
 
                 write_test_logits, x, d= sess.run([model_write.logits, model_write.fc1, model_write.dec_outputs],
                     feed_dict={model_write.keep_prob:1.0, model_write.inputs:X_test[:,1:], model_write.outputs:write_dec_input})
-                print("DEC_OUT",d.shape, "HIDDEN 1", x.shape, "LOGITS", write_test_logits.shape)
+                #print("DEC_OUT",d.shape, "HIDDEN 1", x.shape, "LOGITS", write_test_logits.shape)
                 write_prediction = write_test_logits[:,-1].argmax(axis=-1)
                 write_dec_input = np.hstack([write_dec_input, write_prediction[:,None]])
             write_test_new_targs, tmp = utils.lds_compare(write_dec_input[:,1:],Y_test[:,1:], Y_alt_test[:,1:], dict_num2char_y, 'test')
