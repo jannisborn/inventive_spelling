@@ -620,7 +620,7 @@ if __name__ == '__main__':
             saver.save(sess, save_path + '/my_test_model',global_step=epoch)        
 
         # If lds learning is performed, training regime is changed to normal after half of the epochs 
-        if args.learn_type == 'lds' or args.learn_type=='intervened':
+        if args.learn_type == 'lds':
 
             if args.epochs // 2 == epoch and regime == 'lds':
                 regime = 'normal'
