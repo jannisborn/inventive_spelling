@@ -2,7 +2,7 @@
 import warnings
 warnings.filterwarnings("ignore",category=FutureWarning)
 
-import sys, os, warnings, argparse, time
+import sys, os, warnings, argparse, time, psutil
 import random, shutil
 import numpy as np
 import tensorflow as tf
@@ -316,6 +316,15 @@ if __name__ == '__main__':
 
 
 
+    for l in range(20):
+         for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size,Y_alt_train)):
+
+            process = psutil.Process(os.getpid())
+            print(process.memory_info().rss)
+
+    print("DONE")
+
+
 
     print('\n Starting training \n ')
     for epoch in range(args.epochs):
@@ -624,14 +633,14 @@ if __name__ == '__main__':
             saver.save(sess, save_path + '/my_test_model',global_step=epoch)        
 
         # If lds learning is performed, training regime is changed to normal after half of the epochs 
-        if args.learn_type == 'lds':
+        if args.learn_type == 'lds' or args.learn_type == 'intervened'
 
             if args.epochs // 2 == epoch and regime == 'lds':
                 regime = 'normal'
                 print("Training regime changed to normal\n")
 
         # In interleaved regime, in regular training (2nd half), every 5th epoch is again LdS epoch
-        elif args.learn_type == 'interleaved':
+        if args.learn_type == 'interleaved':
 
             if epoch > args.epochs // 2 and epoch % 5 == 0:
                 regime = 'lds'
