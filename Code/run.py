@@ -234,10 +234,13 @@ if __name__ == '__main__':
 
     regime = args.learn_type
 
-    if args.learn_type == 'lds' or args.learn_type == 'intervened' or args.learn_type == 'intervened + interleaved' :
+    if args.learn_type == 'lds' or args.learn_type == 'intervened' or args.learn_type == 'intervened + interleaved' or args.learn_type == 'interleaved':
         regime = 'lds'
-    elif args.learn_type == 'normal' or args.learn_type == 'interleaved':
+    elif args.learn_type == 'normal' :
         regime = 'normal'
+    else:
+        raise ValueError('Wrong learning type given')
+
 
     print("REGIME IS ", regime)
 
@@ -324,12 +327,13 @@ if __name__ == '__main__':
 
     print("DONE")
 
-
+    lt = []
 
     print('\n Starting training \n ')
     for epoch in range(args.epochs):
 
         print('Epoch ', epoch + 1)
+        lt.append(regime)
         t = time()    
 
 
@@ -689,18 +693,10 @@ if __name__ == '__main__':
     #np.savetxt(save_path+'/train.txt', trainPerf, delimiter=',')   
     #np.savetxt(save_path+'/test.txt', testPerf, delimiter=',')  
     np.savez(save_path + '/metrics.npz', trainPerf=trainPerf, testPerf=testPerf, lds_ratios=lds_ratios,lds_loss=lds_losses, 
-        write_loss=write_losses, read_losses=read_losses, lds_ratios_test=lds_ratios_test)
-
-    if args.show_plot:
-        ax = plt.subplot(111) 
-        plt.plot(np.linspace(1,args.epochs, trainPerf.shape[0]), trainPerf[:,0], label="trainToken")
-        plt.plot(np.linspace(1,args.epochs, trainPerf.shape[0]), trainPerf[:,1], label="trainWord")
-        plt.plot(np.linspace(1,args.epochs, trainPerf.shape[0]), testPerf[:,0], label="testToken")
-        plt.plot(np.linspace(1,args.epochs, trainPerf.shape[0]), testPerf[:,1], label="testWord")
-        ax.legend(loc='best')
-        plt.show()
+        write_loss=write_losses, read_losses=read_losses, lds_ratios_test=lds_ratios_test, lt=lt)
 
 
+print("Learning types were ", lt)
 print("DONE!")   
 
 

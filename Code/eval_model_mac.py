@@ -191,20 +191,10 @@ class evaluation(object):
 		loop = True
 
 		with tf.Session() as sess:
-
 			# Restore model
-			#print(self.path)
-			#saver = tf.train.Saver(tf.trainable_variables())
-			#saver.restore(sess,tf.train.latest_checkpoint(self.path))
-			#sess.run(tf.global_variables_initializer())
 			saver = tf.train.import_meta_graph(self.path+'/my_test_model-'+str(self.epochs)+'.meta')
-			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
+			saver.restore(sess,self.path+'/my_test_model-'+str(self.epochs))
 
-
-			#variables_names = [v.name for v in tf.trainable_variables()]
-			#values = sess.run(variables_names)
-			#for v in variables_names:
-			#	print(v)
 
 			graph = tf.get_default_graph()
 			keep_prob = graph.get_tensor_by_name(self.model_name+'/keep_prob:0')
@@ -221,14 +211,12 @@ class evaluation(object):
 					break
 
 				word_num = self.prepare_sequence(word)
-				print(word_num.shape[1],word_num)
 				dec_input = np.zeros([1,1]) + self.output_dict['<GO>']
 
 				for k in range(self.out_seq_len):
 					pred = sess.run(logits, feed_dict={keep_prob:1.0, inputs:word_num, outputs:dec_input})
 					char = pred[:,-1].argmax(axis=-1)
 					dec_input = np.hstack([dec_input, char[:,None]]) # Identical to np.expand_dims(char,1)
-				print(dec_input.shape[1],dec_input)
 
 				output = ''.join([self.output_dict_rev[num] if self.output_dict_rev[num]!='<PAD>' else '' for ind,num in enumerate(dec_input[0,1:])])
 				print("The ", self.inp_seq_nat, " sequence ", word, "  =>  ", output, ' num ', dec_input[0,1:])
@@ -277,7 +265,8 @@ class evaluation(object):
 
 			# Restore the model
 			saver = tf.train.import_meta_graph(self.path + '/my_test_model-'+str(self.epochs)+'.meta')
-			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
+			print(self.path+'/my_test_model-'+str(self.epochs))
+			saver.restore(sess,self.path+'/my_test_model-'+str(self.epochs))
 			graph = tf.get_default_graph()
 
 
@@ -296,11 +285,6 @@ class evaluation(object):
 				for i in range(tested_targets.shape[1]-1): # output sequence has length of target[1] since [0] is batch_size, -1 since <GO> is ignored
 				    test_logits = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tested_inputs[:,1:],outputs:dec_input})
 				    prediction = test_logits[:,-1].argmax(axis=-1)
-				    print("PRED SHAPE", prediction.shape, "TEST LOG SHAPE", test_logits.shape, "MAX _ SHAPE", test_logits[:,-1].shape, "NoNe Shape", prediction[:,None].shape)
-				    newpred = test_logits[:,:,:].argmax(axis=-1)
-				    if i > 2:
-				    	print("PREDICTION ", np.array_equal(oldpred,newpred[:,:-1]))
-				    oldpred = newpred
 				    dec_input = np.hstack([dec_input, prediction[:,None]])
 
 				# Evaluate performance
@@ -512,8 +496,6 @@ class evaluation(object):
 
 			# Restore model
 			saver = tf.train.import_meta_graph(self.path+'/my_test_model-'+str(self.epochs)+'.meta')
-			print("HERE ", tf.train.latest_checkpoint(self.path+'/./'))
-			#saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
 			saver.restore(sess,self.path+'/my_test_model-'+str(self.epochs))
 			graph = tf.get_default_graph()
 

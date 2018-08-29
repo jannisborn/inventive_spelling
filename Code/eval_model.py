@@ -193,12 +193,9 @@ class evaluation(object):
 		with tf.Session() as sess:
 
 			# Restore model
-			#print(self.path)
-			#saver = tf.train.Saver(tf.trainable_variables())
-			#saver.restore(sess,tf.train.latest_checkpoint(self.path))
-			#sess.run(tf.global_variables_initializer())
 			saver = tf.train.import_meta_graph(self.path+'/my_test_model-'+str(self.epochs)+'.meta')
-			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
+			print()
+			saver.restore(sess,self.path+'/my_test_model-'+str(self.epochs))
 
 
 			#variables_names = [v.name for v in tf.trainable_variables()]
@@ -277,7 +274,7 @@ class evaluation(object):
 
 			# Restore the model
 			saver = tf.train.import_meta_graph(self.path + '/my_test_model-'+str(self.epochs)+'.meta')
-			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
+			saver.restore(sess,self.path+'/my_test_model-'+str(self.epochs))
 			graph = tf.get_default_graph()
 
 
@@ -364,50 +361,6 @@ class evaluation(object):
 
 
 
-
-
-
-
-
-
-
-			"""
-			saver = tf.train.import_meta_graph(self.path+'/my_test_model-'+str(self.epochs)+'.meta')
-			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
-
-
-			#variables_names = [v.name for v in tf.trainable_variables()]
-			#values = sess.run(variables_names)
-			#for v in variables_names:
-			#	print(v)
-
-			graph = tf.get_default_graph()
-			keep_prob = graph.get_tensor_by_name('reading/keep_prob:0')
-			inputs = graph.get_tensor_by_name('reading/input:0')
-			outputs = graph.get_tensor_by_name('reading/output:0')
-			logits = graph.get_tensor_by_name('reading/decoding_read/logits:0')
-
-			# Iterate over dataset and print all wrong predictions
-			tested_inputs = self.inputs[self.indices]
-			tested_labels = self.targets[self.indices]
-			dec_input = np.zeros((len(tested_inputs),1)) + self.output_dict['<GO>']
-
-			print("tested input ", tested_inputs[1,:])
-
-			# Classify
-			for k in range(self.model_args_read[1]): # Length of output sequence
-
-				pred = sess.run(logits, feed_dict={keep_prob:1.0, inputs:tested_inputs[:,1:], outputs:dec_input})
-				predictions = pred[:,-1].argmax(axis=-1)
-				dec_input = np.hstack([dec_input, predictions[:,None]])
-
-
-			fullPred, fullTarg = utils.accuracy_prepare(dec_input[:,1:], tested_labels[:,1:], self.output_dict,mode='test')
-			dists, token_acc = sess.run([self.acc_object.dists, self.acc_object.token_acc], feed_dict={self.acc_object.fullPred:fullPred, self.acc_object.fullTarg: fullTarg})
-			word_acc  = np.count_nonzero(dists==0) / len(dists) 
-
-			print('Accuracy on {:5s} set is for tokens{:>6.3f} and for words {:>6.3f}'.format(mode,token_acc, word_acc))
-			"""
 
 
 
@@ -547,7 +500,7 @@ class evaluation(object):
 
 			# Restore model
 			saver = tf.train.import_meta_graph(self.path+'/my_test_model-'+str(self.epochs)+'.meta')
-			saver.restore(sess,tf.train.latest_checkpoint(self.path+'/./'))
+			saver.restore(sess,self.path+'/my_test_model-'+str(self.epochs))
 			graph = tf.get_default_graph()
 
 
