@@ -163,6 +163,7 @@ if __name__ == '__main__':
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         config.gpu_options.per_process_gpu_memory_fraction = 0.99
+        print(config.gpu_options.per_process_gpu_memory_fraction)
         sess = tf.Session(config = config)
 
 
