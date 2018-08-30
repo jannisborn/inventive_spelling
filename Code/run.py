@@ -319,14 +319,6 @@ if __name__ == '__main__':
 
 
 
-    for l in range(20):
-         for k, (write_inp_batch, write_out_batch, write_alt_targs) in enumerate(utils.batch_data(X_train, Y_train, args.batch_size,Y_alt_train)):
-
-            process = psutil.Process(os.getpid())
-            print(process.memory_info().rss)
-
-    print("DONE")
-
     lt = []
 
     print('\n Starting training \n ')
