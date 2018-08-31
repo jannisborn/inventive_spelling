@@ -76,16 +76,16 @@ class evaluation(object):
 		self.retrieve_model_args()
 		self.set_hyperparams()
 
-		self.show_mistakes('train')
+		#self.show_mistakes('train')
 		#print("Training mistakes saved.")
 		#self.show_mistakes('test')
 		#self.predict_input()
 
-		#self.plot_pca(2,'input')
-		#self.plot_pca(2,'output')
+		self.plot_pca(2,'input')
+		self.plot_pca(2,'output')
 
-		#self.plot_tsne('input')
-		#self.plot_tsne('output')
+		self.plot_tsne('input')
+		self.plot_tsne('output')
 
 
 
@@ -171,8 +171,8 @@ class evaluation(object):
 		self.input_dict_rev = dict(zip(self.input_dict.values(), self.input_dict.keys()))
 		self.output_dict_rev = dict(zip(self.output_dict.values(), self.output_dict.keys()))
 
-		#print("INPUT DICT", self.input_dict)
-		#print("OUTPUT DICT", self.output_dict)
+		print("INPUT DICT", self.input_dict)
+		print("OUTPUT DICT", self.output_dict)
 
 
 		self.inp_seq_nat = 'phonetic' if args.task == 'write' else 'orthografic' # To read in a type of sequence
