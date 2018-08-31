@@ -1,0 +1,40 @@
+- Report Nikola schicken, danach zu Richard.
+- Report Schabmann schicken
+- Papa, Ronja, Thomas schicken
+- Mo schicken
+
+
+
+
++++++++++ REPORT +++++++++++++
+	- Welche Analogien können wir behaupten, wo lehnen wir uns zu weit aus dem Fenster
+	- Zum Schreiben und Redigieren der drafts und als experten für den aktuellen Stand in LdS: 
+		- Gibt es Studien die belegen dass LdS schadet?
+		- Welche Arbeiten sind essentiell zu lesen im Zusammenhang mit LdS?
+	- Wenn man deutsche Zielgruppe anschreibt: paper auf deutsch oder Englisch?
+
+
+
+
+++++++ ANALYSE +++++++++
+
+1)	Phonemes/Graphemes mit t-SNE visualisieren. Unterschiede in der Clusterbildung in beiden Modellen?? (word embedding vectors of trained model). Phonetische Gruppen? Vokale zusammen? Bestimmte Konsonanten zusammen, Frikative zusammen etc?
+STEP1: Finde das beste SOTA paper bezüglich phoneme->grapheme mapping und implementiere das DING. LSTM? HMM? Bidirectional RNN (Graves!)
+-> One RNN moving forward in time, one backward through time (to account for e.g. coarticulation number vs tenth)
+
++++++++ COLLABORATORS +++++++++++++
+
+Alfred Schabmann - Prof: Professur für Didaktik/Pädagogik mit Schwerpunkt Lernen
+Barbara Schmidt - Prof: Vertretungsprofessur Sonderpädagogische Förderung mit Schwerpunkt Unterrichtserforschung
+Anna Rosenkranz - PostDoc: Linguistik & Germanistik + sprachtherapeutische praktische Erfahrung 
+
+
++++++++++++ ESPEAK +++++++++++++
+Dataset creation by espeak: espeak -v de --ipa -f celex_all_words.csv --phonout celex_all_phons.txt -q
+
+
+
++++++++++ NOISE ++++++++++=
+
+	--> Low level representations Irreversibly destroyed: PingPong example: Start with shakehand, then aim to beat person X. After having proceeded to up to 80% of being able to beat X, someone shows Penholder which is more effective. BUT: Although longterm outcome would be higher with penholder, it is more senseful from a greedy perspective to adjust subtleties rather than resetting (forgetting all learned skills).
+
