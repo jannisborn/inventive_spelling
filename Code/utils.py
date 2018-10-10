@@ -181,11 +181,12 @@ def celex_retrieve():
     Retrives the previously saved data from the CELEX corpus
     """
 
-    data = np.load('../../Models/data/celex_few_lds.npz')
+    #data = np.load('../../Models/data/celex_few_lds.npz')
+    data = np.load('../data/celex_few_lds.npz')
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-    path = '../../Models/data/celex_few_lds_alt_targets.npy'
+    path = '../data/celex_few_lds_alt_targets.npy'
     print("Loading alternative targets ...")
     alt_targs_raw = np.load(path)
 
