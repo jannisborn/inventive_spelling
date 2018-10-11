@@ -1,13 +1,9 @@
-###################     IMPORTING      ######################
 import warnings
-warnings.filterwarnings("ignore",category=FutureWarning)
-
-import sys, os, warnings, argparse, time, psutil
-import random, shutil
+import sys
+import os
+import argparse
 import numpy as np
 import tensorflow as tf
-import h5py as h5py
-import matplotlib.pyplot as plt
 
 # Import functions from some modules
 from sklearn.model_selection import train_test_split
@@ -18,7 +14,9 @@ from time import time
 from utils import acc_new
 import utils
 from bLSTM import bLSTM
+
 #from eval_model import evaluation
+warnings.filterwarnings("ignore",category=FutureWarning)
 
 
 sys.path.append('../')
