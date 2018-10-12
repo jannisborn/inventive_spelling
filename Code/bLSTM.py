@@ -70,7 +70,7 @@ class bLSTM(object):
 
 		# Mapping parsed inputs to functions.
 		Function_Map = {'None': None ,  None:None,        'Xavier': tf.contrib.layers.xavier_initializer(),    'ReLU': tf.nn.relu,  
-                'ReLU6': tf.nn.relu6,   'SeLU': tf.nn.selu,     'Tanh':tf.nn.tanh,           'Sigmoid':tf.sigmoid,
+                'ReLU6': tf.nn.relu6, 'Tanh':tf.nn.tanh,           'Sigmoid':tf.sigmoid,
                 'RMSProp': tf.train.RMSPropOptimizer, 'GD':tf.train.GradientDescentOptimizer , 'Momentum':tf.train.MomentumOptimizer , 
                 'Adam': tf.train.AdamOptimizer, 'Adadelta': tf.train.AdadeltaOptimizer, 'Adagrad': tf.train.AdagradOptimizer ,
                 'Uni': tf.random_uniform_initializer(-0.1, 0.1), 'Trunc': tf.truncated_normal_initializer(mean=0.0, stddev=0.1), 
