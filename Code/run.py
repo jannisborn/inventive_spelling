@@ -175,7 +175,7 @@ if __name__ == '__main__':
 
     if args.task == 'celex' :
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_retrieve()
-        mas = 128
+        mas = 96
 
     elif args.task == 'celex_all':
         ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_all_retrieve()
