@@ -1,1 +1,0 @@
-python run.py --epochs 250 --print_step 1 --task celex --batch_size 2500 --save_model 125 --test_size 0.05 --learn_type normal --reading True --optimization Adam --dropout 0.5
