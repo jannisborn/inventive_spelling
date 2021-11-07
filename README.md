@@ -4,11 +4,8 @@ In germanophone countries, this method is known as the **Reichen-method** or sim
 
 ## Computational model
 We propose a computational model based on two recurrent neural networks that allows to imitiate certain aspects of the inventive spelling.
-<p align="center">
-	<img src="assets/overview.pdf" alt="photo not available" width="100%" height="100%">
-	<br>
-   <em>Overview of computational model for reading and writing acquisition based on inventive spelling.</em>
-</p>
+![Overview](https://github.com/jannisborn/inventive_spelling/blob/master/assets/overview.pdf "Overview of computational model for reading and writing acquisition based on inventive spelling.")
+*Overview of computational model for reading and writing acquisition based on inventive spelling.*
 
 
 ### Installation
@@ -28,5 +25,5 @@ pip install -e .
 
 For example, to train the model on the `celex` data, run:
 ```py
-python run.py --epochs 250 --print_step 1 --task celex --batch_size 2500 --save_model 125 --test_size 0.05 --learn_type normal --reading True --optimization Adam --dropout 0.5
+python run.py --data_dir ${PWD}/data --epochs 250 --print_step 1 --task celex --batch_size 2500 --save_model 125 --test_size 0.05 --learn_type normal --reading True --optimization Adam --dropout 0.5 
 ```

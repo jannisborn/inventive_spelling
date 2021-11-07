@@ -48,6 +48,8 @@ if __name__ == '__main__':
                         help='Restore a pretrained model or initialize a new one (default).')
     parser.add_argument('--save_model', default=200, type=int,
                         help='Frequency of iterations before model is saved and stored.')
+    parser.add_argument('--data_dir', default='data', type=str,
+                        help='Directory to read the data from')
 
     # Task hyperparameter
     parser.add_argument('--task', default='fibel', type=str,
@@ -134,6 +136,7 @@ if __name__ == '__main__':
     file_name = args.file_name + str(args.run_id)
     save_path = os.path.join(log_dir,'Models', args.task, args.learn_type + '_' + file_name)
     test_tube = save_path
+    data_dir = args.data_dir
 
     # if save_path does not exist, create one
     while os.path.exists(save_path):
@@ -172,23 +175,23 @@ if __name__ == '__main__':
 
     # LOAD DATA
     if args.task == 'celex' :
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_retrieve()
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_retrieve(data_dir)
         mas = 96
 
     elif args.task == 'celex_all':
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_all_retrieve()
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.celex_all_retrieve(data_dir)
         mas = 100
 
     elif args.task == 'childlex':
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_retrieve()
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_retrieve(data_dir)
         mas = 100
 
     elif args.task == 'childlex_all':
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_all_retrieve()
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.childlex_all_retrieve(data_dir)
         mas = 43200
 
     elif args.task == 'fibel':
-        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.fibel_retrieve()
+        ((inputs, targets) , (dict_char2num_x, dict_char2num_y), alt_targets) = utils.fibel_retrieve(data_dir)
         lektions_inds = [9,14,20,28,36,46,58,77,99,121,154,174]
         mas = 810
 

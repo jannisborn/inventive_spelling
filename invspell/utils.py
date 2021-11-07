@@ -128,7 +128,6 @@ def extract_celex(path):
 
     
     Call via:
-    path = "/Users/jannisborn/Desktop/LDS_Data/celex2/german/gpl/gpl.cd"
     ((w,p) , (word_dict, phon_dict)) = extract_celex(path)
     
     """
@@ -176,19 +175,17 @@ def extract_celex(path):
 
 
  
-def celex_retrieve():
+def celex_retrieve(path: str):
     """
     Retrives the previously saved data from the CELEX corpus
     """
 
-    #data = np.load('../../Models/data/celex_few_lds.npz')
-    data = np.load('../data/celex_few_lds.npz')
+    data = np.load(os.path.join(path, 'celex_few_lds.npz'))
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-    path = '../data/celex_few_lds_alt_targets.npy'
     print("Loading alternative targets ...")
-    alt_targs_raw = np.load(path)
+    alt_targs_raw = np.load(os.path.join(path, 'celex_few_lds_alt_targets.npy'))
 
     alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
     print("Alternative targets successfully loaded.")
@@ -196,21 +193,17 @@ def celex_retrieve():
     return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
 
 
-def celex_all_retrieve():
+def celex_all_retrieve(path: str):
     """
     Retrives the previously saved data from the CELEX corpus
     """
 
-    data = np.load('../../Models/data/celex_all.npz')
-    #data = np.load('/Users/jannisborn/Desktop/LDS_Data/data/celex_all.npz')
+    data = np.load(os.path.join(path, 'celex_all.npz'))
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-    path = '../../Models/data/celex_all_alt_targets.npy'
-    path = '/Users/jannisborn/Desktop/LDS_Data/data/celex_all_alt_targets.npy'
-
     print("Loading alternative targets ...")
-    alt_targs_raw = np.load(path)
+    alt_targs_raw = np.load(os.path.join(path, 'celex_all_alt_targets.npy'))
 
     alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
     print("Alternative targets successfully loaded.")
@@ -218,19 +211,17 @@ def celex_all_retrieve():
     return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
 
 
-def childlex_retrieve():
+def childlex_retrieve(path: str):
     """
     Retrives the previously saved data from the childlex database (subset of CELEX)
     """
 
-    data = np.load('data/childlex.npz')
+    data = np.load(os.path.join(path, 'childlex.npz'))
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
-    path = 'data/childlex_alt_targets.npy'
-
     print("Loading alternative targets ...")
-    alt_targs_raw = np.load(path)
+    alt_targs_raw = np.load(os.path.join(path, 'childlex_alt_targets.npy'))
 
 
     alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
@@ -239,16 +230,15 @@ def childlex_retrieve():
     return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
 
 
-def fibel_retrieve():
+def fibel_retrieve(path:str):
 
-    data = np.load('data/fibel.npz')
+    data = np.load(os.path.join(path, 'fibel.npz'))
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
 
-    path = 'data/fibel_alt_targets.npy'
     print("Loading alternative targets ...")
-    alt_targs_raw = np.load(path)
+    alt_targs_raw = np.load(os.path.join(path, 'fibel_alt_targets.npy'))
 
 
     alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
@@ -257,14 +247,13 @@ def fibel_retrieve():
     return ( (data['phons'], data['words']) , (phon_dict, word_dict), alt_targs )
  
 
-def get_last_id(dataset):
+def get_last_id(path:str, dataset:str):
 
     # Retrieves the maximal ID of all the saved models in the path
 
     from os.path import expanduser
     
-    root_local = expanduser("~")+'/Dropbox/GitHub/LSTM/Models/'
-    path = root_local + dataset
+    path = os.path.join(path, dataset)
 
     try:
         folders = next(os.walk(path))[1]
