@@ -4,6 +4,7 @@ warnings.filterwarnings("ignore",category=FutureWarning)
 import inspect
 import tensorflow as tf 
 import numpy as np 
+from .loss_lds import sequence_loss_lds
 
 from tensorflow.contrib.rnn import LSTMCell, LSTMStateTuple, DropoutWrapper
 from tensorflow.contrib.rnn import stack_bidirectional_dynamic_rnn as bi_rnn
@@ -165,7 +166,7 @@ class bLSTM(object):
 			# Loss function
 			self.loss = tf.contrib.seq2seq.sequence_loss(self.logits, self.targets, tf.ones([self.batch_size, self.output_seq_length]))
 			
-			self.loss_lds, self.read_inps, self.rat_lds, self.rat_corr, self.loss_reg = tf.contrib.seq2seq.sequence_loss_lds(self.logits, self.targets, 
+			self.loss_lds, self.read_inps, self.rat_lds, self.rat_corr, self.loss_reg = sequence_loss_lds(self.logits, self.targets, 
 					tf.ones([self.batch_size, self.output_seq_length]), self.alternative_targets, self.max_alt_spellings)
 
 			# Optimizer

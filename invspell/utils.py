@@ -198,12 +198,15 @@ def celex_all_retrieve(path: str):
     Retrives the previously saved data from the CELEX corpus
     """
 
-    data = np.load(os.path.join(path, 'celex_all.npz'))
+    data = np.load(os.path.join(path, 'celex_all.npz'),  allow_pickle=True)
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
     print("Loading alternative targets ...")
-    alt_targs_raw = np.load(os.path.join(path, 'celex_all_alt_targets.npy'))
+    alt_targs_raw = np.load(
+        os.path.join(path, 'celex_all_alt_targets.npy'),
+        allow_pickle=True
+    )
 
     alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
     print("Alternative targets successfully loaded.")
@@ -216,12 +219,14 @@ def childlex_retrieve(path: str):
     Retrives the previously saved data from the childlex database (subset of CELEX)
     """
 
-    data = np.load(os.path.join(path, 'childlex.npz'))
+    data = np.load(os.path.join(path, 'childlex.npz'), allow_pickle=True)
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
     print("Loading alternative targets ...")
-    alt_targs_raw = np.load(os.path.join(path, 'childlex_alt_targets.npy'))
+    alt_targs_raw = np.load(
+        os.path.join(path, 'childlex_alt_targets.npy'), allow_pickle=True
+    )
 
 
     alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])
@@ -232,13 +237,15 @@ def childlex_retrieve(path: str):
 
 def fibel_retrieve(path:str):
 
-    data = np.load(os.path.join(path, 'fibel.npz'))
+    data = np.load(os.path.join(path, 'fibel.npz'), allow_pickle=True)
     phon_dict = np_dict_to_dict(data['phon_dict'])
     word_dict = np_dict_to_dict(data['word_dict'])
 
 
     print("Loading alternative targets ...")
-    alt_targs_raw = np.load(os.path.join(path, 'fibel_alt_targets.npy'))
+    alt_targs_raw = np.load(
+        os.path.join(path, 'fibel_alt_targets.npy'),  allow_pickle=True
+    )
 
 
     alt_targs = np.array([np.array(d,dtype=np.int8) for d in alt_targs_raw])

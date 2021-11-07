@@ -31,7 +31,7 @@ from tensorflow.python.ops import variables
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import script_ops
 from tensorflow.python.client import session
-from tensorflow.contrib.seq2seq.python.ops import lds_utils
+from .lds_utils import update_tensor
 
 import numpy as np
 import warnings, os
@@ -52,7 +52,6 @@ def sequence_loss_lds(logits,
                   print_ratio=True,
                   name='sequence_loss_lds'):
   """  
-  JANNIS BORN - April 2018
   Modified sequence_loss function for the "Lesen durch Schreiben" project
 
   Modifications include:
@@ -143,7 +142,7 @@ def sequence_loss_lds(logits,
       equal_both_ind = array_ops.where(math_ops.reduce_all(gen_math_ops.equal(writings_all,both_targs),1))
 
       # Outsource the target tensor update operation from TF to python/numpy (excluded from tensor graph)
-      new_targets, ratio_lds, ratio_corr  = script_ops.py_func(lds_utils.update_tensor,[targets, alt_targets, equal_ind, equal_both_ind], 
+      new_targets, ratio_lds, ratio_corr  = script_ops.py_func(update_tensor,[targets, alt_targets, equal_ind, equal_both_ind], 
         [dtypes.int64, dtypes.float64, dtypes.float64])
 
 

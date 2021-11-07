@@ -23,7 +23,9 @@ pip install -e .
 
 ### Model training
 
-For example, to train the model on the `celex` data, run:
+For example, to train the model on the `childlex` data, run:
 ```py
-python run.py --data_dir ${PWD}/data --epochs 250 --print_step 1 --task celex --batch_size 2500 --save_model 125 --test_size 0.05 --learn_type normal --reading True --optimization Adam --dropout 0.5 
+python scripts/run.py --data_dir ${PWD}/data --epochs 250 --print_step 1 --task childlex \
+--batch_size 2500 --save_model 125 --test_size 0.05 --learn_type normal --reading True \
+--optimization Adam --dropout 0.5 
 ```
