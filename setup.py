@@ -7,9 +7,6 @@ setup(
         'Implementation of computational model for inventive spelling'
     ),
     long_description=open('README.md').read(),
-    url='https://github.com/jannisborn/inventive_spelling',
-    author='Jannis Born',
-    author_email='jannis.born@gmx.de',
     install_requires=[
         'numpy', 'tensorflow', 'scikit-learn', 'matplotlib'
     ],
