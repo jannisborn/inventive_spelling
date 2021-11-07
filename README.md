@@ -4,8 +4,11 @@ In germanophone countries, this method is known as the **Reichen-method** or sim
 
 ## Computational model
 We propose a computational model based on two recurrent neural networks that allows to imitiate certain aspects of the inventive spelling.
-![Overview](https://github.com/jannisborn/inventive_spelling/blob/master/assets/overview.pdf "Overview of computational model for reading and writing acquisition based on inventive spelling.")
-*Overview of computational model for reading and writing acquisition based on inventive spelling.*
+<p align="center">
+	<img src="assets/overview.png" alt="photo not available" width="100%" height="100%">
+	<br>
+   <em>Overview of computational model for reading and writing acquisition based on inventive spelling.</em>
+</p>
 
 
 ### Installation
