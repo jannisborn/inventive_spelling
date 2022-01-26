@@ -1,5 +1,5 @@
 # Inventive spelling
-Public repo with code for a computational investigation of the teaching method "inventive spelling". This is a teaching method used in reading and writing skill acquisition in primary schools.
+Public repository with code for a computational investigation of the teaching method "inventive spelling". This is a teaching method used in reading and writing skill acquisition in primary schools.
 In germanophone countries, this method is known as the **Reichen-method** or simply as **Lesen durch Schreiben**.
 
 ## Computational model
