@@ -32,3 +32,19 @@ python scripts/run.py --data_dir ${PWD}/data --epochs 250 --print_step 1 --task 
 --batch_size 2500 --save_model 125 --test_size 0.05 --learn_type normal --reading True \
 --optimization Adam --dropout 0.5 
 ```
+
+### Citation
+If you use this code, please cite:
+
+```bib
+@article{born2022computational,
+title = {A computational investigation of inventive spelling and the “Lesen durch Schreiben” method},
+journal = {Computers and Education: Artificial Intelligence},
+volume = {3},
+pages = {100063},
+year = {2022},
+issn = {2666-920X},
+doi = {https://doi.org/10.1016/j.caeai.2022.100063},
+author = {Jannis Born and Nikola I. Nikolov and Anna Rosenkranz and Alfred Schabmann and Barbara Maria Schmidt},
+}
+```
